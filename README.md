@@ -53,16 +53,41 @@
 
 ---
 
-### 📜 7. Verification & Anti-IDOR Security Trait
+### 🏢 7. Corporate Multi-Owner Governance & Security Architecture
+* **Hierarki Persetujuan 2 Tingkat (Two-Tier Approval Workflow)**:
+  * **Primary Owner (Owner Pertama / Founder Utama)**: Diverifikasi langsung oleh Super Admin melalui dokumen NIB/SIUP PDF. Memegang mahkota kepemilikan utama 👑, wewenang penuh atas Rekening Bank, NPWP, Profil Perusahaan, dan persetujuan Co-Owner baru.
+  * **Co-Owner 2 & 3 (Co-Founders / Direktur)**: Dibatasi maksimal 3 Co-Owner per perusahaan. Pengajuan Co-Owner diverifikasi oleh Super Admin dan **WAJIB disetujui oleh Owner Pertama** di dasbor [Tim HR](file:///d:/web-karir/resources/views/admin/company_team/index.blade.php).
+  * **HR Specialist / Recruiters**: Tanpa batas jumlah. Berfokus pada pengelolaan lowongan & pelamar **tanpa akses ke informasi Rekening Bank & NPWP**.
+* **Smart Canonical Company Matching**:
+  * Pencocokan nama perusahaan secara otomatis (*Case-Insensitive & Space-Normalized*).
+  * Pengupasan otomatis awalan/akhiran badan hukum (*PT, PT., CV, CV., UD, UD., Inc, Ltd, Corp*) untuk mencegah terjadinya duplikasi data perusahaan.
+* **Perlindungan Anti-Klaim Ilegal & Notifikasi Keamanan**:
+  * Peringatan keamanan instan (*Security Alert Notification*) dikirimkan ke Primary Owner jika ada pengguna lain yang mencoba mengajukan akun di perusahaan yang sama.
+  * Data kepemilikan & rekening bank tidak dapat ditimpa atau diklaim secara ilegal.
+
+---
+
+### 📜 8. Verification & Anti-IDOR Security Trait
 * **URL ID Encryption (`HasEncryptedId`)**: Enkripsi ID data sensitif pada URL untuk mencegah serangan IDOR (*Insecure Direct Object References*).
 * **Audit Logs Activity**: Pencatatan jejak digital seluruh tindakan rekrutmen internal demi transparansi & akuntabilitas.
 * **Company Role Request & Verification**: Alur pendaftaran perusahaan baru dengan verifikasi dokumen NIB/SIUP oleh Super Admin.
+
+### 🌐 9. RESTful API & Swagger / OpenAPI 3.0 Interactive Documentation
+* **Dokumentasi Swagger Interaktif**: Dokumentasi OpenAPI 3.0 berbasis L5-Swagger yang dapat diakses langsung via browser.
+  * **Endpoint Utama API**:
+    * `POST /api/register` — Registrasi akun kandidat via API.
+    * `POST /api/login` — Autentikasi API & pembuatan Sanctum Bearer Token.
+    * `GET /api/me` — Mengambil data profil pengguna aktif (Protected Route).
+    * `GET /api/jobs` — Mengambil daftar lowongan kerja publik beserta detail UMK regional.
+  * **Akses Swagger UI**: Buka browser di **`http://localhost:8000/api/documentation`** untuk menguji coba REST API secara langsung.
 
 ---
 
 ## 🛠️ Tech Stack & Dependencies
 
 * **Framework**: Laravel 11.x (PHP 8.2+)
+* **API Documentation Engine**: L5-Swagger / DarkaOnLine (`DarkaOnLine/L5-Swagger`)
+* **API Authentication**: Laravel Sanctum (`laravel/sanctum`)
 * **Database**: MySQL 8.0+ / MariaDB
 * **Frontend**: Blade Templating, Alpine.js, Tailwind CSS, FontAwesome 6, Chart.js
 * **PDF Engine**: DomPDF (`barryvdh/laravel-dompdf`)
