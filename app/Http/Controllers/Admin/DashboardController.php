@@ -19,8 +19,8 @@ class DashboardController extends Controller
         if ($user->hasRole('Super Admin')) {
             // Super Admin Command Center Metrics
             $totalUsers = User::count();
-            $totalCandidates = User::role('Candidate')->count();
-            $totalCompanies = User::role(['HR', 'Company Owner'])->count();
+            $totalCandidates = \Spatie\Permission\Models\Role::where('name', 'Candidate')->exists() ? User::role('Candidate')->count() : 0;
+            $totalCompanies = \Spatie\Permission\Models\Role::whereIn('name', ['HR', 'Company Owner'])->exists() ? User::role(['HR', 'Company Owner'])->count() : 0;
             $verifiedCompanies = CompanyProfile::where('is_verified', true)->count();
             $pendingCompanyVerifications = CompanyProfile::whereNotNull('legal_doc_path')
                 ->where('is_verified', false)

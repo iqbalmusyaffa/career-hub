@@ -8,7 +8,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     $latestJobs = \App\Models\Job::where('status', 'active')->latest()->take(3)->get();
-    return view('welcome', compact('latestJobs'));
+    if ($latestJobs->isEmpty()) {
+        $latestJobs = \App\Models\Job::latest()->take(3)->get();
+    }
+    $trustedCompanies = \App\Models\CompanyProfile::whereNotNull('company_name')->where('company_name', '!=', '')->latest()->take(6)->get();
+    return view('welcome', compact('latestJobs', 'trustedCompanies'));
 });
 
 Route::get('/dashboard', function () {
@@ -144,6 +148,8 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
     // HR Team Management
     Route::get('/company-team', [\App\Http\Controllers\Admin\CompanyTeamController::class, 'index'])->name('company-team.index');
     Route::post('/company-team', [\App\Http\Controllers\Admin\CompanyTeamController::class, 'store'])->name('company-team.store');
+    Route::post('/company-team/{id}/approve-co-owner', [\App\Http\Controllers\Admin\CompanyTeamController::class, 'approveCoOwner'])->name('company-team.approve-co-owner');
+    Route::post('/company-team/{id}/reject-co-owner', [\App\Http\Controllers\Admin\CompanyTeamController::class, 'rejectCoOwner'])->name('company-team.reject-co-owner');
     Route::delete('/company-team/{id}', [\App\Http\Controllers\Admin\CompanyTeamController::class, 'destroy'])->name('company-team.destroy');
 
     // Multi-Branch Management

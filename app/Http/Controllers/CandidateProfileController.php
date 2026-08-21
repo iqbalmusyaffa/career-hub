@@ -127,7 +127,8 @@ class CandidateProfileController extends Controller
     public function editDetails(Request $request)
     {
         $user = $request->user();
-        return view('profile.candidate-details', compact('user'));
+        $profile = $user->candidateProfile;
+        return view('profile.candidate-details', compact('user', 'profile'));
     }
 
     public function updateDetails(Request $request)

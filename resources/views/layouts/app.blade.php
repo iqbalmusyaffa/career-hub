@@ -77,19 +77,19 @@
         <div id="talentflow-splash-screen" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease, visibility 0.5s ease; visibility: visible; opacity: 1;">
             <div style="background: #ffffff; padding: 32px 40px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.4); display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; min-width: 240px;">
                 <!-- Glowing Spinning Outer Ring -->
-                <div style="position: relative; width: 72px; height: 72px; display: flex; items-center; justify-content: center;">
-                    <div style="position: absolute; inset: 0; border: 4px solid #e2e8f0; border-top: 4px solid #2563eb; border-right: 4px solid #4f46e5; border-radius: 50%; animation: talentflowSpin 0.75s linear infinite;"></div>
-                    <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #2563eb, #4f46e5); color: #ffffff; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; box-shadow: 0 10px 20px rgba(37, 99, 235, 0.4); animation: talentflowPulse 1.2s ease-in-out infinite;">
+                <div style="position: relative; width: 72px; height: 72px; display: flex; align-items: center; justify-content: center;">
+                    <div style="position: absolute; inset: 0; border: 4px solid #cbd5e1; border-top: 4px solid #0f172a; border-radius: 50%; animation: talentflowSpin 0.75s linear infinite;"></div>
+                    <div style="width: 44px; height: 44px; background: #0f172a; color: #ffffff; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; box-shadow: 0 8px 16px rgba(15, 23, 42, 0.25); animation: talentflowPulse 1.2s ease-in-out infinite;">
                         ⚡
                     </div>
                 </div>
                 <div>
                     <h3 style="font-size: 18px; font-weight: 900; color: #0f172a; margin: 0; font-family: system-ui, -apple-system, sans-serif;">{{ $siteName }}</h3>
-                    <p style="font-size: 11px; font-weight: 800; color: #2563eb; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; font-family: system-ui, -apple-system, sans-serif; animation: talentflowBlink 1s infinite alternate;">Memuat Halaman...</p>
+                    <p style="font-size: 11px; font-weight: 800; color: #475569; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; font-family: system-ui, -apple-system, sans-serif; animation: talentflowBlink 1s infinite alternate;">Memuat Halaman...</p>
                 </div>
                 <!-- Progress Line -->
                 <div style="width: 140px; height: 4px; background: #e2e8f0; border-radius: 99px; overflow: hidden; position: relative; margin-top: 4px;">
-                    <div id="talentflow-progress-fill" style="position: absolute; top: 0; left: 0; height: 100%; width: 45%; background: linear-gradient(90deg, #2563eb, #4f46e5, #9333ea); transition: width 0.3s ease; border-radius: 99px;"></div>
+                    <div id="talentflow-progress-fill" style="position: absolute; top: 0; left: 0; height: 100%; width: 45%; background: #0f172a; transition: width 0.3s ease; border-radius: 99px;"></div>
                 </div>
             </div>
         </div>

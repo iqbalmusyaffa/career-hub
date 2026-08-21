@@ -24,48 +24,48 @@
             @endif
 
             <!-- External Test Banner Card -->
-            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200/80 space-y-6 text-center">
-                <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl mx-auto flex items-center justify-center text-2xl shadow-md">
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-2xs border border-slate-200 space-y-6 text-center">
+                <div class="w-14 h-14 bg-slate-900 text-white rounded-xl mx-auto flex items-center justify-center text-xl border border-slate-900">
                     <i class="fa-solid fa-brain"></i>
                 </div>
 
                 <div class="space-y-2">
-                    <h3 class="text-xl font-black text-slate-900">{{ $test->title }}</h3>
-                    <span class="inline-block px-3 py-1 bg-indigo-50 text-indigo-700 font-black text-3xs rounded-full border border-indigo-200 uppercase">
+                    <h3 class="text-lg font-bold text-slate-900">{{ $test->title }}</h3>
+                    <span class="inline-block px-3 py-1 bg-slate-100 text-slate-800 font-bold text-3xs rounded-md border border-slate-200 uppercase">
                         🔗 Tes Psikotes Eksternal (Custom Link Provider)
                     </span>
                 </div>
 
                 @if($test->description)
-                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 text-xs text-slate-600 leading-relaxed text-left">
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 leading-relaxed text-left font-normal">
                         <span class="font-bold text-slate-800 block mb-1">📋 Petunjuk dari Perusahaan:</span>
                         {{ $test->description }}
                     </div>
                 @endif
 
                 @if($test->file_path)
-                    <div class="p-5 bg-rose-50 rounded-2xl border border-rose-200 text-left space-y-3">
-                        <div class="flex items-center gap-2 text-rose-900 font-extrabold text-xs">
-                            <i class="fa-solid fa-file-pdf text-rose-600 text-base"></i>
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-left space-y-3">
+                        <div class="flex items-center gap-2 text-slate-900 font-bold text-xs">
+                            <i class="fa-solid fa-file-pdf text-slate-600 text-base"></i>
                             <span>Dokumen Lampiran Soal / Brief Project PDF</span>
                         </div>
-                        <p class="text-xs text-rose-700">Unduh dokumen berkas PDF berikut untuk mempelajari soal studi kasus / spesifikasi teknis lengkap yang diberikan oleh HR:</p>
-                        <a href="{{ Storage::url($test->file_path) }}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-xl text-xs shadow-2xs transition">
-                            <i class="fa-solid fa-download"></i> Unduh File Soal PDF
+                        <p class="text-xs text-slate-600">Unduh dokumen berkas PDF berikut untuk mempelajari soal studi kasus / spesifikasi teknis lengkap yang diberikan oleh HR:</p>
+                        <a href="{{ Storage::url($test->file_path) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs shadow-2xs transition border border-slate-900">
+                            <i class="fa-solid fa-download text-xs"></i> Unduh File Soal PDF
                         </a>
                     </div>
                 @endif
 
-                <div class="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-100 space-y-4">
-                    <p class="text-xs text-indigo-900 font-bold">
+                <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
+                    <p class="text-xs text-slate-800 font-bold">
                         Silakan klik tombol di bawah untuk membuka halaman Tes Psikotes / Asesmen pada link eksternal yang disediakan oleh tim HR:
                     </p>
 
-                    <a href="{{ $test->external_url }}" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm rounded-2xl shadow-md transition transform hover:-translate-y-0.5">
-                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka & Kerjakan Tes Psikotes Eksternal &rarr;
+                    <a href="{{ $test->external_url }}" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-2xs transition border border-slate-900">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i> Buka & Kerjakan Tes Psikotes Eksternal &rarr;
                     </a>
                     
-                    <p class="text-3xs text-indigo-600">Link URL: <span class="font-mono underline">{{ $test->external_url }}</span></p>
+                    <p class="text-3xs text-slate-500 font-mono truncate">Link URL: {{ $test->external_url }}</p>
                 </div>
 
                 <!-- Confirmation & Answer Submission Form -->

@@ -16,10 +16,10 @@
             @endif
 
             <!-- Summary Card -->
-            <div class="bg-gradient-to-r from-slate-900 to-blue-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl flex items-center justify-between flex-wrap gap-4">
+            <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-2xs border border-slate-800 flex items-center justify-between flex-wrap gap-4">
                 <div>
-                    <span class="px-3 py-1 bg-white/20 text-blue-200 text-3xs font-extrabold rounded-full uppercase">Approval Management</span>
-                    <h3 class="text-2xl font-black mt-2">Daftar Permohonan Akun Perusahaan Baru</h3>
+                    <span class="px-2.5 py-1 bg-slate-800 text-slate-300 text-3xs font-bold rounded-md uppercase border border-slate-700">Approval Management</span>
+                    <h3 class="text-xl font-bold mt-2 text-slate-100">Daftar Permohonan Akun Perusahaan Baru</h3>
                     <p class="text-xs text-slate-300 mt-1">Verifikasi berkas legalitas NIB/SIUP dan berikan persetujuan role Company Owner secara aman.</p>
                 </div>
                 <div class="text-right">

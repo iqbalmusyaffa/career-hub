@@ -171,7 +171,10 @@ class DummyDataSeeder extends Seeder
 
         $createdJobs = [];
         foreach ($jobsData as $data) {
-            $createdJobs[] = Job::create($data);
+            $createdJobs[] = Job::firstOrCreate(
+                ['title' => $data['title'], 'company_name' => $data['company_name'] ?? 'PT TechNova Asia Digital'],
+                $data
+            );
         }
 
         // 2. Create Candidate Users with Rich Profiles
@@ -275,22 +278,26 @@ class DummyDataSeeder extends Seeder
 
         $createdCandidates = [];
         foreach ($candidatesData as $cData) {
-            $user = User::create([
-                'name' => $cData['name'],
-                'email' => $cData['email'],
-                'password' => Hash::make('password'),
-            ]);
+            $user = User::firstOrCreate(
+                ['email' => $cData['email']],
+                [
+                    'name' => $cData['name'],
+                    'password' => Hash::make('S3cur3#P@ssw0rd!2026'),
+                ]
+            );
             $user->assignRole($candidateRole);
 
-            CandidateProfile::create([
-                'user_id' => $user->id,
-                'phone' => $cData['phone'],
-                'summary' => $cData['summary'],
-                'skills' => $cData['skills'],
-                'experiences' => $cData['experiences'],
-                'educations' => $cData['educations'],
-                'languages' => $cData['languages'],
-            ]);
+            CandidateProfile::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'phone' => $cData['phone'],
+                    'summary' => $cData['summary'],
+                    'skills' => $cData['skills'],
+                    'experiences' => $cData['experiences'],
+                    'educations' => $cData['educations'],
+                    'languages' => $cData['languages'],
+                ]
+            );
 
             $createdCandidates[] = $user;
         }
@@ -305,11 +312,15 @@ class DummyDataSeeder extends Seeder
             foreach ($appliedJobs as $jobIndex => $job) {
                 $status = $statuses[($candidateIndex + $jobIndex) % count($statuses)];
 
-                $application = Application::create([
-                    'user_id' => $candidate->id,
-                    'job_id' => $job->id,
-                    'status' => $status,
-                ]);
+                $application = Application::firstOrCreate(
+                    [
+                        'user_id' => $candidate->id,
+                        'job_id' => $job->id,
+                    ],
+                    [
+                        'status' => $status,
+                    ]
+                );
 
                 // Create interview if status is interview
                 if ($status === 'interview') {
@@ -331,6 +342,40 @@ class DummyDataSeeder extends Seeder
                     ]);
                 }
             }
+        }
+
+        // 4. Create Company Profiles for Trusted Companies
+        $companiesList = [
+            ['company_name' => 'PT TechNova Asia Digital', 'industry' => 'Teknologi & Informasi', 'address' => 'Jakarta Selatan', 'is_verified' => true],
+            ['company_name' => 'PT GlobalCorp Digital', 'industry' => 'Konsultan IT & Multi Perusahaan', 'address' => 'Bandung', 'is_verified' => true],
+            ['company_name' => 'FinServe Digital Indonesia', 'industry' => 'Keuangan & Fintech', 'address' => 'Jakarta Pusat', 'is_verified' => true],
+            ['company_name' => 'EduSmart Tech Indonesia', 'industry' => 'Teknologi Pendidikan', 'address' => 'Yogyakarta', 'is_verified' => true],
+            ['company_name' => 'AeroLogistics Transport', 'industry' => 'Logistik & Transportasi', 'address' => 'Surabaya', 'is_verified' => true],
+            ['company_name' => 'TokoKreatif E-Commerce', 'industry' => 'Ritel & E-Commerce', 'address' => 'Tangerang', 'is_verified' => true],
+        ];
+
+        // Ensure default HR owner user exists for company profiles
+        $hrOwner = User::firstOrCreate(
+            ['email' => 'hr.official@technova.id'],
+            [
+                'name' => 'HR Official TechNova',
+                'password' => Hash::make('S3cur3#P@ssw0rd!2026'),
+            ]
+        );
+        $hrRole = Role::firstOrCreate(['name' => 'HR']);
+        $hrOwner->assignRole($hrRole);
+
+        foreach ($companiesList as $comp) {
+            \App\Models\CompanyProfile::firstOrCreate(
+                ['company_name' => $comp['company_name']],
+                [
+                    'user_id' => $hrOwner->id,
+                    'industry' => $comp['industry'],
+                    'address' => $comp['address'],
+                    'is_verified' => $comp['is_verified'],
+                    'description' => 'Perusahaan terkemuka mitra resmi rekrutmen TalentFlow.',
+                ]
+            );
         }
     }
 }

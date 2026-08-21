@@ -19,20 +19,20 @@
                 <div class="flex justify-between h-20">
                     <div class="flex">
                         <div class="shrink-0 flex items-center">
-                            <a href="/" class="text-2xl font-extrabold text-blue-600 tracking-tight flex items-center gap-2 group">
-                                <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-md group-hover:scale-105 transition">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            <a href="/" class="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2 group">
+                                <div class="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center text-white shadow-2xs group-hover:bg-slate-800 transition border border-slate-900">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                                 </div>
                                 TalentFlow
                             </a>
                         </div>
                         <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                            <a href="{{ route('jobs.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('jobs.*') ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300' }} text-sm font-medium leading-5 transition">
+                            <a href="{{ route('jobs.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('jobs.*') ? 'border-slate-900 text-slate-900 font-bold' : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300' }} text-xs font-semibold leading-5 transition">
                                 💼 Cari Lowongan
                             </a>
                             @auth
                                 @if(auth()->user()->hasRole('Candidate'))
-                                    <a href="{{ route('saved-jobs.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('saved-jobs.*') ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300' }} text-sm font-medium leading-5 transition">
+                                    <a href="{{ route('saved-jobs.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('saved-jobs.*') ? 'border-slate-900 text-slate-900 font-bold' : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300' }} text-xs font-semibold leading-5 transition">
                                         ⭐ Lowongan Tersimpan
                                     </a>
                                 @endif
@@ -41,7 +41,7 @@
                     </div>
                     <div class="hidden sm:flex sm:items-center sm:ml-6 gap-3">
                         @auth
-                            <a href="{{ url('/dashboard') }}" class="text-sm font-semibold bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 shadow-sm hover:shadow transition-all flex items-center gap-2">
+                            <a href="{{ url('/dashboard') }}" class="text-xs font-bold bg-slate-900 text-white px-4 py-2 rounded-xl hover:bg-slate-800 shadow-2xs border border-slate-900 transition-all flex items-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                                 Dashboard
                             </a>
@@ -50,13 +50,13 @@
                             <div class="ml-2 relative">
                                 <x-dropdown align="right" width="48">
                                     <x-slot name="trigger">
-                                        <button class="inline-flex items-center px-2 py-2 border border-transparent text-sm leading-4 font-medium rounded-full text-gray-700 bg-gray-50 hover:bg-gray-100 hover:text-blue-600 focus:outline-none transition ease-in-out duration-150 shadow-sm border-gray-200">
+                                        <button class="inline-flex items-center px-2 py-2 border border-slate-200 text-xs leading-4 font-bold rounded-full text-slate-700 bg-slate-50 hover:bg-slate-100 hover:text-slate-900 focus:outline-none transition ease-in-out duration-150 shadow-2xs">
                                             <div class="flex items-center gap-2">
-                                                <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold shadow-inner">
+                                                <div class="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold shadow-2xs border border-slate-900">
                                                     {{ substr(Auth::user()->name, 0, 1) }}
                                                 </div>
                                                 <span class="hidden md:inline-block font-semibold">{{ explode(' ', Auth::user()->name)[0] }}</span>
-                                                <svg class="fill-current h-4 w-4 text-gray-400 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                                <svg class="fill-current h-4 w-4 text-slate-400 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                                 </svg>
                                             </div>
@@ -97,16 +97,16 @@
                                 </x-dropdown>
                             </div>
                         @else
-                            <a href="{{ route('login') }}" class="text-sm text-gray-700 font-semibold hover:text-blue-600 transition">Log in</a>
+                            <a href="{{ route('login') }}" class="text-xs font-bold text-slate-700 hover:text-slate-900 transition">Log in</a>
                             @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="text-sm font-semibold bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all">Daftar</a>
+                                <a href="{{ route('register') }}" class="text-xs font-bold bg-slate-900 text-white px-4 py-2 rounded-xl hover:bg-slate-800 shadow-2xs border border-slate-900 transition-all">Daftar</a>
                             @endif
                         @endauth
                     </div>
                     
                     <!-- Hamburger -->
                     <div class="-mr-2 flex items-center sm:hidden">
-                        <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                        <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus:outline-none transition">
                             <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                 <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                                 <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -117,18 +117,18 @@
             </div>
             
             <!-- Mobile Menu -->
-            <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-white border-b border-gray-100 shadow-md">
+            <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-white border-b border-slate-200 shadow-2xs">
                 <div class="pt-2 pb-3 space-y-1">
-                    <a href="{{ route('jobs.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('jobs.*') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium focus:outline-none transition duration-150 ease-in-out">
+                    <a href="{{ route('jobs.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('jobs.*') ? 'border-slate-900 text-slate-900 bg-slate-100' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50' }} text-sm font-bold focus:outline-none transition duration-150 ease-in-out">
                         Cari Lowongan
                     </a>
                     @auth
-                        <a href="{{ url('/dashboard') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50">Dashboard</a>
+                        <a href="{{ url('/dashboard') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-sm font-bold text-slate-900 hover:bg-slate-50">Dashboard</a>
                         
                         <!-- Mobile Settings Options -->
                         <div class="pt-4 pb-1 border-t border-gray-200 mt-2 bg-gray-50">
                             <div class="px-4 flex items-center gap-3 mb-3">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-xl shadow-md">
+                                <div class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-lg border border-slate-900">
                                     {{ substr(Auth::user()->name, 0, 1) }}
                                 </div>
                                 <div>
@@ -180,28 +180,28 @@
             <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div class="col-span-1 md:col-span-2 space-y-4">
-                        <a href="/" class="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-                            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                        <a href="/" class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                            <div class="w-8 h-8 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-2xs">
                                 T
                             </div>
-                            TalentFlow <span class="text-xs bg-blue-900 text-blue-300 font-semibold px-2 py-0.5 rounded border border-blue-700">Official Portal</span>
+                            TalentFlow
                         </a>
-                        <p class="text-gray-400 text-sm max-w-sm leading-relaxed">
+                        <p class="text-slate-400 text-xs max-w-sm leading-relaxed font-normal">
                             Platform rekrutmen digital terintegrasi resmi untuk menghubungkan talenta terbaik Indonesia dengan perusahaan nasional dan multinasional.
                         </p>
-                        <div class="flex items-center gap-4 pt-2">
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-800 text-green-400 rounded-full text-xs font-semibold border border-gray-700">
-                                <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <div class="flex flex-wrap items-center gap-3 pt-1">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-800 text-emerald-400 rounded-md text-3xs font-bold border border-slate-700">
+                                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                                 Verified SSL & Data Encryption
                             </span>
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-800 text-blue-400 rounded-full text-xs font-semibold border border-gray-700">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-800 text-slate-300 rounded-md text-3xs font-bold border border-slate-700">
                                 🏢 500+ Partner Perusahaan
                             </span>
                         </div>
                     </div>
                     <div>
-                        <h3 class="text-xs font-bold text-gray-200 tracking-wider uppercase mb-4">Pintasan Navigasi</h3>
-                        <ul class="space-y-2.5">
+                        <h3 class="text-3xs font-bold text-slate-300 tracking-wider uppercase mb-4">Pintasan Navigasi</h3>
+                        <ul class="space-y-2 text-3xs">
                             <li><a href="{{ route('jobs.index') }}" class="hover:text-white transition">🔍 Cari Lowongan Kerja</a></li>
                             <li><a href="{{ route('login') }}" class="hover:text-white transition">🔑 Masuk ke Portal</a></li>
                             <li><a href="{{ route('register') }}" class="hover:text-white transition">📝 Mendaftar Akun Baru</a></li>
@@ -211,20 +211,20 @@
                         </ul>
                     </div>
                     <div>
-                        <h3 class="text-xs font-bold text-gray-200 tracking-wider uppercase mb-4">Dukungan & Legal</h3>
-                        <ul class="space-y-2.5">
+                        <h3 class="text-3xs font-bold text-slate-300 tracking-wider uppercase mb-4">Dukungan & Legal</h3>
+                        <ul class="space-y-2 text-3xs">
                             <li><a href="#" class="hover:text-white transition">Pusat Bantuan & FAQ</a></li>
                             <li><a href="#" class="hover:text-white transition">Kebijakan Privasi & Data</a></li>
                             <li><a href="#" class="hover:text-white transition">Syarat & Ketentuan Layanan</a></li>
-                            <li><a href="mailto:support@talentflow.com" class="hover:text-white transition text-blue-400">✉️ support@talentflow.com</a></li>
+                            <li><a href="mailto:support@talentflow.com" class="hover:text-white transition text-slate-300 font-medium">✉️ support@talentflow.com</a></li>
                         </ul>
                     </div>
                 </div>
-                <div class="mt-12 border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <p class="text-xs text-gray-500">
+                <div class="mt-10 border-t border-slate-800 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p class="text-3xs text-slate-500 font-medium">
                         &copy; {{ date('Y') }} TalentFlow Enterprise Career Portal. Hak Cipta Dilindungi Undang-Undang.
                     </p>
-                    <div class="flex items-center gap-6 text-xs text-gray-500">
+                    <div class="flex items-center gap-4 text-3xs text-slate-500 font-medium">
                         <span>Bahasa Indonesia (ID)</span>
                         <span>•</span>
                         <span>Keamanan Terjamin</span>

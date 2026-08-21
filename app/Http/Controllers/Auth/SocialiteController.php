@@ -41,6 +41,7 @@ class SocialiteController extends Controller
                 ]);
 
                 // Assign default role 'Candidate'
+                \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Candidate', 'guard_name' => 'web']);
                 $newUser->assignRole('Candidate');
 
                 // Create CandidateProfile

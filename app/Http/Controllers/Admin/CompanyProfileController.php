@@ -42,6 +42,10 @@ class CompanyProfileController extends Controller
             'website' => 'nullable|url|max:255',
             'phone' => 'nullable|string|max:255',
             'address' => 'nullable|string',
+            'bank_name' => 'nullable|string|max:100',
+            'bank_account_number' => 'nullable|string|max:100',
+            'bank_account_name' => 'nullable|string|max:255',
+            'npwp_number' => 'nullable|string|max:100',
             'description' => 'nullable|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,svg,webp|max:2048',
             'legal_doc' => 'nullable|mimes:pdf,jpg,png|max:5120',
@@ -64,6 +68,10 @@ class CompanyProfileController extends Controller
             'website' => $request->website,
             'phone' => $request->phone,
             'address' => $request->address,
+            'bank_name' => $request->bank_name,
+            'bank_account_number' => $request->bank_account_number,
+            'bank_account_name' => $request->bank_account_name,
+            'npwp_number' => $request->npwp_number,
             'description' => $request->description,
         ];
 

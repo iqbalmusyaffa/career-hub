@@ -69,6 +69,8 @@ class JobTestController extends Controller
                 'pdf_file' => 'nullable|file|mimes:pdf|max:10240',
             ]);
             if ($filePath && \Illuminate\Support\Facades\Storage::disk('public')->exists($filePath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($filePath);
+            }
             $companyFolder = 'company_tests/' . \Illuminate\Support\Str::slug($job->company_name ?: 'company');
             $filePath = $request->file('pdf_file')->store($companyFolder, 'public');
         }

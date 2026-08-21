@@ -153,14 +153,14 @@
                     </div>
 
                     <!-- PDF CV System Generator Widget -->
-                    <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white rounded-3xl p-6 shadow-md space-y-4">
-                        <div class="flex items-center gap-3 border-b border-indigo-800/80 pb-3">
-                            <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-white">
+                    <div class="bg-slate-900 text-white rounded-2xl p-5 shadow-2xs border border-slate-800 space-y-4">
+                        <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
+                            <div class="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-white border border-slate-700">
                                 <i class="fa-solid fa-file-pdf"></i>
                             </div>
                             <div>
-                                <h4 class="font-extrabold text-sm text-white">Cetak PDF CV System</h4>
-                                <p class="text-3xs text-indigo-200">Format standar profesional otomatis.</p>
+                                <h4 class="font-bold text-xs text-white">Cetak PDF CV System</h4>
+                                <p class="text-3xs text-slate-400">Format standar profesional otomatis.</p>
                             </div>
                         </div>
 

@@ -114,4 +114,68 @@ class CompanyTeamController extends Controller
 
         return back()->with('success', "Anggota tim HR {$memberName} berhasil dihapus dari tim perusahaan.");
     }
+
+    /**
+     * Primary Owner approves pending Co-Owner join request.
+     */
+    public function approveCoOwner($id)
+    {
+        $currentUser = Auth::user();
+        $companyProfile = CompanyProfile::where('user_id', $currentUser->id)->firstOrFail();
+
+        $member = CompanyTeamMember::where('company_profile_id', $companyProfile->id)
+            ->findOrFail($id);
+
+        $member->update([
+            'role_title' => 'Co-Owner / Founder',
+            'status' => 'active',
+        ]);
+
+        if ($member->user) {
+            $member->user->syncRoles(['Company Owner']);
+            UserNotification::send(
+                $member->user->id,
+                "🎉 Persetujuan Co-Owner Disetujui!",
+                "Selamat! Pemilik Utama {$currentUser->name} telah menyetujui Anda sebagai Co-Owner di {$companyProfile->company_name}. Anda kini memiliki akses pengelolaan profil & bank perusahaan.",
+                route('admin.company.profile.edit'),
+                'success'
+            );
+        }
+
+        AuditLog::record('co_owner_approved', "Owner Utama {$currentUser->name} menyetujui {$member->user->name} sebagai Co-Owner");
+
+        return back()->with('success', "Permintaan Co-Owner {$member->user->name} BERHASIL DISETUJUI sebagai Co-Owner resmi!");
+    }
+
+    /**
+     * Primary Owner rejects pending Co-Owner request (converts them to HR Specialist).
+     */
+    public function rejectCoOwner($id)
+    {
+        $currentUser = Auth::user();
+        $companyProfile = CompanyProfile::where('user_id', $currentUser->id)->firstOrFail();
+
+        $member = CompanyTeamMember::where('company_profile_id', $companyProfile->id)
+            ->findOrFail($id);
+
+        $member->update([
+            'role_title' => 'HR Specialist',
+            'status' => 'active',
+        ]);
+
+        if ($member->user) {
+            $member->user->syncRoles(['HR']);
+            UserNotification::send(
+                $member->user->id,
+                "ℹ️ Penyesuaian Peran Tim HR",
+                "Permintaan status Co-Owner di {$companyProfile->company_name} tidak disetujui oleh Owner Utama. Peran Anda ditetapkan sebagai HR Specialist.",
+                route('admin.jobs.index'),
+                'info'
+            );
+        }
+
+        AuditLog::record('co_owner_rejected', "Owner Utama {$currentUser->name} menetapkan {$member->user->name} sebagai HR Specialist");
+
+        return back()->with('success', "Permintaan Co-Owner {$member->user->name} ditolak dan ditetapkan sebagai HR Specialist.");
+    }
 }

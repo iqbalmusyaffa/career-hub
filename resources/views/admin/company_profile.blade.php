@@ -36,13 +36,13 @@
                                 @if($profile->logo_path)
                                     <img id="logo-preview-img" src="{{ Storage::url($profile->logo_path) }}" alt="Company Logo" class="w-full h-full object-cover">
                                 @else
-                                    <div id="logo-preview-placeholder" class="w-full h-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-2xl rounded-2xl flex items-center justify-center">
+                                    <div id="logo-preview-placeholder" class="w-full h-full bg-slate-900 text-white font-bold text-xl rounded-xl flex items-center justify-center border border-slate-900">
                                         {{ strtoupper(substr($profile->company_name ?? 'C', 0, 1)) }}
                                     </div>
                                     <img id="logo-preview-img" class="w-full h-full object-cover hidden">
                                 @endif
                             </div>
-                            <div id="logo-upload-spinner" class="absolute inset-0 bg-blue-900/60 backdrop-blur-xs rounded-2xl flex items-center justify-center text-white hidden animate-fade-in">
+                            <div id="logo-upload-spinner" class="absolute inset-0 bg-slate-900/70 backdrop-blur-xs rounded-2xl flex items-center justify-center text-white hidden animate-fade-in">
                                 <i class="fa-solid fa-circle-notch fa-spin text-xl"></i>
                             </div>
                         </div>
@@ -112,9 +112,41 @@
 
                     <div>
                         <x-input-label for="address" :value="__('Alamat Lengkap Kantor Utama')" />
-                        <textarea id="address" name="address" rows="2" class="mt-1 block w-full border-gray-300 rounded-xl shadow-xs focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white transition text-sm" placeholder="Jl. HR Rasuna Said, Jakarta Selatan...">{{ old('address', $profile->address) }}</textarea>
+                        <textarea id="address" name="address" rows="2" class="mt-1 block w-full border-gray-300 rounded-xl shadow-xs focus:border-slate-800 focus:ring-slate-800 bg-gray-50 focus:bg-white transition text-sm" placeholder="Jl. HR Rasuna Said, Jakarta Selatan...">{{ old('address', $profile->address) }}</textarea>
                         @error('address') <span class="text-xs text-red-500 mt-1 font-bold">{{ $message }}</span> @enderror
                     </div>
+
+                    <!-- Rekening Bank & NPWP Perusahaan (Hanya untuk Role Company Owner & Super Admin) -->
+                    @if(auth()->user()->hasRole('Company Owner') || auth()->user()->hasRole('Super Admin'))
+                    <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
+                        <div class="flex items-center gap-2 text-slate-900 font-bold text-xs">
+                            <i class="fa-solid fa-building-columns text-slate-700"></i>
+                            <span>Informasi Rekening Bank & NPWP Perusahaan (Wewenang Khusus Company Owner)</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <x-input-label for="bank_name" :value="__('Nama Bank')" />
+                                <x-text-input id="bank_name" name="bank_name" type="text" class="mt-1 block w-full bg-white text-xs border-slate-300 rounded-xl" :value="old('bank_name', $profile->bank_name)" placeholder="Misal: Bank BCA / Mandiri / BNI" />
+                            </div>
+
+                            <div>
+                                <x-input-label for="bank_account_number" :value="__('Nomor Rekening')" />
+                                <x-text-input id="bank_account_number" name="bank_account_number" type="text" class="mt-1 block w-full bg-white text-xs border-slate-300 rounded-xl" :value="old('bank_account_number', $profile->bank_account_number)" placeholder="Misal: 1234567890" />
+                            </div>
+
+                            <div>
+                                <x-input-label for="bank_account_name" :value="__('Atas Nama Rekening')" />
+                                <x-text-input id="bank_account_name" name="bank_account_name" type="text" class="mt-1 block w-full bg-white text-xs border-slate-300 rounded-xl" :value="old('bank_account_name', $profile->bank_account_name)" placeholder="Misal: PT TechNova Asia Digital" />
+                            </div>
+
+                            <div>
+                                <x-input-label for="npwp_number" :value="__('Nomor NPWP Perusahaan')" />
+                                <x-text-input id="npwp_number" name="npwp_number" type="text" class="mt-1 block w-full bg-white text-xs border-slate-300 rounded-xl" :value="old('npwp_number', $profile->npwp_number)" placeholder="Misal: 01.234.567.8-901.000" />
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
                     <div>
                         <x-input-label for="description" :value="__('Deskripsi & Profil Singkat Perusahaan')" />

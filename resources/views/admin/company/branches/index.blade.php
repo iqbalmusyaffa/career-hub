@@ -21,10 +21,10 @@
             @endif
 
             <!-- Company Info Banner -->
-            <div class="bg-gradient-to-r from-slate-900 to-blue-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl flex items-center justify-between flex-wrap gap-4">
+            <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-2xs border border-slate-800 flex items-center justify-between flex-wrap gap-4">
                 <div>
-                    <span class="px-3 py-1 bg-white/20 text-blue-200 text-3xs font-extrabold rounded-full uppercase tracking-wider">Multi-Branch System</span>
-                    <h3 class="text-2xl font-black mt-2">{{ $companyProfile->company_name ?: 'PT TechNova Asia Digital' }}</h3>
+                    <span class="px-2.5 py-1 bg-slate-800 text-slate-300 text-3xs font-bold rounded-md uppercase tracking-wider border border-slate-700">Multi-Branch System</span>
+                    <h3 class="text-xl font-bold mt-2 text-slate-100">{{ $companyProfile->company_name ?: 'PT TechNova Asia Digital' }}</h3>
                     <p class="text-xs text-slate-300 mt-1">Kelola seluruh lokasi kantor cabang, anak perusahaan, dan lokasi penempatan lowongan kerja dalam satu dasbor terpadu.</p>
                 </div>
                 <div class="text-right">

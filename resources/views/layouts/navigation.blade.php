@@ -1,12 +1,12 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
+<nav x-data="{ open: false }" class="bg-white border-b border-slate-200 shadow-2xs sticky top-0 z-50">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="/" class="text-2xl font-extrabold text-blue-600 tracking-tight flex items-center gap-2">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <a href="/" class="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                        <svg class="w-7 h-7 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                         TalentFlow
                     </a>
                 </div>
@@ -49,9 +49,9 @@
                             <div class="hidden sm:flex sm:items-center">
                                 <x-dropdown align="left" width="56">
                                     <x-slot name="trigger">
-                                        <button class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out whitespace-nowrap {{ (request()->routeIs('admin.users.*') || request()->routeIs('admin.companies.*') || request()->routeIs('admin.settings.smtp.*') || request()->routeIs('admin.company.profile.*')) ? 'border-blue-600 text-gray-900 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                                        <button class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out whitespace-nowrap {{ (request()->routeIs('admin.users.*') || request()->routeIs('admin.companies.*') || request()->routeIs('admin.settings.smtp.*') || request()->routeIs('admin.company.profile.*')) ? 'border-slate-900 text-slate-900 font-bold' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' }}">
                                             <span>Kelola Platform</span>
-                                            <svg class="ml-1 h-4 w-4 fill-current text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <svg class="ml-1 h-4 w-4 fill-current text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                             </svg>
                                         </button>
@@ -206,23 +206,23 @@
 
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
-                            <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:text-blue-600 focus:outline-none transition ease-in-out duration-150">
+                            <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-slate-700 bg-white hover:text-slate-900 focus:outline-none transition ease-in-out duration-150">
                                 <div class="flex items-center gap-2">
                                     @php
                                         $userPhoto = (Auth::user()->candidateProfile && (Auth::user()->candidateProfile->photo || Auth::user()->candidateProfile->photo_path)) 
                                             ? Storage::url(Auth::user()->candidateProfile->photo ?? Auth::user()->candidateProfile->photo_path) 
                                             : null;
                                     @endphp
-                                    <div class="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-gray-200 shadow-2xs">
+                                    <div class="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-200 shadow-2xs">
                                         @if($userPhoto)
                                             <img src="{{ $userPhoto }}" class="w-full h-full object-cover">
                                         @else
-                                            <div class="w-full h-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs">
+                                            <div class="w-full h-full bg-slate-900 flex items-center justify-center text-white font-bold text-xs">
                                                 {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                                             </div>
                                         @endif
                                     </div>
-                                    <span class="font-semibold text-xs text-gray-800">{{ Auth::user()->name }}</span>
+                                    <span class="font-semibold text-xs text-slate-800">{{ Auth::user()->name }}</span>
                                 </div>
 
                                 <div class="ml-1">
@@ -235,29 +235,29 @@
 
                         <x-slot name="content">
                             <x-dropdown-link :href="route('profile.edit')" class="flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                 {{ __('Pengaturan Akun') }}
                             </x-dropdown-link>
 
                             @if(auth()->user()->hasRole('Candidate'))
                             <x-dropdown-link :href="route('profile.candidate.details.edit')" class="flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                 {{ __('Profil & Upload CV') }}
                             </x-dropdown-link>
-                            <x-dropdown-link :href="route('profile.candidate.documents.index')" class="flex items-center gap-2 text-indigo-700 font-bold">
-                                <i class="fa-solid fa-folder-closed text-indigo-600"></i>
+                            <x-dropdown-link :href="route('profile.candidate.documents.index')" class="flex items-center gap-2 text-slate-800 font-semibold">
+                                <i class="fa-solid fa-folder-closed text-slate-600"></i>
                                 {{ __('Vault Dokumen Pendukung') }}
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('profile.cv.download', ['format' => 'ats'])" class="flex items-center gap-2 text-slate-800 font-semibold">
                                 <i class="fa-solid fa-file-contract text-slate-600"></i>
                                 {{ __('Download CV (ATS Friendly)') }}
                             </x-dropdown-link>
-                            <x-dropdown-link :href="route('profile.cv.download', ['format' => 'creative'])" class="flex items-center gap-2 text-blue-600 font-semibold">
-                                <i class="fa-solid fa-file-pdf text-blue-600"></i>
+                            <x-dropdown-link :href="route('profile.cv.download', ['format' => 'creative'])" class="flex items-center gap-2 text-slate-800 font-semibold">
+                                <i class="fa-solid fa-file-pdf text-slate-600"></i>
                                 {{ __('Download CV (Modern Creative)') }}
                             </x-dropdown-link>
-                            <x-dropdown-link :href="route('profile.role-request.show')" class="flex items-center gap-2 text-amber-600 font-extrabold border-t border-gray-100">
-                                <i class="fa-solid fa-building-circle-check text-amber-500"></i>
+                            <x-dropdown-link :href="route('profile.role-request.show')" class="flex items-center gap-2 text-slate-800 font-semibold border-t border-slate-100">
+                                <i class="fa-solid fa-building-circle-check text-slate-600"></i>
                                 {{ __('Daftarkan Perusahaan / HR') }}
                             </x-dropdown-link>
                             @endif
@@ -276,10 +276,10 @@
                         </x-slot>
                     </x-dropdown>
                 @else
-                    <a href="{{ route('login') }}" class="text-xs font-extrabold text-slate-700 hover:text-blue-600 px-4 py-2 transition">
+                    <a href="{{ route('login') }}" class="text-xs font-extrabold text-slate-700 hover:text-slate-900 px-4 py-2 transition">
                         Masuk / Login
                     </a>
-                    <a href="{{ route('register') }}" class="text-xs font-extrabold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl shadow-2xs transition">
+                    <a href="{{ route('register') }}" class="text-xs font-extrabold text-white bg-slate-900 hover:bg-slate-800 px-4 py-2 rounded-xl shadow-2xs transition border border-slate-900">
                         Daftar Akun
                     </a>
                 @endauth
@@ -336,7 +336,7 @@
             <!-- Responsive Settings Options -->
             <div class="pt-4 pb-1 border-t border-gray-200">
                 <div class="px-4 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-lg">
+                    <div class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-lg border border-slate-900">
                         {{ substr(Auth::user()->name, 0, 1) }}
                     </div>
                     <div>
@@ -371,7 +371,7 @@
         @else
             <div class="pt-4 pb-3 border-t border-gray-200 p-4 space-y-2">
                 <a href="{{ route('login') }}" class="block w-full text-center py-2 bg-slate-100 text-slate-700 font-bold text-xs rounded-xl">Masuk / Login</a>
-                <a href="{{ route('register') }}" class="block w-full text-center py-2 bg-blue-600 text-white font-bold text-xs rounded-xl">Daftar Akun</a>
+                <a href="{{ route('register') }}" class="block w-full text-center py-2 bg-slate-900 text-white font-bold text-xs rounded-xl border border-slate-900">Daftar Akun</a>
             </div>
         @endauth
     </div>

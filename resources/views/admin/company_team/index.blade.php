@@ -116,14 +116,36 @@
                                         </span>
                                     </td>
                                     <td class="p-4 whitespace-nowrap">
-                                        <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 font-bold rounded-lg border border-emerald-200 text-2xs uppercase">
-                                            ● {{ $member->status }}
-                                        </span>
+                                        @if($member->status === 'pending_owner_approval')
+                                            <span class="px-2.5 py-1 bg-amber-50 text-amber-700 font-bold rounded-lg border border-amber-200 text-2xs uppercase animate-pulse">
+                                                ⏳ Menunggu Persetujuan Owner
+                                            </span>
+                                        @else
+                                            <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 font-bold rounded-lg border border-emerald-200 text-2xs uppercase">
+                                                ● {{ $member->status }}
+                                            </span>
+                                        @endif
                                     </td>
                                     <td class="p-4 whitespace-nowrap text-gray-500">
                                         {{ $member->inviter->name ?? 'Pemilik Perusahaan' }}
                                     </td>
-                                    <td class="p-4 pr-6 text-right whitespace-nowrap">
+                                    <td class="p-4 pr-6 text-right whitespace-nowrap space-x-1">
+                                        @if($member->status === 'pending_owner_approval')
+                                            <form method="POST" action="{{ route('company-team.approve-co-owner', $member->id) }}" class="inline-block">
+                                                @csrf
+                                                <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-2xs shadow-2xs border border-emerald-600 transition">
+                                                    <i class="fa-solid fa-check"></i> Setujui Co-Owner
+                                                </button>
+                                            </form>
+
+                                            <form method="POST" action="{{ route('company-team.reject-co-owner', $member->id) }}" class="inline-block">
+                                                @csrf
+                                                <button type="submit" class="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold rounded-xl text-2xs border border-slate-300 transition">
+                                                    <i class="fa-solid fa-user-shield"></i> Jadikan HR
+                                                </button>
+                                            </form>
+                                        @endif
+
                                         <form method="POST" action="{{ route('admin.company-team.destroy', $member->id) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus anggota tim HR ini?');" class="inline-block">
                                             @csrf
                                             @method('DELETE')

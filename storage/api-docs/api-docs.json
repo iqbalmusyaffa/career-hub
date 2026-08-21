@@ -1,0 +1,2591 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Web-Karir (Career Hub) Secure REST API",
+        "description": "Dokumentasi REST API lengkap dan terproteksi untuk platform Web-Karir (Career Hub). Menggunakan Laravel Sanctum Bearer Token Authentication, Rate Limiting, dan Spatie Role-Based Access Control.",
+        "contact": {
+            "name": "Web-Karir Support Team",
+            "email": "admin@webkarir.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api/v1",
+            "description": "Web-Karir Primary API Server"
+        }
+    ],
+    "paths": {
+        "/admin/applications": {
+            "get": {
+                "tags": [
+                    "HR Recruitment Pipeline"
+                ],
+                "summary": "[HR] Daftar Pelamar Masuk (Applicant Pipeline)",
+                "description": "Mengambil daftar seluruh berkas pelamar yang masuk.",
+                "operationId": "12613dd21a706791b412b46036bc7b38",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "pending"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar pelamar",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Daftar pelamar berhasil diambil.",
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 10,
+                                                "user": {
+                                                    "name": "Budi Pratama",
+                                                    "email": "budi@example.com"
+                                                },
+                                                "job": {
+                                                    "title": "Senior Backend Developer"
+                                                },
+                                                "status": "pending"
+                                            }
+                                        ]
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/applications/{id}": {
+            "get": {
+                "tags": [
+                    "HR Recruitment Pipeline"
+                ],
+                "summary": "[HR] Detail Pelamar & Evaluasi",
+                "description": "Mengambil informasi detail pelamar.",
+                "operationId": "84e7c0a950949bc53bef3464cf06fadf",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail pelamar",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Detail pelamar berhasil diambil.",
+                                    "data": {
+                                        "id": 10,
+                                        "status": "interview",
+                                        "cover_letter": "Saya berminat...",
+                                        "user": {
+                                            "name": "Budi Pratama",
+                                            "email": "budi@example.com",
+                                            "candidate_profile": {
+                                                "phone": "081234567890",
+                                                "skills": "PHP, Laravel, Vue.js"
+                                            }
+                                        },
+                                        "evaluations": [],
+                                        "internal_notes": []
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/applications/{id}/status": {
+            "patch": {
+                "tags": [
+                    "HR Recruitment Pipeline"
+                ],
+                "summary": "[HR] Update Status Tahap Seleksi Pelamar",
+                "description": "Mengubah status seleksi kandidat (pending, review, shortlisted, interview, hired, rejected).",
+                "operationId": "8de223b6987f6307a17f0d4ae43d839b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "example": "shortlisted"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Status berhasil diperbarui",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Status tahap seleksi pelamar berhasil diperbarui.",
+                                    "data": {
+                                        "id": 10,
+                                        "status": "shortlisted"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/applications/{id}/schedule-interview": {
+            "post": {
+                "tags": [
+                    "HR Recruitment Pipeline"
+                ],
+                "summary": "[HR] Penjadwalan Wawancara (Interview)",
+                "description": "Membuat jadwal interview baru untuk kandidat.",
+                "operationId": "e125962e7c1b58024d67778bdc585657",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "interview_date",
+                                    "location_or_link"
+                                ],
+                                "properties": {
+                                    "interview_date": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-09-01T10:00:00"
+                                    },
+                                    "location_or_link": {
+                                        "type": "string",
+                                        "example": "Google Meet: https://meet.google.com/abc-defg-hij"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Persiapkan presentasi."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Interview berhasil dijadwalkan",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Jadwal wawancara berhasil dikirimkan ke pelamar.",
+                                    "data": {
+                                        "id": 1,
+                                        "application_id": 10,
+                                        "interview_date": "2026-09-01 10:00:00",
+                                        "location_or_link": "Google Meet: https://meet.google.com/abc-defg-hij"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/applications/{id}/evaluations": {
+            "post": {
+                "tags": [
+                    "HR Recruitment Pipeline"
+                ],
+                "summary": "[HR] Tambah Skor Evaluasi Kandidat",
+                "description": "Menambahkan skor penilain kriteria kandidat oleh tim HR.",
+                "operationId": "eecc1f8dc42c0e162f7338ad4b3e8d54",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "criteria",
+                                    "score"
+                                ],
+                                "properties": {
+                                    "criteria": {
+                                        "type": "string",
+                                        "example": "Problem Solving"
+                                    },
+                                    "score": {
+                                        "type": "integer",
+                                        "example": 85
+                                    },
+                                    "feedback": {
+                                        "type": "string",
+                                        "example": "Sangat baik."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Evaluasi berhasil disimpan",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Skor evaluasi berhasil disimpan.",
+                                    "data": {
+                                        "id": 1,
+                                        "application_id": 10,
+                                        "criteria": "Problem Solving",
+                                        "score": 85,
+                                        "feedback": "Sangat baik."
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/applications/{id}/offer-letter": {
+            "post": {
+                "tags": [
+                    "HR Recruitment Pipeline"
+                ],
+                "summary": "[HR] Terbitkan Surat Penawaran Kerja (Offer Letter)",
+                "description": "Membuat dan mengirimkan offer letter kepada kandidat terpilih.",
+                "operationId": "abcaec61c40ff8d7ffb645320ddd1c88",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "offered_position",
+                                    "offered_salary",
+                                    "start_date"
+                                ],
+                                "properties": {
+                                    "offered_position": {
+                                        "type": "string",
+                                        "example": "Backend Engineer"
+                                    },
+                                    "offered_salary": {
+                                        "type": "number",
+                                        "example": 18000000
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-10-01"
+                                    },
+                                    "terms_and_conditions": {
+                                        "type": "string",
+                                        "example": "Jam kerja 09.00-17.00 WIB."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Offer Letter diterbitkan",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Surat Penawaran Kerja (Offer Letter) berhasil diterbitkan!",
+                                    "data": {
+                                        "id": 1,
+                                        "application_id": 10,
+                                        "offered_position": "Backend Engineer",
+                                        "offered_salary": 18000000,
+                                        "start_date": "2026-10-01",
+                                        "status": "pending"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/jobs": {
+            "get": {
+                "tags": [
+                    "HR Job Postings & Company"
+                ],
+                "summary": "[HR] Daftar Lowongan Perusahaan",
+                "description": "Mengambil seluruh daftar lowongan kerja HR/Company saat ini.",
+                "operationId": "e51f27d87d5bd10f743c9637f36efbc8",
+                "responses": {
+                    "200": {
+                        "description": "Daftar lowongan kerja HR",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Daftar lowongan kerja perusahaan berhasil diambil.",
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "title": "Senior Backend Developer",
+                                                "company_name": "PT Tech Nusantara",
+                                                "applications_count": 12,
+                                                "status": "active"
+                                            }
+                                        ]
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "HR Job Postings & Company"
+                ],
+                "summary": "[HR] Buat Lowongan Pekerjaan Baru",
+                "description": "Membuat postingan lowongan kerja baru.",
+                "operationId": "26361e249af5f750dcd99b3516af70d6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "job_type",
+                                    "location",
+                                    "salary_min",
+                                    "salary_max",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Senior Backend Developer"
+                                    },
+                                    "job_type": {
+                                        "type": "string",
+                                        "example": "Full-time"
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "example": "Jakarta Selatan"
+                                    },
+                                    "department": {
+                                        "type": "string",
+                                        "example": "Engineering"
+                                    },
+                                    "experience_level": {
+                                        "type": "string",
+                                        "example": "Senior Level"
+                                    },
+                                    "salary_min": {
+                                        "type": "number",
+                                        "example": 15000000
+                                    },
+                                    "salary_max": {
+                                        "type": "number",
+                                        "example": 25000000
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Mengembangkan API"
+                                    },
+                                    "quota": {
+                                        "type": "integer",
+                                        "example": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Lowongan berhasil dibuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Lowongan pekerjaan baru berhasil dipublikasikan!",
+                                    "data": {
+                                        "id": 1,
+                                        "title": "Senior Backend Developer",
+                                        "company_name": "PT Tech Nusantara",
+                                        "status": "active"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/jobs/{id}": {
+            "put": {
+                "tags": [
+                    "HR Job Postings & Company"
+                ],
+                "summary": "[HR] Perbarui Lowongan Pekerjaan",
+                "description": "Memperbarui data lowongan kerja.",
+                "operationId": "5d57eee2255e79d7c3ee2941200b1464",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lowongan berhasil diperbarui",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Lowongan pekerjaan berhasil diperbarui.",
+                                    "data": {
+                                        "id": 1,
+                                        "title": "Senior Backend Engineer",
+                                        "status": "active"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "HR Job Postings & Company"
+                ],
+                "summary": "[HR] Hapus Lowongan Pekerjaan",
+                "description": "Menghapus postingan lowongan kerja.",
+                "operationId": "1aa14dc8d499490f341d1afc82a9111e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lowongan berhasil dihapus",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Lowongan pekerjaan berhasil dihapus.",
+                                    "data": null,
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/company-profile": {
+            "get": {
+                "tags": [
+                    "HR Job Postings & Company"
+                ],
+                "summary": "[HR] Profil Perusahaan & Cabang",
+                "description": "Mengambil profil perusahaan dan daftar cabang perusahaan.",
+                "operationId": "1333bcde1e326c36d52b8006cc8b0bd9",
+                "responses": {
+                    "200": {
+                        "description": "Profil perusahaan",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Profil perusahaan berhasil diambil.",
+                                    "data": {
+                                        "company_profile": {
+                                            "company_name": "PT Tech Nusantara",
+                                            "industry": "Information Technology",
+                                            "address": "Jl. Sudirman No. 45, Jakarta",
+                                            "is_verified": true
+                                        },
+                                        "branches": [],
+                                        "team_members": []
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/users": {
+            "get": {
+                "tags": [
+                    "Super Admin Moderation"
+                ],
+                "summary": "[Super Admin] Daftar Seluruh Pengguna Platform",
+                "description": "Mengambil seluruh daftar pengguna (Candidate, HR, Super Admin).",
+                "operationId": "4da9f9b8d631a791611f4799c05e36ae",
+                "responses": {
+                    "200": {
+                        "description": "Daftar pengguna",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Daftar pengguna berhasil diambil.",
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "name": "Budi Pratama",
+                                                "email": "budi@example.com",
+                                                "is_suspended": false,
+                                                "roles": [
+                                                    {
+                                                        "name": "Candidate"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/users/{id}/toggle-suspend": {
+            "patch": {
+                "tags": [
+                    "Super Admin Moderation"
+                ],
+                "summary": "[Super Admin] Suspend / Unsuspend Akun User",
+                "description": "Menangguhkan atau mengaktifkan kembali akun pengguna.",
+                "operationId": "4b65d737773f2d1b03660d9e7bc030b2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status penangguhan akun diperbarui",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Akun pengguna Budi Pratama berhasil ditangguhkan (suspended).",
+                                    "data": {
+                                        "id": 1,
+                                        "name": "Budi Pratama",
+                                        "is_suspended": true,
+                                        "status_reason": "Tindakan moderasi oleh Super Admin"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/companies": {
+            "get": {
+                "tags": [
+                    "Super Admin Moderation"
+                ],
+                "summary": "[Super Admin] Daftar Perusahaan Terdaftar",
+                "description": "Mengambil daftar profil seluruh perusahaan mitra.",
+                "operationId": "efd6352435e0bac9c62c58a40fabf8c8",
+                "responses": {
+                    "200": {
+                        "description": "Daftar profil perusahaan",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Daftar perusahaan berhasil diambil.",
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "company_name": "PT Tech Nusantara",
+                                                "is_verified": true
+                                            }
+                                        ]
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/companies/{id}/toggle-verify": {
+            "patch": {
+                "tags": [
+                    "Super Admin Moderation"
+                ],
+                "summary": "[Super Admin] Verifikasi / Unverify Perusahaan",
+                "description": "Memberikan centang biru verifikasi resmi kepada profil perusahaan.",
+                "operationId": "1c0cee98a42b471e2a10960f50f42fa6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status verifikasi diperbarui",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Status verifikasi perusahaan PT Tech Nusantara berhasil diubah menjadi terverifikasi.",
+                                    "data": {
+                                        "id": 1,
+                                        "company_name": "PT Tech Nusantara",
+                                        "is_verified": true
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/role-requests": {
+            "get": {
+                "tags": [
+                    "Super Admin Moderation"
+                ],
+                "summary": "[Super Admin] Daftar Pengajuan Role HR/Company",
+                "description": "Mengambil permohonan penambahan role HR / Company Owner.",
+                "operationId": "a51f259d9b907a23be0d76c68fcab68e",
+                "responses": {
+                    "200": {
+                        "description": "Daftar pengajuan role",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Daftar pengajuan role berhasil diambil.",
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "user_id": 1,
+                                                "requested_role": "HR",
+                                                "company_name": "PT Tech Nusantara",
+                                                "status": "pending"
+                                            }
+                                        ]
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/role-requests/{id}/approve": {
+            "post": {
+                "tags": [
+                    "Super Admin Moderation"
+                ],
+                "summary": "[Super Admin] Setujui Permohonan Role HR",
+                "description": "Setujui permohonan role HR/Company Owner dan tetapkan role Spatie kepada user.",
+                "operationId": "f68bf6897a22b2d687acd35ff9af842b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Role request disetujui",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Permohonan role HR untuk Budi Pratama disetujui!",
+                                    "data": {
+                                        "id": 1,
+                                        "requested_role": "HR",
+                                        "status": "approved"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/audit-logs": {
+            "get": {
+                "tags": [
+                    "Super Admin Moderation"
+                ],
+                "summary": "[Super Admin] Audit Logs Keamanan Platform",
+                "description": "Mengambil catatan riwayat log aktivitas keamanan pengguna.",
+                "operationId": "072b2439383c5934cc39ecf90aecdc43",
+                "responses": {
+                    "200": {
+                        "description": "Audit logs",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Log audit sistem berhasil diambil.",
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "user_id": 1,
+                                                "action": "LOGIN",
+                                                "ip_address": "127.0.0.1",
+                                                "created_at": "2026-08-21T22:00:00.000000Z"
+                                            }
+                                        ]
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/jobs/{id}/apply": {
+            "post": {
+                "tags": [
+                    "Candidate Applications"
+                ],
+                "summary": "Mengirim Lamaran Kerja",
+                "description": "Pelamar mengirimkan lamaran untuk lowongan pekerjaan tertentu.",
+                "operationId": "7ca7333ffe2dc7ab3aaac0c0afef1546",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "cover_letter": {
+                                        "type": "string",
+                                        "example": "Saya berminat bergabung di posisi ini..."
+                                    },
+                                    "resume": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Lamaran berhasil dikirim",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Lamaran pekerjaan berhasil dikirim!",
+                                    "data": {
+                                        "id": 10,
+                                        "job_id": 1,
+                                        "user_id": 1,
+                                        "cover_letter": "Saya berminat bergabung...",
+                                        "status": "pending",
+                                        "created_at": "2026-08-21T22:00:00.000000Z"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Sudah melamar atau kuota penuh",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": false,
+                                    "message": "Anda sudah melamar pekerjaan ini sebelumnya.",
+                                    "data": null,
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/applications": {
+            "get": {
+                "tags": [
+                    "Candidate Applications"
+                ],
+                "summary": "Daftar Riwayat Lamaran Saya",
+                "description": "Mengambil riwayat lamaran yang pernah dikirimkan.",
+                "operationId": "c557b33a6cec9ad9b0bbe6b8c02f5628",
+                "responses": {
+                    "200": {
+                        "description": "Daftar lamaran kandidat",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Daftar riwayat lamaran berhasil diambil.",
+                                    "data": [
+                                        {
+                                            "id": 10,
+                                            "job_id": 1,
+                                            "status": "interview",
+                                            "created_at": "2026-08-21T22:00:00.000000Z",
+                                            "job": {
+                                                "title": "Senior Backend Developer",
+                                                "company_name": "PT Tech Nusantara"
+                                            },
+                                            "interviews": [
+                                                {
+                                                    "interview_date": "2026-09-01 10:00:00",
+                                                    "location_or_link": "Google Meet: https://meet.google.com/abc-defg-hij"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/applications/{id}/messages": {
+            "get": {
+                "tags": [
+                    "Candidate Applications"
+                ],
+                "summary": "Pesan Live Chat Lamaran",
+                "description": "Mengambil histori percakapan antara Pelamar dan HR.",
+                "operationId": "a1520c55e78dabae4cad1423283be014",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Histori percakapan chat",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Pesan percakapan berhasil diambil.",
+                                    "data": [
+                                        {
+                                            "id": 1,
+                                            "application_id": 10,
+                                            "sender_id": 1,
+                                            "message": "Halo HR, mohon info jadwal wawancara",
+                                            "created_at": "2026-08-21T22:05:00.000000Z",
+                                            "sender": {
+                                                "id": 1,
+                                                "name": "Budi Pratama"
+                                            }
+                                        }
+                                    ],
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Candidate Applications"
+                ],
+                "summary": "Kirim Pesan Live Chat",
+                "description": "Mengirim pesan baru pada saluran obrolan lamaran kerja.",
+                "operationId": "2696cb94b790c1a4b3622e04592df080",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "message"
+                                ],
+                                "properties": {
+                                    "message": {
+                                        "type": "string",
+                                        "example": "Halo HR, apakah ada kelanjutan wawancara?"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pesan berhasil terkirim",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Pesan berhasil terkirim.",
+                                    "data": {
+                                        "id": 2,
+                                        "application_id": 10,
+                                        "sender_id": 1,
+                                        "message": "Halo HR, apakah ada kelanjutan wawancara?",
+                                        "created_at": "2026-08-21T22:10:00.000000Z"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Registrasi Akun Pelamar (Candidate)",
+                "description": "Mendaftarkan akun kandidat/pelamar baru dan mengembalikan Bearer Token Sanctum.",
+                "operationId": "08136088c4862c313b35d6518bab8d3a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Budi Pratama"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "budi@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Secret123!"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Secret123!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Registrasi berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Registrasi akun kandidat berhasil!",
+                                    "data": {
+                                        "user": {
+                                            "id": 1,
+                                            "name": "Budi Pratama",
+                                            "email": "budi@example.com",
+                                            "roles": [
+                                                "Candidate"
+                                            ]
+                                        },
+                                        "token": "1|sanctum_bearer_token_string_sample"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi error payload",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": false,
+                                    "message": "Validasi data registrasi gagal.",
+                                    "data": null,
+                                    "errors": {
+                                        "email": [
+                                            "The email has already been taken."
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login User & Generasi Sanctum Token",
+                "description": "Otentikasi kredensial pengguna dan mengembalikan Sanctum Bearer Token.",
+                "operationId": "99d66635c4992aeaa6aa44ff653d0563",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "budi@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Secret123!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Login berhasil!",
+                                    "data": {
+                                        "user": {
+                                            "id": 1,
+                                            "name": "Budi Pratama",
+                                            "email": "budi@example.com",
+                                            "roles": [
+                                                "Candidate"
+                                            ]
+                                        },
+                                        "token": "2|sanctum_bearer_token_string_sample"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Kredensial salah",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": false,
+                                    "message": "Email atau password yang Anda masukkan salah.",
+                                    "data": null,
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Informasi User Saat Ini",
+                "description": "Mengambil profil pengguna terautentikasi.",
+                "operationId": "7edae2cdbaafc10dff8c9c4198b320a2",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil data pengguna",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Data pengguna berhasil diambil.",
+                                    "data": {
+                                        "id": 1,
+                                        "name": "Budi Pratama",
+                                        "email": "budi@example.com",
+                                        "avatar": "avatars/sample.jpg",
+                                        "is_suspended": false,
+                                        "roles": [
+                                            "Candidate"
+                                        ],
+                                        "candidate_profile": {
+                                            "phone": "081234567890",
+                                            "bio": "Software Engineer",
+                                            "education": "S1 Teknik Informatika"
+                                        }
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Unauthenticated."
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout User",
+                "description": "Mencabut access token Sanctum yang sedang aktif.",
+                "operationId": "6abf3b64a4bc7838d56346f05a5153af",
+                "responses": {
+                    "200": {
+                        "description": "Logout berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Logout berhasil, token telah dicabut.",
+                                    "data": null,
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/role-request": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Pengajuan Role Perusahaan / HR",
+                "description": "Mengajukan permohonan pengubahan role menjadi HR atau Company Owner.",
+                "operationId": "ba17734d242bd36bb60c2286bb7adfab",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "requested_role",
+                                    "company_name"
+                                ],
+                                "properties": {
+                                    "requested_role": {
+                                        "type": "string",
+                                        "example": "HR"
+                                    },
+                                    "company_name": {
+                                        "type": "string",
+                                        "example": "PT Teknologi Nusantara"
+                                    },
+                                    "company_address": {
+                                        "type": "string",
+                                        "example": "Jl. Sudirman No. 45, Jakarta"
+                                    },
+                                    "reason": {
+                                        "type": "string",
+                                        "example": "Membutuhkan akses rekruitmen."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Request berhasil diajukan",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Permohonan role berhasil dikirim.",
+                                    "data": {
+                                        "id": 1,
+                                        "user_id": 1,
+                                        "requested_role": "HR",
+                                        "company_name": "PT Teknologi Nusantara",
+                                        "status": "pending"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/documents": {
+            "get": {
+                "tags": [
+                    "Document Vault"
+                ],
+                "summary": "Daftar Dokumen Vault Pelamar",
+                "description": "Mengambil seluruh dokumen yang diunggah oleh kandidat.",
+                "operationId": "74a3114b88150ad3f814e9937342e683",
+                "responses": {
+                    "200": {
+                        "description": "Daftar dokumen",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Daftar dokumen berhasil diambil.",
+                                    "data": [
+                                        {
+                                            "id": 1,
+                                            "title": "Sertifikat Laravel Expert",
+                                            "document_type": "Sertifikat",
+                                            "file_path": "candidate_vault/1/cert.pdf",
+                                            "file_size": 1024500,
+                                            "created_at": "2026-08-21T22:00:00.000000Z"
+                                        }
+                                    ],
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Document Vault"
+                ],
+                "summary": "Unggah Dokumen Baru ke Vault",
+                "description": "Mengunggah berkas dokumen pendukung baru milik pelamar.",
+                "operationId": "4a60f17a26264ec6e789d861c88fcaa9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Sertifikat AWS Solution Architect"
+                                    },
+                                    "document_type": {
+                                        "type": "string",
+                                        "example": "Sertifikat"
+                                    },
+                                    "document_file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Dokumen berhasil diunggah",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Dokumen berhasil diunggah ke vault.",
+                                    "data": {
+                                        "id": 2,
+                                        "user_id": 1,
+                                        "title": "Sertifikat AWS Solution Architect",
+                                        "document_type": "Sertifikat",
+                                        "file_path": "candidate_vault/1/aws_cert.pdf",
+                                        "file_size": 2048000
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/documents/{id}": {
+            "delete": {
+                "tags": [
+                    "Document Vault"
+                ],
+                "summary": "Hapus Dokumen Vault",
+                "description": "Menghapus berkas dokumen milik kandidat.",
+                "operationId": "a9fcd4a10d1c5930662f33ac7e5a1b01",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dokumen berhasil dihapus",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Dokumen berhasil dihapus.",
+                                    "data": null,
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/profile": {
+            "get": {
+                "tags": [
+                    "Candidate Profile"
+                ],
+                "summary": "Detail Profil Pelamar Terautentikasi",
+                "description": "Mengambil profil lengkap kandidat.",
+                "operationId": "4c9d8c1db8b6196264f4fc97acdec5f2",
+                "responses": {
+                    "200": {
+                        "description": "Data profil kandidat",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Profil kandidat berhasil diambil.",
+                                    "data": {
+                                        "user": {
+                                            "id": 1,
+                                            "name": "Budi Pratama",
+                                            "email": "budi@example.com",
+                                            "avatar": "avatars/sample.jpg"
+                                        },
+                                        "profile": {
+                                            "phone": "081234567890",
+                                            "nickname": "Budi",
+                                            "bio": "Software Engineer berpengalaman 3 tahun",
+                                            "education": "S1 Teknik Informatika - Universitas Indonesia",
+                                            "experience": "Fullstack Developer at Tech Corp (2023-2026)",
+                                            "skills": "PHP, Laravel, Vue.js, MySQL, REST API",
+                                            "portfolio_website": "https://budi.dev",
+                                            "expected_salary": 12000000
+                                        }
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Candidate Profile"
+                ],
+                "summary": "Perbarui Detail Profil Pelamar",
+                "description": "Memperbarui data bio, pendidikan, pengalaman kerja, keahlian, dan kontak kandidat.",
+                "operationId": "d652a023fcdbec4a8639838e50057bf6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "081234567890"
+                                    },
+                                    "nickname": {
+                                        "type": "string",
+                                        "example": "Budi"
+                                    },
+                                    "bio": {
+                                        "type": "string",
+                                        "example": "Senior Fullstack Developer"
+                                    },
+                                    "education": {
+                                        "type": "string",
+                                        "example": "S1 Teknik Informatika"
+                                    },
+                                    "experience": {
+                                        "type": "string",
+                                        "example": "Software Engineer at Tech Corp"
+                                    },
+                                    "skills": {
+                                        "type": "string",
+                                        "example": "PHP, Laravel, Docker, React"
+                                    },
+                                    "portfolio_website": {
+                                        "type": "string",
+                                        "example": "https://budi.dev"
+                                    },
+                                    "expected_salary": {
+                                        "type": "number",
+                                        "example": 15000000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profil diperbarui",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Profil kandidat berhasil diperbarui!",
+                                    "data": {
+                                        "phone": "081234567890",
+                                        "bio": "Senior Fullstack Developer",
+                                        "skills": "PHP, Laravel, Docker, React",
+                                        "expected_salary": 15000000
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/profile/photo": {
+            "post": {
+                "tags": [
+                    "Candidate Profile"
+                ],
+                "summary": "Upload Foto Profil Candidate",
+                "description": "Mengunggah foto profil pengguna.",
+                "operationId": "19888bf9586a7203a2653758d0b8e073",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "photo": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Foto berhasil diunggah",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Foto profil berhasil diperbarui.",
+                                    "data": {
+                                        "avatar_url": "http://localhost/storage/avatars/sample.jpg"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/tests/{jobId}": {
+            "get": {
+                "tags": [
+                    "Online Tests & Offers"
+                ],
+                "summary": "Lihat Soal / Detail Tes Online Lowongan",
+                "description": "Mengambil informasi tes online psikotes/kompetensi.",
+                "operationId": "e0274c4e5fef84daa604930cba954ee0",
+                "parameters": [
+                    {
+                        "name": "jobId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail tes online",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Detail tes online berhasil diambil.",
+                                    "data": {
+                                        "test": {
+                                            "id": 1,
+                                            "title": "Tes Logika & Pemrograman Backend",
+                                            "test_mode": "internal",
+                                            "duration_minutes": 30,
+                                            "description": "Kerjakan soal dalam waktu 30 menit",
+                                            "questions": [
+                                                {
+                                                    "id": 101,
+                                                    "question_text": "Metode mana yang digunakan untuk routing HTTP GET di Laravel?",
+                                                    "option_a": "Route::get()",
+                                                    "option_b": "Route::post()",
+                                                    "option_c": "Route::put()",
+                                                    "option_d": "Route::delete()"
+                                                }
+                                            ]
+                                        },
+                                        "candidate_result": null
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/tests/{jobId}/submit": {
+            "post": {
+                "tags": [
+                    "Online Tests & Offers"
+                ],
+                "summary": "Kirim Jawaban Tes Online",
+                "description": "Mengirimkan jawaban pilihan ganda atau berkas tugas tes online.",
+                "operationId": "70bf8c32a85b0e254e16cba915a55fc6",
+                "parameters": [
+                    {
+                        "name": "jobId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "answers": {
+                                        "type": "object",
+                                        "example": {
+                                            "101": "a"
+                                        }
+                                    },
+                                    "project_link": {
+                                        "type": "string",
+                                        "example": "https://github.com/budi/project"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tes berhasil disubmit",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Jawaban tes berhasil dikirim!",
+                                    "data": {
+                                        "score": 100,
+                                        "status": "passed",
+                                        "passed": true
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/offer-letters/{id}/respond": {
+            "post": {
+                "tags": [
+                    "Online Tests & Offers"
+                ],
+                "summary": "Respon Surat Penawaran (Offer Letter)",
+                "description": "Pelamar menerima (accept) atau menolak (reject) surat penawaran kerja.",
+                "operationId": "a05858671ea879ac37c4a6dbd31462ac",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "example": "accepted"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Terima kasih, saya menerima penawaran ini."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Respon berhasil disimpan",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Respon penawaran kerja berhasil disimpan!",
+                                    "data": {
+                                        "id": 1,
+                                        "offered_position": "Backend Engineer",
+                                        "offered_salary": 18000000,
+                                        "status": "accepted"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/jobs": {
+            "get": {
+                "tags": [
+                    "Jobs & Search"
+                ],
+                "summary": "Pencarian & Katalog Lowongan Kerja Active",
+                "description": "Mengambil daftar lowongan kerja aktif dengan fitur pencarian dan pagination.",
+                "operationId": "88a913195419d2f3fba99d86edeb8bbb",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Developer"
+                        }
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Jakarta"
+                        }
+                    },
+                    {
+                        "name": "job_type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Full-time"
+                        }
+                    },
+                    {
+                        "name": "experience_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Senior Level"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar lowongan kerja",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Daftar lowongan kerja berhasil diambil.",
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "title": "Senior Backend Developer",
+                                                "company_name": "PT Tech Nusantara",
+                                                "location": "Jakarta Selatan",
+                                                "work_type": "Full-time",
+                                                "salary": "15.000.000 - 25.000.000",
+                                                "quota": 5,
+                                                "status": "active"
+                                            }
+                                        ],
+                                        "total": 1
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/jobs/{id}": {
+            "get": {
+                "tags": [
+                    "Jobs & Search"
+                ],
+                "summary": "Detail Lowongan Kerja",
+                "description": "Mengambil informasi detail lowongan kerja berdasarkan ID.",
+                "operationId": "7317ccc088b0a8228b51c6e436171cff",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail lowongan",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Detail lowongan kerja berhasil diambil.",
+                                    "data": {
+                                        "id": 1,
+                                        "title": "Senior Backend Developer",
+                                        "company_name": "PT Tech Nusantara",
+                                        "division": "Engineering",
+                                        "location": "Jakarta Selatan",
+                                        "work_type": "Full-time",
+                                        "salary": "15.000.000 - 25.000.000",
+                                        "description": "Mengembangkan API dan mikroservis.",
+                                        "requirements": "Pengalaman PHP Laravel > 4 tahun.",
+                                        "benefits": "Asuransi, Bonus, Remote Option",
+                                        "quota": 5,
+                                        "status": "active"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Lowongan tidak ditemukan",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": false,
+                                    "message": "Lowongan kerja tidak ditemukan.",
+                                    "data": null,
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/jobs/{id}/bookmark": {
+            "post": {
+                "tags": [
+                    "Jobs & Search"
+                ],
+                "summary": "Toggle Bookmark / Simpan Lowongan",
+                "description": "Menyimpan atau menghapus lowongan dari simpanan kandidat.",
+                "operationId": "323d5b6708149ec3f5a1f761cae8bec5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status simpan diperbarui",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Lowongan berhasil disimpan!",
+                                    "data": {
+                                        "bookmarked": true
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/saved-jobs": {
+            "get": {
+                "tags": [
+                    "Jobs & Search"
+                ],
+                "summary": "Daftar Lowongan Tersimpan Pelamar",
+                "description": "Mengambil seluruh lowongan kerja yang telah disimpan oleh kandidat.",
+                "operationId": "f607ac9ee946992b7a3ed77b4645cd46",
+                "responses": {
+                    "200": {
+                        "description": "Daftar lowongan tersimpan",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Daftar lowongan tersimpan berhasil diambil.",
+                                    "data": [
+                                        {
+                                            "id": 1,
+                                            "title": "Senior Backend Developer",
+                                            "company_name": "PT Tech Nusantara"
+                                        }
+                                    ],
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/notifications": {
+            "get": {
+                "tags": [
+                    "Notifications & Salary"
+                ],
+                "summary": "Daftar Notifikasi User",
+                "description": "Mengambil daftar notifikasi in-app bell pengguna.",
+                "operationId": "7eca2b9e84a26784eb55b3fc6b697567",
+                "responses": {
+                    "200": {
+                        "description": "Daftar notifikasi",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Notifikasi berhasil diambil.",
+                                    "data": {
+                                        "unread_count": 1,
+                                        "notifications": [
+                                            {
+                                                "id": 1,
+                                                "user_id": 1,
+                                                "title": "Undangan Interview",
+                                                "message": "Selamat! Anda diundang untuk mengikuti wawancara.",
+                                                "is_read": false,
+                                                "created_at": "2026-08-21T22:00:00.000000Z"
+                                            }
+                                        ]
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/notifications/{id}/read": {
+            "post": {
+                "tags": [
+                    "Notifications & Salary"
+                ],
+                "summary": "Tandai Notifikasi Dibaca",
+                "description": "Tandai notifikasi tertentu sebagai telah dibaca.",
+                "operationId": "dbadc4694f2557775ca3c1996daba876",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notifikasi ditandai dibaca",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Notifikasi ditandai sudah dibaca.",
+                                    "data": null,
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/notifications/read-all": {
+            "post": {
+                "tags": [
+                    "Notifications & Salary"
+                ],
+                "summary": "Tandai Semua Notifikasi Dibaca",
+                "description": "Menandai seluruh notifikasi user sebagai telah dibaca.",
+                "operationId": "925deb27b88c45df00bdf714699c3a68",
+                "responses": {
+                    "200": {
+                        "description": "Seluruh notifikasi dibaca",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Semua notifikasi ditandai sudah dibaca.",
+                                    "data": null,
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/umk-lookup": {
+            "get": {
+                "tags": [
+                    "Regional UMK & Benchmark"
+                ],
+                "summary": "Pencarian UMK 2026 Wilayah",
+                "description": "Mencari besaran Nilai UMK Resmi 2026 berdasarkan lokasi kota/kabupaten.",
+                "operationId": "940b056932eef816f95c339a32a06ba3",
+                "parameters": [
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Jakarta Pusat"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data UMK ditemukan",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "found": true,
+                                    "city_district": "Kota Administrasi Jakarta Pusat",
+                                    "province": "DKI JAKARTA",
+                                    "umk_amount": 5729876,
+                                    "formatted_umk": "Rp 5.729.876",
+                                    "legal_decree": "KEPUTUSAN MENTERI KETENAGAKERJAAN REPUBLIK INDONESIA NOMOR 65 TAHUN 2026"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/regions/cities": {
+            "get": {
+                "tags": [
+                    "Regional UMK & Benchmark"
+                ],
+                "summary": "Daftar Wilayah Kota/Kabupaten Autocomplete",
+                "description": "Mengambil daftar kota/kabupaten di Indonesia untuk pilihan autocomplete.",
+                "operationId": "3dba2910e52918bd274c4139f286b0b2",
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Bandung"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar kota/kabupaten",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": [
+                                    {
+                                        "city_district": "Kota Bandung",
+                                        "province": "JAWA BARAT",
+                                        "umk_amount": 4737678
+                                    },
+                                    {
+                                        "city_district": "Kabupaten Bandung",
+                                        "province": "JAWA BARAT",
+                                        "umk_amount": 3972202
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Enter your Sanctum Bearer Token to access protected API endpoints.",
+                "name": "Authorization",
+                "in": "header",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "HR Recruitment Pipeline",
+            "description": "HR Recruitment Pipeline"
+        },
+        {
+            "name": "HR Job Postings & Company",
+            "description": "HR Job Postings & Company"
+        },
+        {
+            "name": "Super Admin Moderation",
+            "description": "Super Admin Moderation"
+        },
+        {
+            "name": "Candidate Applications",
+            "description": "Candidate Applications"
+        },
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Document Vault",
+            "description": "Document Vault"
+        },
+        {
+            "name": "Candidate Profile",
+            "description": "Candidate Profile"
+        },
+        {
+            "name": "Online Tests & Offers",
+            "description": "Online Tests & Offers"
+        },
+        {
+            "name": "Jobs & Search",
+            "description": "Jobs & Search"
+        },
+        {
+            "name": "Notifications & Salary",
+            "description": "Notifications & Salary"
+        },
+        {
+            "name": "Regional UMK & Benchmark",
+            "description": "Regional UMK & Benchmark"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ]
+}

@@ -72,42 +72,42 @@
                         <input type="text" name="skills" value="{{ request('skills', $result['skills_input'] ?? '') }}" placeholder="Misal: React, AWS, Laravel..." class="w-full border-gray-300 rounded-xl text-sm font-bold focus:ring-blue-500 focus:border-blue-500 text-slate-800">
                     </div>
                     <div class="flex items-end">
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition shadow-md flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-chart-line"></i> Hitung Gaji
+                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-2xs flex items-center justify-center gap-2 border border-slate-900">
+                            <i class="fa-solid fa-chart-line text-xs"></i> Hitung Gaji
                         </button>
                     </div>
                 </form>
             </div>
 
             <!-- Salary Result Cards -->
-            <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-3xl p-8 sm:p-12 shadow-xl relative overflow-hidden">
+            <div class="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-2xs relative overflow-hidden border border-slate-800">
                 <div class="relative z-10 space-y-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <span class="px-3 py-1 bg-white/20 text-blue-200 text-xs font-bold rounded-full uppercase tracking-wide">
+                            <span class="px-3 py-1 bg-slate-800 text-slate-300 text-3xs font-bold rounded-md uppercase tracking-wide border border-slate-700">
                                 {{ $result['level'] }} • {{ $result['location'] }}
                             </span>
-                            <h3 class="text-3xl font-black text-white mt-2">{{ $result['position'] }}</h3>
+                            <h3 class="text-2xl font-bold text-white mt-2">{{ $result['position'] }}</h3>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-white/10">
-                        <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10 text-center">
-                            <span class="text-xs font-bold text-blue-200 uppercase">Gaji Minimum Pasar</span>
-                            <div class="text-2xl font-black text-emerald-400 mt-2">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-800">
+                        <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 text-center">
+                            <span class="text-3xs font-bold text-slate-400 uppercase">Gaji Minimum Pasar</span>
+                            <div class="text-xl font-bold text-emerald-400 mt-1">
                                 Rp {{ number_format($result['min'], 0, ',', '.') }}
                             </div>
                         </div>
 
-                        <div class="bg-white/20 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-center transform scale-105 shadow-lg">
-                            <span class="text-xs font-black text-yellow-300 uppercase">Rata-Rata Industri (Average)</span>
-                            <div class="text-3xl font-black text-white mt-2">
+                        <div class="bg-slate-800 p-5 rounded-xl border border-slate-600 text-center shadow-2xs">
+                            <span class="text-3xs font-bold text-slate-300 uppercase">Rata-Rata Industri (Average)</span>
+                            <div class="text-2xl font-bold text-white mt-1">
                                 Rp {{ number_format($result['avg'], 0, ',', '.') }}
                             </div>
-                            <span class="text-2xs text-blue-200 mt-1 block">Rekomendasi Ekspektasi Gaji</span>
+                            <span class="text-3xs text-slate-400 mt-1 block">Rekomendasi Ekspektasi Gaji</span>
                         </div>
 
-                        <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10 text-center">
+                        <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 text-center">
                             <span class="text-xs font-bold text-blue-200 uppercase">Gaji Maksimum Pasar</span>
                             <div class="text-2xl font-black text-purple-300 mt-2">
                                 Rp {{ number_format($result['max'], 0, ',', '.') }}
