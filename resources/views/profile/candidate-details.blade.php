@@ -1,0 +1,1513 @@
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-bold text-2xl text-gray-800 leading-tight">
+            {{ __('Resume & Profil Lengkap') }}
+        </h2>
+    </x-slot>
+
+    <div class="py-12 bg-gray-50 min-h-screen">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Bangun Profil Profesional Anda</h1>
+                <p class="mt-2 text-gray-600">Isi secara lengkap untuk meningkatkan peluang Anda dilirik oleh perusahaan impian.</p>
+                
+                <a href="{{ route('profile.candidate.documents.index') }}" class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition">
+                    <i class="fa-solid fa-folder-closed text-amber-300"></i> Buka Vault Dokumen & Berkas Pendukung (Ijazah, SKCK, Sertifikat, KTP) &rarr;
+                </a>
+                
+                @if ($errors->any())
+                    <div class="mt-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded shadow-sm">
+                        <p class="font-bold">Ada beberapa kesalahan saat menyimpan data:</p>
+                        <ul class="list-disc list-inside text-sm mt-2">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            </div>
+
+            @php
+                $profile = $user->candidateProfile;
+                $defaultArray = '[{}]';
+                $defaultObject = '{}';
+                
+                $getOldOrDb = function($field, $default) use ($profile) {
+                    $old = old($field);
+                    if ($old !== null) return json_encode($old);
+                    if ($profile && $profile->$field) return json_encode($profile->$field);
+                    return $default;
+                };
+            @endphp
+
+            <div x-data="resumeForm()" class="pb-12 flex flex-col md:flex-row gap-8 items-start">
+                <!-- Sidebar Tabs -->
+                <div class="w-full md:w-1/4 flex-shrink-0">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                        <template x-for="(tab, index) in tabs" :key="index">
+                            <button type="button" @click="activeTab = tab.id"
+                                :class="activeTab === tab.id ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 font-bold' : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300'"
+                                class="px-5 py-3.5 text-left text-sm transition-colors w-full border-b border-gray-50 last:border-b-0 flex items-center justify-between">
+                                <span x-text="tab.label"></span>
+                                <svg x-show="activeTab === tab.id" class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Form Content -->
+                <div class="w-full md:w-3/4">
+                    <form method="post" action="{{ route('profile.candidate.details.update') }}" enctype="multipart/form-data" class="space-y-8">
+                        @csrf
+
+                        <!-- 1. INFORMASI PRIBADI -->
+                        <div x-show="activeTab === 1" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="bg-blue-50 border-b border-blue-100 px-6 py-4 flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">1</div>
+                            <h2 class="text-lg font-bold text-blue-900">Informasi Pribadi</h2>
+                        </div>
+                        <div class="p-6 sm:p-8 space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="md:col-span-2 flex items-center gap-6">
+                                    <div class="relative w-24 h-24 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden shrink-0 shadow-md group">
+                                        @php
+                                            $photoSrc = ($profile && ($profile->photo || $profile->photo_path)) 
+                                                ? Storage::url($profile->photo ?? $profile->photo_path) 
+                                                : null;
+                                        @endphp
+
+                                        <img id="candidate-photo-preview" src="{{ $photoSrc }}" class="w-full h-full object-cover {{ $photoSrc ? '' : 'hidden' }}">
+                                        <svg id="candidate-photo-placeholder" class="w-12 h-12 text-gray-400 {{ $photoSrc ? 'hidden' : '' }}" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                        
+                                        <div id="candidate-photo-spinner" class="absolute inset-0 bg-blue-900/60 backdrop-blur-xs flex items-center justify-center text-white hidden">
+                                            <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <x-input-label for="photo" :value="__('Pas Foto (Opsional)')" />
+                                        <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/jpg,image/webp" onchange="previewCandidatePhoto(event)" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer">
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <p class="text-xs text-gray-500">Maksimal 2MB (JPG/PNG/WEBP)</p>
+                                            <span id="photo-status-badge" class="hidden text-2xs font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+                                                ✅ Foto Tersimpan Otomatis!
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <x-input-label for="nik" :value="__('NIK KTP')" class="after:content-['*'] after:ml-0.5 after:text-red-500" />
+                                    <x-text-input id="nik" name="nik" required type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('nik', $profile->nik ?? '')" placeholder="16 digit NIK" />
+                                </div>
+                                <div>
+                                    <x-input-label for="name" :value="__('Nama Lengkap (Sesuai KTP)')" class="after:content-['*'] after:ml-0.5 after:text-red-500" />
+                                    <x-text-input id="name" name="name" type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white font-semibold text-gray-900" :value="old('name', $user->name ?? '')" required />
+                                </div>
+                                <div>
+                                    <x-input-label for="nickname" :value="__('Nama Panggilan')" class="after:content-['*'] after:ml-0.5 after:text-red-500" />
+                                    <x-text-input id="nickname" name="nickname" required type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('nickname', $profile->nickname ?? '')" />
+                                </div>
+                                <div>
+                                    <x-input-label for="phone" :value="__('Nomor Handphone')" class="after:content-['*'] after:ml-0.5 after:text-red-500" />
+                                    <x-text-input id="phone" name="phone" required type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('phone', $profile->phone ?? '')" />
+                                </div>
+                                <div>
+                                    <x-input-label for="nationality" :value="__('Kewarganegaraan')" class="after:content-['*'] after:ml-0.5 after:text-red-500" />
+                                    <x-text-input id="nationality" name="nationality" required type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('nationality', $profile->nationality ?? '')" />
+                                </div>
+                                <div>
+                                    <x-input-label for="birth_place" :value="__('Tempat Lahir')" class="after:content-['*'] after:ml-0.5 after:text-red-500" />
+                                    <x-text-input id="birth_place" name="birth_place" required type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('birth_place', $profile->birth_place ?? '')" />
+                                </div>
+                                <div>
+                                    <x-input-label for="dob" :value="__('Tanggal Lahir')" class="after:content-['*'] after:ml-0.5 after:text-red-500" />
+                                    <x-text-input id="dob" name="dob" required type="date" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('dob', ($profile && $profile->dob) ? $profile->dob->format('Y-m-d') : '')" />
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <x-input-label :value="__('Jenis Kelamin')" class="mb-2 after:content-['*'] after:ml-0.5 after:text-red-500" />
+                                <div class="flex gap-4">
+                                    <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                        <input type="radio" name="gender" value="male" required class="text-blue-600" {{ (old('gender', $profile->gender ?? '') === 'male') ? 'checked' : '' }}>
+                                        <span class="ml-2">Laki-laki</span>
+                                    </label>
+                                    <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                        <input type="radio" name="gender" value="female" required class="text-blue-600" {{ (old('gender', $profile->gender ?? '') === 'female') ? 'checked' : '' }}>
+                                        <span class="ml-2">Perempuan</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <x-input-label for="religion" :value="__('Agama')" class="after:content-['*'] after:ml-0.5 after:text-red-500" />
+                                    <select id="religion" name="religion" required class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white">
+                                        <option value="">Pilih Agama</option>
+                                        <option value="Islam" {{ old('religion', $profile->religion ?? '') === 'Islam' ? 'selected' : '' }}>Islam</option>
+                                        <option value="Kristen Protestan" {{ old('religion', $profile->religion ?? '') === 'Kristen Protestan' ? 'selected' : '' }}>Kristen Protestan</option>
+                                        <option value="Katolik" {{ old('religion', $profile->religion ?? '') === 'Katolik' ? 'selected' : '' }}>Katolik</option>
+                                        <option value="Hindu" {{ old('religion', $profile->religion ?? '') === 'Hindu' ? 'selected' : '' }}>Hindu</option>
+                                        <option value="Buddha" {{ old('religion', $profile->religion ?? '') === 'Buddha' ? 'selected' : '' }}>Buddha</option>
+                                        <option value="Konghucu" {{ old('religion', $profile->religion ?? '') === 'Konghucu' ? 'selected' : '' }}>Konghucu</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <x-input-label for="marital_status" :value="__('Status Pernikahan')" class="after:content-['*'] after:ml-0.5 after:text-red-500" />
+                                    <select id="marital_status" name="marital_status" required class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white">
+                                        <option value="">Pilih Status</option>
+                                        <option value="Lajang" {{ old('marital_status', $profile->marital_status ?? '') === 'Lajang' ? 'selected' : '' }}>Lajang / Belum Menikah</option>
+                                        <option value="Menikah" {{ old('marital_status', $profile->marital_status ?? '') === 'Menikah' ? 'selected' : '' }}>Menikah</option>
+                                        <option value="Cerai" {{ old('marital_status', $profile->marital_status ?? '') === 'Cerai' ? 'selected' : '' }}>Cerai</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="md:col-span-2 mt-4 pt-4 border-t border-gray-100" x-data="{ showEmergency: {{ (old('emergency_contact_name', $profile->emergency_contact_name ?? '') || old('emergency_contact_phone', $profile->emergency_contact_phone ?? '')) ? 'true' : 'false' }} }">
+                                <div class="flex items-center gap-2 mb-4">
+                                    <input type="checkbox" id="toggle_emergency" x-model="showEmergency" class="w-4 h-4 text-blue-600 bg-gray-50 border-gray-300 rounded focus:ring-blue-500">
+                                    <label for="toggle_emergency" class="text-md font-bold text-gray-800 cursor-pointer">Tambahkan Kontak Darurat (Opsional)</label>
+                                </div>
+                                <div x-show="showEmergency" class="grid grid-cols-1 md:grid-cols-2 gap-6" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                                    <div>
+                                        <x-input-label for="emergency_contact_name" :value="__('Nama Kontak Darurat')" />
+                                        <x-text-input id="emergency_contact_name" name="emergency_contact_name" type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('emergency_contact_name', $profile->emergency_contact_name ?? '')" placeholder="Nama keluarga/kerabat" />
+                                    </div>
+                                    <div>
+                                        <x-input-label for="emergency_contact_phone" :value="__('No. Handphone Darurat')" />
+                                        <x-text-input id="emergency_contact_phone" name="emergency_contact_phone" type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('emergency_contact_phone', $profile->emergency_contact_phone ?? '')" placeholder="Contoh: 08123456789" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" x-data="{
+                                provinces: [],
+                                cities: [],
+                                provinceName: '{{ old('province', $profile->province ?? '') }}',
+                                cityName: '{{ old('city', $profile->city ?? '') }}',
+                                showProv: false,
+                                showCity: false,
+                                provQuery: '{{ old('province', $profile->province ?? '') }}',
+                                cityQuery: '{{ old('city', $profile->city ?? '') }}',
+                                get filteredProvs() {
+                                    return this.provinces.filter(p => p.name.toLowerCase().includes(this.provQuery.toLowerCase()));
+                                },
+                                get filteredCities() {
+                                    return this.cities.filter(c => c.name.toLowerCase().includes(this.cityQuery.toLowerCase()));
+                                },
+                                init() {
+                                    fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json')
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            this.provinces = data;
+                                            if (this.provinceName) {
+                                                const p = data.find(x => x.name.toUpperCase() === this.provinceName.toUpperCase());
+                                                if (p) this.fetchCities(p.id);
+                                            }
+                                        })
+                                        .catch(err => console.error(err));
+                                },
+                                fetchCities(id) {
+                                    fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${id}.json`)
+                                        .then(res => res.json())
+                                        .then(data => this.cities = data)
+                                        .catch(err => console.error(err));
+                                },
+                                selectProv(p) {
+                                    this.provinceName = p.name;
+                                    this.provQuery = p.name;
+                                    this.cityName = '';
+                                    this.cityQuery = '';
+                                    this.showProv = false;
+                                    this.fetchCities(p.id);
+                                },
+                                selectCity(c) {
+                                    this.cityName = c.name;
+                                    this.cityQuery = c.name;
+                                    this.showCity = false;
+                                }
+                            }">
+                                <div class="md:col-span-2">
+                                    <x-input-label for="address" :value="__('Alamat Lengkap')" class="after:content-['*'] after:ml-0.5 after:text-red-500" />
+                                    <textarea id="address" name="address" required rows="2" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white">{{ old('address', $profile->address ?? '') }}</textarea>
+                                </div>
+                                
+                                <!-- Provinsi -->
+                                <div class="relative">
+                                    <x-input-label for="province" :value="__('Provinsi')" class="after:content-['*'] after:ml-0.5 after:text-red-500" />
+                                    <input type="hidden" name="province" x-model="provinceName">
+                                    <x-text-input type="text" x-model="provQuery" required 
+                                        @focus="showProv = true" 
+                                        @click.away="showProv = false; provQuery = provinceName"
+                                        @input="showProv = true; provinceName = provQuery"
+                                        class="mt-1 block w-full bg-gray-50 focus:bg-white" autocomplete="off" placeholder="Cari Provinsi..." />
+                                    <ul x-show="showProv" class="absolute z-50 w-full bg-white border border-gray-300 mt-1 rounded-md shadow-lg max-h-48 overflow-y-auto" style="display: none;">
+                                        <template x-for="p in filteredProvs" :key="p.id">
+                                            <li @click="selectProv(p)" class="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-0" x-text="p.name"></li>
+                                        </template>
+                                        <li x-show="filteredProvs.length === 0" class="px-4 py-2 text-sm text-gray-500 italic">Tidak ditemukan, ketik manual...</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Kota/Kabupaten -->
+                                <div class="relative">
+                                    <x-input-label for="city" :value="__('Kota/Kabupaten')" class="after:content-['*'] after:ml-0.5 after:text-red-500" />
+                                    <input type="hidden" name="city" x-model="cityName">
+                                    <x-text-input type="text" x-model="cityQuery" required 
+                                        @focus="showCity = true" 
+                                        @click.away="showCity = false; cityQuery = cityName"
+                                        @input="showCity = true; cityName = cityQuery"
+                                        class="mt-1 block w-full bg-gray-50 focus:bg-white" autocomplete="off" placeholder="Cari Kota/Kabupaten..." />
+                                    <ul x-show="showCity" class="absolute z-50 w-full bg-white border border-gray-300 mt-1 rounded-md shadow-lg max-h-48 overflow-y-auto" style="display: none;">
+                                        <template x-for="c in filteredCities" :key="c.id">
+                                            <li @click="selectCity(c)" class="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-0" x-text="c.name"></li>
+                                        </template>
+                                        <li x-show="filteredCities.length === 0" class="px-4 py-2 text-sm text-gray-500 italic">Tidak ditemukan, ketik manual...</li>
+                                    </ul>
+                                </div>
+                                
+                                <div>
+                                    <x-input-label for="postal_code" :value="__('Kode Pos')" class="after:content-['*'] after:ml-0.5 after:text-red-500" />
+                                    <x-text-input id="postal_code" name="postal_code" required type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('postal_code', $profile->postal_code ?? '')" placeholder="Cth: 12345" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. RINGKASAN PROFIL -->
+                    <div x-show="activeTab === 2" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="bg-indigo-50 border-b border-indigo-100 px-6 py-4 flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">2</div>
+                            <h2 class="text-lg font-bold text-indigo-900">Ringkasan Profil (Professional Summary)</h2>
+                        </div>
+                        <div class="p-6 sm:p-8">
+                            <textarea name="summary" required rows="4" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white" placeholder="Deskripsikan diri Anda, pengalaman utama, dan kelebihan Anda secara singkat...">{{ old('summary', $profile->summary ?? '') }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- 3. PENDIDIKAN -->
+                    <div x-show="activeTab === 3" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="bg-blue-50 border-b border-blue-100 px-6 py-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">3</div>
+                                <h2 class="text-lg font-bold text-blue-900">Riwayat Pendidikan</h2>
+                            </div>
+                            <button type="button" @click="addEdu" class="text-sm font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 px-3 py-1 rounded-lg">+ Tambah</button>
+                        </div>
+                        <div class="p-6 sm:p-8 space-y-6">
+                            <template x-for="(item, index) in educations" :key="index">
+                                <div class="p-6 border border-gray-200 rounded-xl bg-gray-50">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h3 class="font-bold text-gray-700">Pendidikan #<span x-text="index + 1"></span></h3>
+                                        <button type="button" @click="removeEdu(index)" x-show="educations.length > 1" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 text-sm rounded-lg transition-colors">Hapus</button>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Jenjang</label>
+                                            <select x-model="item.level" :name="`educations[${index}][level]`" class="mt-1 block w-full border-gray-300 rounded-md">
+                                                <option value="">Pilih Jenjang</option>
+                                                <option value="SMA">SMA</option>
+                                                <option value="SMK">SMK</option>
+                                                <option value="D3">D3</option>
+                                                <option value="S1">S1 / D4</option>
+                                                <option value="S2">S2</option>
+                                                <option value="S3">S3</option>
+                                            </select>
+                                        </div>
+                                        <div x-data="{ 
+                                            showDropdown: false, 
+                                            isSearching: false,
+                                            searchResults: [],
+                                            searchSchools() {
+                                                const query = (item.institution || '').trim().toLowerCase();
+                                                
+                                                if (['D3', 'S1', 'S2', 'S3'].includes(item.level)) {
+                                                    this.searchResults = universities.filter(u => u.toLowerCase().includes(query)).slice(0, 30);
+                                                } else if (['SMA', 'SMK'].includes(item.level) && query.length >= 3) {
+                                                    this.isSearching = true;
+                                                    fetch(`https://api-sekolah-indonesia.vercel.app/sekolah/s?sekolah=${encodeURIComponent(query)}`)
+                                                        .then(res => res.json())
+                                                        .then(data => {
+                                                            if (data && data.dataSekolah) {
+                                                                // Filter by level (SMA or SMK)
+                                                                let schools = data.dataSekolah;
+                                                                schools = schools.filter(s => {
+                                                                    const name = (s.sekolah || '').toUpperCase();
+                                                                    const type = (s.bentuk || '').toUpperCase();
+                                                                    return type === item.level || name.includes(item.level);
+                                                                });
+                                                                this.searchResults = schools.map(s => s.sekolah);
+                                                            } else {
+                                                                this.searchResults = [];
+                                                            }
+                                                        })
+                                                        .catch(err => { console.error(err); this.searchResults = []; })
+                                                        .finally(() => this.isSearching = false);
+                                                } else {
+                                                    this.searchResults = [];
+                                                }
+                                            }
+                                        }" class="relative">
+                                            <label class="block text-sm font-medium text-gray-700">Institusi / Sekolah</label>
+                                            <input type="text" 
+                                                x-model="item.institution" 
+                                                @focus="showDropdown = true; searchSchools()"
+                                                @click.away="showDropdown = false"
+                                                @input.debounce.500ms="searchSchools()"
+                                                :name="`educations[${index}][institution]`" 
+                                                autocomplete="off" 
+                                                placeholder="Ketik nama kampus / sekolah..." 
+                                                class="mt-1 block w-full border-gray-300 rounded-md">
+                                            
+                                            <ul x-show="showDropdown" 
+                                                x-transition.opacity.duration.200ms
+                                                class="absolute z-50 w-full bg-white border border-gray-300 mt-1 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                                                style="display: none;">
+                                                <template x-for="uni in searchResults" :key="uni">
+                                                    <li @click="item.institution = uni; showDropdown = false"
+                                                        class="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-0"
+                                                        x-text="uni"></li>
+                                                </template>
+                                                <li x-show="isSearching" class="px-4 py-3 text-sm text-blue-500 italic text-center font-semibold">Sedang mencari...</li>
+                                                <li x-show="!isSearching && searchResults.length === 0 && (item.institution || '').length < 3" 
+                                                    class="px-4 py-3 text-sm text-gray-500 italic text-center">
+                                                    Ketik nama untuk mencari...
+                                                </li>
+                                                <li x-show="!isSearching && searchResults.length === 0 && (item.institution || '').length >= 3" 
+                                                    class="px-4 py-3 text-sm text-gray-500 italic text-center">
+                                                    Tidak ditemukan. Anda tetap bisa menyimpannya secara manual!
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Jurusan / Program Studi</label>
+                                            <input type="text" x-model="item.major" :name="`educations[${index}][major]`" placeholder="Contoh: Teknik Informatika / Akuntansi" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Gelar Akademis (Opsional)</label>
+                                            <input type="text" x-model="item.degree" :name="`educations[${index}][degree]`" placeholder="Contoh: S.Kom / M.T / B.Sc / A.Md" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Kota / Negara Institusi</label>
+                                            <input type="text" x-model="item.city" :name="`educations[${index}][city]`" placeholder="Contoh: Depok / Jakarta / Melbourne" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">IPK / Nilai Akhir</label>
+                                            <input type="text" x-model="item.gpa" :name="`educations[${index}][gpa]`" placeholder="Contoh: 3.85 / 4.00 atau Nilai Rata-rata 88.5" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Tahun Masuk</label>
+                                                <input type="text" x-model="item.start_year" :name="`educations[${index}][start_year]`" placeholder="Contoh: 2019" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Tahun Lulus</label>
+                                                <input type="text" x-model="item.end_year" :name="`educations[${index}][end_year]`" placeholder="Contoh: 2023" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm" :disabled="item.is_current">
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center mt-6">
+                                            <label class="flex items-center cursor-pointer">
+                                                <input type="checkbox" value="1" x-model="item.is_current" :name="`educations[${index}][is_current]`" class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500 w-4 h-4">
+                                                <span class="ml-2 text-xs font-bold text-gray-700">Masih menempuh pendidikan di sini</span>
+                                            </label>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Judul Skripsi / Tesis / Tugas Akhir (Opsional)</label>
+                                            <input type="text" x-model="item.thesis_title" :name="`educations[${index}][thesis_title]`" placeholder="Contoh: Penerapan Algoritma Machine Learning pada Sistem..." class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Deskripsi & Pencapaian Akademis (Opsional)</label>
+                                            <textarea x-model="item.description" :name="`educations[${index}][description]`" rows="3" placeholder="Jelaskan predikat Cumlaude, beasiswa yang diterima, penelitian, atau organisasi kemahasiswaan..." class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- 4. PENGALAMAN KERJA -->
+                    <div x-show="activeTab === 4" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="bg-indigo-50 border-b border-indigo-100 px-6 py-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">4</div>
+                                <h2 class="text-lg font-bold text-indigo-900">Pengalaman Kerja & Profesional</h2>
+                            </div>
+                            <button type="button" @click="addExp" class="text-sm font-semibold text-indigo-700 bg-indigo-100 hover:bg-indigo-200 px-3 py-1 rounded-lg transition-colors">+ Tambah Pekerjaan</button>
+                        </div>
+                        <div class="p-6 sm:p-8 space-y-6">
+                            <template x-for="(item, index) in experiences" :key="index">
+                                <div class="p-6 border border-gray-200 rounded-xl bg-gray-50/50 hover:bg-white transition-all duration-200 shadow-2xs space-y-4">
+                                    <div class="flex justify-between items-center pb-2 border-b border-gray-200">
+                                        <h3 class="font-black text-gray-800 flex items-center gap-2">
+                                            <i class="fa-solid fa-briefcase text-indigo-600"></i> Pengalaman Kerja #<span x-text="index + 1"></span>
+                                        </h3>
+                                        <button type="button" @click="removeExp(index)" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 text-sm font-medium rounded-lg transition-colors">Hapus</button>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Perusahaan / Instansi</label>
+                                            <input type="text" x-model="item.company" :name="`experiences[${index}][company]`" placeholder="Contoh: PT Tech Nova Indonesia" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Jabatan / Posisi</label>
+                                            <input type="text" x-model="item.position" :name="`experiences[${index}][position]`" placeholder="Contoh: Senior Fullstack Developer" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Industri Perusahaan</label>
+                                            <select x-model="item.industry" :name="`experiences[${index}][industry]`" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                                <option value="">Pilih Industri</option>
+                                                <option value="Teknologi / Informasi (IT)">Teknologi / Informasi (IT)</option>
+                                                <option value="Perbankan & Keuangan">Perbankan & Keuangan</option>
+                                                <option value="Kesehatan & Kebugaran">Kesehatan & Kebugaran</option>
+                                                <option value="Pendidikan & Edukasi">Pendidikan & Edukasi</option>
+                                                <option value="Manufaktur & Pabrik">Manufaktur & Pabrik</option>
+                                                <option value="Retail & E-commerce">Retail & E-commerce</option>
+                                                <option value="Konsultan & Layanan Profesional">Konsultan & Layanan Profesional</option>
+                                                <option value="Media & Hiburan">Media & Hiburan</option>
+                                                <option value="Lainnya">Lainnya</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Jenis Pekerjaan</label>
+                                            <select x-model="item.type" :name="`experiences[${index}][type]`" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                                <option value="">Pilih Jenis</option>
+                                                <option value="Penuh Waktu (Full-time)">Penuh Waktu (Full-time)</option>
+                                                <option value="Paruh Waktu (Part-time)">Paruh Waktu (Part-time)</option>
+                                                <option value="Kontrak (Contract)">Kontrak (Contract)</option>
+                                                <option value="Magang (Internship)">Magang (Internship)</option>
+                                                <option value="Freelance">Pekerja Lepas (Freelance)</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Lokasi / Kota Workstyle</label>
+                                            <input type="text" x-model="item.location" :name="`experiences[${index}][location]`" placeholder="Contoh: Jakarta / Remote (WFH)" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Gaji Terakhir (Opsional)</label>
+                                            <input type="text" x-model="item.last_salary" :name="`experiences[${index}][last_salary]`" placeholder="Contoh: Rp 8.500.000 / Bulan" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Mulai Kerja</label>
+                                                <input type="date" x-model="item.start_date" :name="`experiences[${index}][start_date]`" class="mt-1 block w-full border-gray-300 rounded-xl text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Selesai Kerja</label>
+                                                <input type="date" x-model="item.end_date" :name="`experiences[${index}][end_date]`" class="mt-1 block w-full border-gray-300 rounded-xl text-sm" :disabled="item.is_current">
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center mt-6">
+                                            <label class="flex items-center cursor-pointer">
+                                                <input type="checkbox" value="1" x-model="item.is_current" :name="`experiences[${index}][is_current]`" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 w-4 h-4">
+                                                <span class="ml-2 text-xs font-bold text-gray-700">Masih bekerja di sini sampai sekarang</span>
+                                            </label>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Nama Atasan / Supervisor (Opsional)</label>
+                                            <input type="text" x-model="item.supervisor_name" :name="`experiences[${index}][supervisor_name]`" placeholder="Contoh: Bpk. Hendra Gunawan" class="mt-1 block w-full border-gray-300 rounded-xl text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Kontak / No. HP Atasan (Opsional)</label>
+                                            <input type="text" x-model="item.supervisor_contact" :name="`experiences[${index}][supervisor_contact]`" placeholder="Contoh: 0812-xxxx-xxxx" class="mt-1 block w-full border-gray-300 rounded-xl text-sm">
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Alasan Resign / Berhenti (Opsional)</label>
+                                            <input type="text" x-model="item.reason_for_leaving" :name="`experiences[${index}][reason_for_leaving]`" placeholder="Contoh: Mencari peluang pengembangan tantangan karier baru" class="mt-1 block w-full border-gray-300 rounded-xl text-sm">
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Deskripsi Pekerjaan & Tanggung Jawab Utama</label>
+                                            <textarea x-model="item.description" :name="`experiences[${index}][description]`" rows="3" placeholder="Jelaskan peran harian, alat/teknologi yang digunakan, serta lingkup pekerjaan..." class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm"></textarea>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Prestasi Utama / Achievement (Opsional)</label>
+                                            <textarea x-model="item.achievements" :name="`experiences[${index}][achievements]`" rows="2" placeholder="Jelaskan kontribusi khusus seperti peningkatan omset %, efisiensi sistem, atau penghargaan karyawan terbaik..." class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <p x-show="experiences.length === 0" class="text-sm text-gray-500 text-center py-4">Belum ada pengalaman kerja ditambahkan. Klik <strong>+ Tambah Pekerjaan</strong> untuk menambahkan.</p>
+                        </div>
+                    </div>
+
+                    <!-- 5. ORGANISASI -->
+                    <div x-show="activeTab === 5" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="bg-blue-50 border-b border-blue-100 px-6 py-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">5</div>
+                                <h2 class="text-lg font-bold text-blue-900">Pengalaman Organisasi & Komunitas</h2>
+                            </div>
+                            <button type="button" @click="addOrg" class="text-sm font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 px-3 py-1 rounded-lg transition-colors">+ Tambah Organisasi</button>
+                        </div>
+                        <div class="p-6 sm:p-8 space-y-6">
+                            <template x-for="(item, index) in organizations" :key="index">
+                                <div class="p-6 border border-gray-200 rounded-xl bg-gray-50/50 hover:bg-white transition-all duration-200 shadow-2xs space-y-4">
+                                    <div class="flex justify-between items-center pb-2 border-b border-gray-200">
+                                        <h3 class="font-black text-gray-800 flex items-center gap-2">
+                                            <i class="fa-solid fa-users text-blue-600"></i> Organisasi #<span x-text="index + 1"></span>
+                                        </h3>
+                                        <button type="button" @click="removeOrg(index)" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 text-sm font-medium rounded-lg transition-colors">Hapus</button>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Nama Organisasi / Komunitas</label>
+                                            <input type="text" x-model="item.name" :name="`organizations[${index}][name]`" placeholder="Contoh: BEM Universitas / PMI / Karang Taruna" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Jabatan / Posisi</label>
+                                            <input type="text" x-model="item.position" :name="`organizations[${index}][position]`" placeholder="Contoh: Ketua Umum / Kepala Divisi Humas" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Tingkat Organisasi</label>
+                                            <select x-model="item.level" :name="`organizations[${index}][level]`" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                                <option value="">Pilih Tingkat</option>
+                                                <option value="Kampus / Sekolah">Kampus / Sekolah</option>
+                                                <option value="Daerah / Kota / Kabupaten">Daerah / Kota / Kabupaten</option>
+                                                <option value="Provinsi / Regional">Provinsi / Regional</option>
+                                                <option value="Nasional">Nasional</option>
+                                                <option value="Internasional">Internasional</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Lokasi / Kota</label>
+                                            <input type="text" x-model="item.location" :name="`organizations[${index}][location]`" placeholder="Contoh: Jakarta / Bandung" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Mulai Berintegrasi</label>
+                                                <input type="date" x-model="item.start_date" :name="`organizations[${index}][start_date]`" class="mt-1 block w-full border-gray-300 rounded-xl text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Selesai Berintegrasi</label>
+                                                <input type="date" x-model="item.end_date" :name="`organizations[${index}][end_date]`" class="mt-1 block w-full border-gray-300 rounded-xl text-sm" :disabled="item.is_current">
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center mt-6">
+                                            <label class="flex items-center cursor-pointer">
+                                                <input type="checkbox" value="1" x-model="item.is_current" :name="`organizations[${index}][is_current]`" class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500 w-4 h-4">
+                                                <span class="ml-2 text-xs font-bold text-gray-700">Masih aktif di organisasi ini</span>
+                                            </label>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Periode Ringkas (Opsional)</label>
+                                            <input type="text" x-model="item.period" :name="`organizations[${index}][period]`" placeholder="Contoh: Jan 2021 - Des 2023" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Deskripsi Peran & Pencapaian Organisasi</label>
+                                            <textarea x-model="item.description" :name="`organizations[${index}][description]`" rows="3" placeholder="Jelaskan program kerja utama, jumlah tim yang dipimpin, atau pencapaian organisasi yang berhasil diraih..." class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <p x-show="organizations.length === 0" class="text-sm text-gray-500 text-center py-4">Belum ada pengalaman organisasi ditambahkan. Klik <strong>+ Tambah Organisasi</strong> untuk menambahkan.</p>
+                        </div>
+                    </div>
+
+                    <!-- 6. SKILLS & 7. BAHASA -->
+                    <div x-show="activeTab === 6" class="grid grid-cols-1 gap-8">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="bg-indigo-50 border-b border-indigo-100 px-6 py-4 flex items-center justify-between">
+                                <h2 class="text-lg font-bold text-indigo-900">6. Keahlian (Skills)</h2>
+                                <button type="button" @click="addSkill" class="text-sm text-indigo-700 font-semibold bg-indigo-100 px-2 py-1 rounded">+ Tambah</button>
+                            </div>
+                            <div class="p-6 space-y-4">
+                                <template x-for="(item, index) in skills" :key="index">
+                                    <div class="flex flex-col sm:flex-row gap-3 p-4 sm:p-0 border border-gray-100 sm:border-0 rounded-lg sm:rounded-none bg-gray-50 sm:bg-transparent relative">
+                                        <button type="button" @click="removeSkill(index)" class="absolute sm:relative top-2 right-2 sm:top-0 sm:right-0 text-red-500 hover:text-red-700 sm:px-2 flex items-center justify-center shrink-0">
+                                            <svg class="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            <span class="hidden sm:inline text-xl leading-none">&times;</span>
+                                        </button>
+                                        <input type="text" x-model="item.name" :name="`skills[${index}][name]`" placeholder="Nama Skill (Cth: PHP)" class="w-full sm:flex-1 border-gray-300 rounded-md text-sm bg-white">
+                                        <select x-model="item.level" :name="`skills[${index}][level]`" class="w-full sm:w-48 shrink-0 border-gray-300 rounded-md text-sm bg-white">
+                                            <option value="Beginner">Beginner</option>
+                                            <option value="Intermediate">Intermediate</option>
+                                            <option value="Advanced">Advanced</option>
+                                        </select>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="bg-blue-50 border-b border-blue-100 px-6 py-4 flex items-center justify-between">
+                                <h2 class="text-lg font-bold text-blue-900">7. Bahasa</h2>
+                                <button type="button" @click="addLang" class="text-sm text-blue-700 font-semibold bg-blue-100 px-2 py-1 rounded">+ Tambah</button>
+                            </div>
+                            <div class="p-6 space-y-4">
+                                <template x-for="(item, index) in languages" :key="index">
+                                    <div class="flex flex-col sm:flex-row gap-3 p-4 sm:p-0 border border-gray-100 sm:border-0 rounded-lg sm:rounded-none bg-gray-50 sm:bg-transparent relative">
+                                        <button type="button" @click="removeLang(index)" class="absolute sm:relative top-2 right-2 sm:top-0 sm:right-0 text-red-500 hover:text-red-700 sm:px-2 flex items-center justify-center shrink-0">
+                                            <svg class="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            <span class="hidden sm:inline text-xl leading-none">&times;</span>
+                                        </button>
+                                        <input type="text" x-model="item.name" :name="`languages[${index}][name]`" placeholder="Bahasa (Cth: Inggris)" class="w-full sm:flex-1 border-gray-300 rounded-md text-sm bg-white">
+                                        <select x-model="item.level" :name="`languages[${index}][level]`" class="w-full sm:w-48 shrink-0 border-gray-300 rounded-md text-sm bg-white">
+                                            <option value="Basic">Basic</option>
+                                            <option value="Conversational">Conversational</option>
+                                            <option value="Fluent">Fluent</option>
+                                            <option value="Native">Native</option>
+                                        </select>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 8. SERTIFIKAT & PELATIHAN -->
+                    <div x-show="activeTab === 8" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="bg-blue-50 border-b border-blue-100 px-6 py-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">8</div>
+                                <h2 class="text-lg font-bold text-blue-900">Sertifikasi & Lisensi Profesional</h2>
+                            </div>
+                            <button type="button" @click="addCert" class="text-sm font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 px-3 py-1 rounded-lg transition-colors">+ Tambah Sertifikat</button>
+                        </div>
+                        <div class="p-6 sm:p-8 space-y-6">
+                            <template x-for="(item, index) in certificates" :key="index">
+                                <div class="p-6 border border-gray-200 rounded-xl bg-gray-50/50 hover:bg-white transition-all duration-200 shadow-2xs space-y-4">
+                                    <div class="flex justify-between items-center pb-2 border-b border-gray-200">
+                                        <h3 class="font-black text-gray-800 flex items-center gap-2">
+                                            <i class="fa-solid fa-award text-blue-600"></i> Sertifikat #<span x-text="index + 1"></span>
+                                        </h3>
+                                        <button type="button" @click="removeCert(index)" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 text-sm font-medium rounded-lg transition-colors">Hapus</button>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Nama Sertifikat / Pelatihan</label>
+                                            <input type="text" x-model="item.name" :name="`certificates[${index}][name]`" placeholder="Contoh: AWS Certified Solutions Architect / TOEFL ITP" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Penerbit / Penyelenggara</label>
+                                            <input type="text" x-model="item.issuer" :name="`certificates[${index}][issuer]`" placeholder="Contoh: Amazon Web Services / ETS / Google" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Jenis Sertifikasi</label>
+                                            <select x-model="item.type" :name="`certificates[${index}][type]`" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                                <option value="">Pilih Jenis</option>
+                                                <option value="Sertifikasi Profesional / Kredensial">Sertifikasi Profesional / Kredensial</option>
+                                                <option value="Lisensi Resmi / Profesi">Lisensi Resmi / Profesi</option>
+                                                <option value="Pelatihan / Bootcamps / Course">Pelatihan / Bootcamps / Course</option>
+                                                <option value="Sertifikasi Bahasa (TOEFL / IELTS / JLPT)">Sertifikasi Bahasa (TOEFL / IELTS / JLPT)</option>
+                                                <option value="Workshop / Seminar">Workshop / Seminar</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Nomor / ID Sertifikat</label>
+                                            <input type="text" x-model="item.number" :name="`certificates[${index}][number]`" placeholder="Contoh: AWS-00129381" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">URL Verifikasi Kredensial</label>
+                                            <input type="url" x-model="item.url" :name="`certificates[${index}][url]`" placeholder="Contoh: https://www.credly.com/badges/..." class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Nilai / Skor / Predikat (Opsional)</label>
+                                            <input type="text" x-model="item.score" :name="`certificates[${index}][score]`" placeholder="Contoh: Score 580 / Grade A / Distinction" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Tgl Terbit</label>
+                                                <input type="date" x-model="item.issue_date" :name="`certificates[${index}][issue_date]`" class="mt-1 block w-full border-gray-300 rounded-xl text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Tgl Berakhir</label>
+                                                <input type="date" x-model="item.expiry_date" :name="`certificates[${index}][expiry_date]`" class="mt-1 block w-full border-gray-300 rounded-xl text-sm" :disabled="item.does_not_expire">
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center mt-6">
+                                            <label class="flex items-center cursor-pointer">
+                                                <input type="checkbox" value="1" x-model="item.does_not_expire" :name="`certificates[${index}][does_not_expire]`" class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500 w-4 h-4">
+                                                <span class="ml-2 text-xs font-bold text-gray-700">Sertifikat ini berlaku selamanya (tidak kadaluarsa)</span>
+                                            </label>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Keterangan / Skill Yang Diuji (Opsional)</label>
+                                            <textarea x-model="item.description" :name="`certificates[${index}][description]`" rows="2" placeholder="Jelaskan modul utama atau keahlian spesifik yang disertifikasi..." class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <p x-show="certificates.length === 0" class="text-sm text-gray-500 text-center py-4">Belum ada sertifikat ditambahkan. Klik <strong>+ Tambah Sertifikat</strong> untuk menambahkan.</p>
+                        </div>
+                    </div>
+
+                    <!-- 9. PORTOFOLIO & 10. PRESTASI -->
+                    <div x-show="activeTab === 9" class="grid grid-cols-1 gap-8">
+                        <!-- Portofolio / Proyek -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="bg-indigo-50 border-b border-indigo-100 px-6 py-4 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">9</div>
+                                    <h2 class="text-lg font-bold text-indigo-900">Portofolio & Proyek Unggulan</h2>
+                                </div>
+                                <button type="button" @click="addPort" class="text-sm font-semibold text-indigo-700 bg-indigo-100 hover:bg-indigo-200 px-3 py-1 rounded-lg transition-colors">+ Tambah Proyek</button>
+                            </div>
+                            <div class="p-6 sm:p-8 space-y-6">
+                                <template x-for="(item, index) in portfolios" :key="index">
+                                    <div class="p-6 border border-gray-200 rounded-xl bg-gray-50/50 hover:bg-white transition-all duration-200 shadow-2xs space-y-4">
+                                        <div class="flex justify-between items-center pb-2 border-b border-gray-200">
+                                            <h3 class="font-black text-gray-800 flex items-center gap-2">
+                                                <i class="fa-solid fa-laptop-code text-indigo-600"></i> Proyek #<span x-text="index + 1"></span>
+                                            </h3>
+                                            <button type="button" @click="removePort(index)" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 text-sm font-medium rounded-lg transition-colors">Hapus</button>
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Nama Proyek / Aplikasi</label>
+                                                <input type="text" x-model="item.name" :name="`portfolios[${index}][name]`" placeholder="Contoh: E-Commerce Marketplace App" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Kategori Proyek</label>
+                                                <select x-model="item.category" :name="`portfolios[${index}][category]`" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                                    <option value="">Pilih Kategori</option>
+                                                    <option value="Web Application">Web Application</option>
+                                                    <option value="Mobile App (iOS/Android)">Mobile App (iOS/Android)</option>
+                                                    <option value="AI / Machine Learning">AI / Machine Learning</option>
+                                                    <option value="UI/UX Design & Prototype">UI/UX Design & Prototype</option>
+                                                    <option value="Data Analysis / Dashboard">Data Analysis / Dashboard</option>
+                                                    <option value="System Architecture / DevOps">System Architecture / DevOps</option>
+                                                    <option value="Game Development">Game Development</option>
+                                                    <option value="Lainnya">Lainnya</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Peran Utama dalam Proyek</label>
+                                                <input type="text" x-model="item.role" :name="`portfolios[${index}][role]`" placeholder="Contoh: Lead Frontend Developer & UI Designer" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Tahun / Waktu Pengerjaan</label>
+                                                <input type="text" x-model="item.year" :name="`portfolios[${index}][year]`" placeholder="Contoh: 2023 - 2024" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                            </div>
+                                            <div class="md:col-span-2">
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Teknologi & Tools Yang Digunakan</label>
+                                                <input type="text" x-model="item.technologies" :name="`portfolios[${index}][technologies]`" placeholder="Contoh: Laravel 10, Vue 3, TailwindCSS, PostgreSQL, AWS" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Tautan Live Demo / Website</label>
+                                                <input type="url" x-model="item.url" :name="`portfolios[${index}][url]`" placeholder="Contoh: https://myprojectdemo.com" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Tautan Code Repository (GitHub/GitLab)</label>
+                                                <input type="url" x-model="item.github_url" :name="`portfolios[${index}][github_url]`" placeholder="Contoh: https://github.com/username/project" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                            </div>
+                                            <div class="md:col-span-2">
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Deskripsi Ringkas & Impact Proyek</label>
+                                                <textarea x-model="item.description" :name="`portfolios[${index}][description]`" rows="3" placeholder="Jelaskan tujuan proyek, fitur utama yang Anda kembangkan, serta dampak/skala pengguna dari proyek ini..." class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <p x-show="portfolios.length === 0" class="text-sm text-gray-500 text-center py-4">Belum ada portofolio ditambahkan. Klik <strong>+ Tambah Proyek</strong> untuk menambahkan.</p>
+                            </div>
+                        </div>
+
+                        <!-- Prestasi & Penghargaan -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="bg-blue-50 border-b border-blue-100 px-6 py-4 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">10</div>
+                                    <h2 class="text-lg font-bold text-blue-900">Prestasi & Penghargaan</h2>
+                                </div>
+                                <button type="button" @click="addAchieve" class="text-sm font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 px-3 py-1 rounded-lg transition-colors">+ Tambah Prestasi</button>
+                            </div>
+                            <div class="p-6 sm:p-8 space-y-6">
+                                <template x-for="(item, index) in achievements" :key="index">
+                                    <div class="p-6 border border-gray-200 rounded-xl bg-gray-50/50 hover:bg-white transition-all duration-200 shadow-2xs space-y-4">
+                                        <div class="flex justify-between items-center pb-2 border-b border-gray-200">
+                                            <h3 class="font-black text-gray-800 flex items-center gap-2">
+                                                <i class="fa-solid fa-trophy text-amber-500"></i> Prestasi #<span x-text="index + 1"></span>
+                                            </h3>
+                                            <button type="button" @click="removeAchieve(index)" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 text-sm font-medium rounded-lg transition-colors">Hapus</button>
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Nama Prestasi / Penghargaan</label>
+                                                <input type="text" x-model="item.name" :name="`achievements[${index}][name]`" placeholder="Contoh: Juara 1 Hackathon Nasional" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Tingkat Prestasi</label>
+                                                <select x-model="item.level" :name="`achievements[${index}][level]`" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                                    <option value="">Pilih Tingkat</option>
+                                                    <option value="Internal Perusahaan / Kampus">Internal Perusahaan / Kampus</option>
+                                                    <option value="Kota / Kabupaten">Kota / Kabupaten</option>
+                                                    <option value="Provinsi / Regional">Provinsi / Regional</option>
+                                                    <option value="Nasional">Nasional</option>
+                                                    <option value="Internasional">Internasional</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Penyelenggara / Lembaga Pemberi</label>
+                                                <input type="text" x-model="item.issuer" :name="`achievements[${index}][issuer]`" placeholder="Contoh: Kementerian Kominfo / Google" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Juara / Peringkat / Predikat</label>
+                                                <input type="text" x-model="item.rank" :name="`achievements[${index}][rank]`" placeholder="Contoh: Juara 1 / Gold Medalist / Best Innovation" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Tahun Perolehan</label>
+                                                <input type="text" x-model="item.year" :name="`achievements[${index}][year]`" placeholder="Contoh: 2023" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Tautan Bukti / Sertifikat (Opsional)</label>
+                                                <input type="url" x-model="item.url" :name="`achievements[${index}][url]`" placeholder="Contoh: https://..." class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                            </div>
+                                            <div class="md:col-span-2">
+                                                <label class="block text-sm font-bold text-gray-700 mb-1">Deskripsi Kriteria & Tantangan (Opsional)</label>
+                                                <textarea x-model="item.description" :name="`achievements[${index}][description]`" rows="2" placeholder="Jelaskan kriteria penilaian, jumlah peserta yang dilampaui, atau inovasi karya Anda..." class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <p x-show="achievements.length === 0" class="text-sm text-gray-500 text-center py-4">Belum ada prestasi ditambahkan. Klik <strong>+ Tambah Prestasi</strong> untuk menambahkan.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 11. REFERENSI -->
+                    <div x-show="activeTab === 11" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="bg-indigo-50 border-b border-indigo-100 px-6 py-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">11</div>
+                                <h2 class="text-lg font-bold text-indigo-900">Referensi Profesional & Kontak Rekomendasi</h2>
+                            </div>
+                            <button type="button" @click="addRef" class="text-sm font-semibold text-indigo-700 bg-indigo-100 hover:bg-indigo-200 px-3 py-1 rounded-lg transition-colors">+ Tambah Referensi</button>
+                        </div>
+                        <div class="p-6 sm:p-8 space-y-6">
+                            <template x-for="(item, index) in references" :key="index">
+                                <div class="p-6 border border-gray-200 rounded-xl bg-gray-50/50 hover:bg-white transition-all duration-200 shadow-2xs space-y-4">
+                                    <div class="flex justify-between items-center pb-2 border-b border-gray-200">
+                                        <h3 class="font-black text-gray-800 flex items-center gap-2">
+                                            <i class="fa-solid fa-address-book text-indigo-600"></i> Referensi #<span x-text="index + 1"></span>
+                                        </h3>
+                                        <button type="button" @click="removeRef(index)" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 text-sm font-medium rounded-lg transition-colors">Hapus</button>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Nama Pemberi Referensi</label>
+                                            <input type="text" x-model="item.name" :name="`references[${index}][name]`" placeholder="Contoh: Bpk. Bambang Supriyadi" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Jabatan / Posisi</label>
+                                            <input type="text" x-model="item.position" :name="`references[${index}][position]`" placeholder="Contoh: Head of Engineering / HR Manager" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Perusahaan / Instansi</label>
+                                            <input type="text" x-model="item.company" :name="`references[${index}][company]`" placeholder="Contoh: PT Innovasi Digital" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Hubungan Profesional</label>
+                                            <select x-model="item.relationship" :name="`references[${index}][relationship]`" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                                <option value="">Pilih Hubungan</option>
+                                                <option value="Atasan Langsung (Direct Supervisor)">Atasan Langsung (Direct Supervisor)</option>
+                                                <option value="Manajer HRD / Divisi">Manajer HRD / Divisi</option>
+                                                <option value="Rekan Kerja (Peer / Colleague)">Rekan Kerja (Peer / Colleague)</option>
+                                                <option value="Bawahan (Subordinate)">Bawahan (Subordinate)</option>
+                                                <option value="Klien / Partner Bisnis">Klien / Partner Bisnis</option>
+                                                <option value="Dosen Pembimbing / Akademis">Dosen Pembimbing / Akademis</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Email Profesional</label>
+                                            <input type="email" x-model="item.email" :name="`references[${index}][email]`" placeholder="Contoh: bambang@perusahaan.com" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">No. HP / WhatsApp Kontak</label>
+                                            <input type="text" x-model="item.phone" :name="`references[${index}][phone]`" placeholder="Contoh: 0812-3456-7890" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Lama Bekerja Sama / Mengenal (Opsional)</label>
+                                            <input type="text" x-model="item.years_known" :name="`references[${index}][years_known]`" placeholder="Contoh: 3 Tahun (2021 - 2024)" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-bold text-gray-700 mb-1">Catatan / Ringkasan Rekomendasi (Opsional)</label>
+                                            <textarea x-model="item.notes" :name="`references[${index}][notes]`" rows="2" placeholder="Catatan singkat mengenai karakter profesional atau rekomendasi kinerja..." class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <p x-show="references.length === 0" class="text-sm text-gray-500 text-center py-4">Belum ada referensi ditambahkan. Klik <strong>+ Tambah Referensi</strong> untuk menambahkan.</p>
+                        </div>
+                    </div>
+
+                    <!-- 12. PREFERENSI PEKERJAAN & 14. SOSIAL -->
+                    <div x-show="activeTab === 12" class="grid grid-cols-1 gap-8">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="bg-blue-50 border-b border-blue-100 px-6 py-4">
+                                <h2 class="text-lg font-bold text-blue-900">12. Preferensi Pekerjaan</h2>
+                            </div>
+                            <div class="p-6 space-y-4">
+                                <div><label class="block text-sm text-gray-700">Posisi Diinginkan</label><input type="text" x-model="prefs.position" name="job_preferences[position]" class="mt-1 w-full border-gray-300 rounded-md"></div>
+                                <div><label class="block text-sm text-gray-700">Lokasi Diinginkan</label><input type="text" x-model="prefs.location" name="job_preferences[location]" class="mt-1 w-full border-gray-300 rounded-md"></div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Gaji Saat Ini / Terakhir (Opsional)</label>
+                                    <input type="text" name="current_salary" value="{{ old('current_salary', $profile->current_salary ?? '') }}" placeholder="Contoh: 5.000.000" class="mt-1 block w-full border-gray-300 rounded-md bg-gray-50 focus:bg-white">
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm text-gray-700">Tipe Kerja</label>
+                                        <select x-model="prefs.type" name="job_preferences[type]" class="mt-1 w-full border-gray-300 rounded-md">
+                                            <option value="">Semua</option>
+                                            <option value="Full-time">Full-time</option>
+                                            <option value="Part-time">Part-time</option>
+                                            <option value="Contract">Contract</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm text-gray-700">Sistem Kerja</label>
+                                        <select x-model="prefs.wfo_hybrid_remote" name="job_preferences[wfo_hybrid_remote]" class="mt-1 w-full border-gray-300 rounded-md">
+                                            <option value="">Semua</option>
+                                            <option value="WFO">WFO</option>
+                                            <option value="Hybrid">Hybrid</option>
+                                            <option value="Remote">Remote</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div><label class="block text-sm text-gray-700">Ekspektasi Gaji (Rp)</label><input type="number" x-model="prefs.expected_salary" name="job_preferences[expected_salary]" class="mt-1 w-full border-gray-300 rounded-md"></div>
+                                <div class="flex gap-6 mt-4">
+                                    <label class="flex items-center text-sm"><input type="checkbox" x-model="prefs.willing_to_relocate" name="job_preferences[willing_to_relocate]" value="1" class="mr-2 border-gray-300 text-blue-600 rounded"> Bersedia Relokasi</label>
+                                    <label class="flex items-center text-sm"><input type="checkbox" x-model="prefs.willing_to_travel" name="job_preferences[willing_to_travel]" value="1" class="mr-2 border-gray-300 text-blue-600 rounded"> Bersedia Dinas</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="bg-indigo-50 border-b border-indigo-100 px-6 py-4 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">14</div>
+                                    <h2 class="text-lg font-bold text-indigo-900">Tautan Profesional & Media Sosial</h2>
+                                </div>
+                            </div>
+                            <div class="p-6 sm:p-8 space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
+                                            <i class="fa-brands fa-linkedin text-blue-600 text-base"></i> LinkedIn Profile URL
+                                        </label>
+                                        <input type="url" x-model="socials.linkedin" name="social_links[linkedin]" placeholder="https://linkedin.com/in/username" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
+                                            <i class="fa-brands fa-github text-gray-800 text-base"></i> GitHub / GitLab URL
+                                        </label>
+                                        <input type="url" x-model="socials.github" name="social_links[github]" placeholder="https://github.com/username" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
+                                            <i class="fa-solid fa-globe text-emerald-600 text-base"></i> Website / Interactive Portfolio
+                                        </label>
+                                        <input type="url" x-model="socials.website" name="social_links[website]" placeholder="https://myportfolio.com" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
+                                            <i class="fa-solid fa-square-rss text-orange-500 text-base"></i> Blog / Medium / Dev.to URL
+                                        </label>
+                                        <input type="url" x-model="socials.blog" name="social_links[blog]" placeholder="https://medium.com/@username" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
+                                            <i class="fa-brands fa-behance text-blue-500 text-base"></i> Behance / Dribbble (Desain)
+                                        </label>
+                                        <input type="url" x-model="socials.behance" name="social_links[behance]" placeholder="https://behance.net/username" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
+                                            <i class="fa-brands fa-kaggle text-sky-500 text-base"></i> Kaggle / HuggingFace (Data & AI)
+                                        </label>
+                                        <input type="url" x-model="socials.kaggle" name="social_links[kaggle]" placeholder="https://kaggle.com/username" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
+                                            <i class="fa-brands fa-youtube text-red-600 text-base"></i> YouTube / Video Showreel
+                                        </label>
+                                        <input type="url" x-model="socials.youtube" name="social_links[youtube]" placeholder="https://youtube.com/@channel" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
+                                            <i class="fa-brands fa-instagram text-pink-600 text-base"></i> Instagram / Twitter (X)
+                                        </label>
+                                        <input type="url" x-model="socials.instagram" name="social_links[instagram]" placeholder="https://instagram.com/username" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 13. DOKUMEN -->
+                    <div x-show="activeTab === 13" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="bg-emerald-50 border-b border-emerald-100 px-6 py-4 flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold">13</div>
+                            <h2 class="text-lg font-bold text-emerald-900">Unggah Dokumen (Maks. 5MB per file)</h2>
+                        </div>                        <div class="p-6 sm:p-8" x-data="{ activeTab: 'cv' }">
+                            <!-- Tabs Navigation with Upload Status Checkmarks -->
+                            <div class="flex flex-wrap border-b border-gray-200 mb-8 -mx-2 overflow-x-auto pb-2 sm:pb-0 gap-1">
+                                <button type="button" data-doc-tab="cv" @click="activeTab = 'cv'" :class="{'border-emerald-600 text-emerald-700 font-bold bg-emerald-50/50': activeTab === 'cv', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'cv'}" class="px-4 py-3 border-b-2 text-sm transition whitespace-nowrap flex items-center gap-1.5 rounded-t-xl">
+                                    CV @if($profile && $profile->cv_path) <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i> @endif
+                                </button>
+                                <button type="button" data-doc-tab="ktp" @click="activeTab = 'ktp'" :class="{'border-emerald-600 text-emerald-700 font-bold bg-emerald-50/50': activeTab === 'ktp', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'ktp'}" class="px-4 py-3 border-b-2 text-sm transition whitespace-nowrap flex items-center gap-1.5 rounded-t-xl">
+                                    KTP @if($profile && $profile->ktp_path) <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i> @endif
+                                </button>
+                                <button type="button" data-doc-tab="ijazah" @click="activeTab = 'ijazah'" :class="{'border-emerald-600 text-emerald-700 font-bold bg-emerald-50/50': activeTab === 'ijazah', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'ijazah'}" class="px-4 py-3 border-b-2 text-sm transition whitespace-nowrap flex items-center gap-1.5 rounded-t-xl">
+                                    Ijazah @if($profile && $profile->ijazah_path) <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i> @endif
+                                </button>
+                                <button type="button" data-doc-tab="transcript" @click="activeTab = 'transcript'" :class="{'border-emerald-600 text-emerald-700 font-bold bg-emerald-50/50': activeTab === 'transcript', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'transcript'}" class="px-4 py-3 border-b-2 text-sm transition whitespace-nowrap flex items-center gap-1.5 rounded-t-xl">
+                                    Transkrip @if($profile && $profile->transcript_path) <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i> @endif
+                                </button>
+                                <button type="button" data-doc-tab="certificate" @click="activeTab = 'certificate'" :class="{'border-emerald-600 text-emerald-700 font-bold bg-emerald-50/50': activeTab === 'certificate', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'certificate'}" class="px-4 py-3 border-b-2 text-sm transition whitespace-nowrap flex items-center gap-1.5 rounded-t-xl">
+                                    Sertifikat @if($profile && $profile->certificate_file_path) <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i> @endif
+                                </button>
+                                <button type="button" data-doc-tab="portfolio" @click="activeTab = 'portfolio'" :class="{'border-emerald-600 text-emerald-700 font-bold bg-emerald-50/50': activeTab === 'portfolio', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'portfolio'}" class="px-4 py-3 border-b-2 text-sm transition whitespace-nowrap flex items-center gap-1.5 rounded-t-xl">
+                                    Portofolio @if($profile && $profile->portfolio_file_path) <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i> @endif
+                                </button>
+                                <button type="button" data-doc-tab="cover_letter" @click="activeTab = 'cover_letter'" :class="{'border-emerald-600 text-emerald-700 font-bold bg-emerald-50/50': activeTab === 'cover_letter', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'cover_letter'}" class="px-4 py-3 border-b-2 text-sm transition whitespace-nowrap flex items-center gap-1.5 rounded-t-xl">
+                                    Surat Lamaran @if($profile && $profile->cover_letter_path) <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i> @endif
+                                </button>
+                                <button type="button" data-doc-tab="skck" @click="activeTab = 'skck'" :class="{'border-emerald-600 text-emerald-700 font-bold bg-emerald-50/50': activeTab === 'skck', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'skck'}" class="px-4 py-3 border-b-2 text-sm transition whitespace-nowrap flex items-center gap-1.5 rounded-t-xl">
+                                    SKCK @if($profile && $profile->skck_path) <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i> @endif
+                                </button>
+                                <button type="button" data-doc-tab="health_certificate" @click="activeTab = 'health_certificate'" :class="{'border-emerald-600 text-emerald-700 font-bold bg-emerald-50/50': activeTab === 'health_certificate', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'health_certificate'}" class="px-4 py-3 border-b-2 text-sm transition whitespace-nowrap flex items-center gap-1.5 rounded-t-xl">
+                                    Ket. Sehat @if($profile && $profile->health_certificate_path) <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i> @endif
+                                </button>
+                                <button type="button" data-doc-tab="consent_letter" @click="activeTab = 'consent_letter'" :class="{'border-emerald-600 text-emerald-700 font-bold bg-emerald-50/50': activeTab === 'consent_letter', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'consent_letter'}" class="px-4 py-3 border-b-2 text-sm transition whitespace-nowrap flex items-center gap-1.5 rounded-t-xl">
+                                    Persetujuan @if($profile && $profile->consent_letter_path) <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i> @endif
+                                </button>
+                            </div>
+
+                            <div class="relative w-full max-w-2xl mx-auto">
+                                <!-- CV -->
+                                <div x-show="activeTab === 'cv'" x-transition:enter="transition ease-out duration-300">
+                                    <div x-data="{ fileName: '' }" class="border-2 border-dashed border-emerald-300 rounded-2xl p-8 bg-emerald-50/40 hover:bg-emerald-50/90 transition flex flex-col items-center justify-center relative group text-center min-h-[220px]">
+                                        <input type="file" name="cv" accept=".pdf" onchange="autoUploadDoc(event, 'cv')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                        
+                                        <div class="text-emerald-600 mb-3 group-hover:scale-110 transition-transform">
+                                            <i class="fa-solid fa-file-pdf text-4xl"></i>
+                                        </div>
+                                        <p class="font-black text-base text-gray-900 mb-1">Curriculum Vitae (PDF)</p>
+                                        
+                                        <div class="doc-status-box mb-3 px-3 py-1.5 bg-emerald-100/80 border border-emerald-300 text-emerald-900 text-xs font-bold rounded-xl flex items-center gap-2 {{ ($profile && $profile->cv_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-circle-check text-emerald-600"></i> File Sudah Terunggah
+                                        </div>
+                                        <a href="{{ ($profile && $profile->cv_path) ? Storage::url($profile->cv_path) : '#' }}" target="_blank" class="doc-link-btn z-20 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition transform hover:scale-105 mb-2 {{ ($profile && $profile->cv_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat / Unduh Dokumen Terunggah
+                                        </a>
+                                        <p class="text-2xs text-gray-500 font-medium">Klik atau seret file baru jika ingin mengganti file</p>
+                                    </div>
+                                </div>
+
+                                <!-- KTP -->
+                                <div x-show="activeTab === 'ktp'" style="display: none;" x-transition:enter="transition ease-out duration-300">
+                                    <div x-data="{ fileName: '' }" class="border-2 border-dashed border-emerald-300 rounded-2xl p-8 bg-emerald-50/40 hover:bg-emerald-50/90 transition flex flex-col items-center justify-center relative group text-center min-h-[220px]">
+                                        <input type="file" name="ktp" accept=".pdf,.jpg,.jpeg,.png" onchange="autoUploadDoc(event, 'ktp')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                        
+                                        <div class="text-emerald-600 mb-3 group-hover:scale-110 transition-transform">
+                                            <i class="fa-solid fa-id-card text-4xl"></i>
+                                        </div>
+                                        <p class="font-black text-base text-gray-900 mb-1">KTP (Image/PDF)</p>
+                                        
+                                        <div class="doc-status-box mb-3 px-3 py-1.5 bg-emerald-100/80 border border-emerald-300 text-emerald-900 text-xs font-bold rounded-xl flex items-center gap-2 {{ ($profile && $profile->ktp_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-circle-check text-emerald-600"></i> File Sudah Terunggah
+                                        </div>
+                                        <a href="{{ ($profile && $profile->ktp_path) ? Storage::url($profile->ktp_path) : '#' }}" target="_blank" class="doc-link-btn z-20 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition transform hover:scale-105 mb-2 {{ ($profile && $profile->ktp_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat / Unduh Dokumen Terunggah
+                                        </a>
+                                        <p class="text-2xs text-gray-500 font-medium">Klik atau seret file baru jika ingin mengganti file</p>
+                                    </div>
+                                </div>
+
+                                <!-- Ijazah -->
+                                <div x-show="activeTab === 'ijazah'" style="display: none;" x-transition:enter="transition ease-out duration-300">
+                                    <div x-data="{ fileName: '' }" class="border-2 border-dashed border-emerald-300 rounded-2xl p-8 bg-emerald-50/40 hover:bg-emerald-50/90 transition flex flex-col items-center justify-center relative group text-center min-h-[220px]">
+                                        <input type="file" name="ijazah" accept=".pdf,.jpg,.jpeg,.png" onchange="autoUploadDoc(event, 'ijazah')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                        
+                                        <div class="text-emerald-600 mb-3 group-hover:scale-110 transition-transform">
+                                            <i class="fa-solid fa-graduation-cap text-4xl"></i>
+                                        </div>
+                                        <p class="font-black text-base text-gray-900 mb-1">Ijazah (Image/PDF)</p>
+                                        
+                                        <div class="doc-status-box mb-3 px-3 py-1.5 bg-emerald-100/80 border border-emerald-300 text-emerald-900 text-xs font-bold rounded-xl flex items-center gap-2 {{ ($profile && $profile->ijazah_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-circle-check text-emerald-600"></i> File Sudah Terunggah
+                                        </div>
+                                        <a href="{{ ($profile && $profile->ijazah_path) ? Storage::url($profile->ijazah_path) : '#' }}" target="_blank" class="doc-link-btn z-20 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition transform hover:scale-105 mb-2 {{ ($profile && $profile->ijazah_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat / Unduh Dokumen Terunggah
+                                        </a>
+                                        <p class="text-2xs text-gray-500 font-medium">Klik atau seret file baru jika ingin mengganti file</p>
+                                    </div>
+                                </div>
+
+                                <!-- Transkrip -->
+                                <div x-show="activeTab === 'transcript'" style="display: none;" x-transition:enter="transition ease-out duration-300">
+                                    <div x-data="{ fileName: '' }" class="border-2 border-dashed border-emerald-300 rounded-2xl p-8 bg-emerald-50/40 hover:bg-emerald-50/90 transition flex flex-col items-center justify-center relative group text-center min-h-[220px]">
+                                        <input type="file" name="transcript" accept=".pdf,.jpg,.jpeg,.png" onchange="autoUploadDoc(event, 'transcript')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                        
+                                        <div class="text-emerald-600 mb-3 group-hover:scale-110 transition-transform">
+                                            <i class="fa-solid fa-file-invoice text-4xl"></i>
+                                        </div>
+                                        <p class="font-black text-base text-gray-900 mb-1">Transkrip Nilai (PDF/Image)</p>
+                                        
+                                        <div class="doc-status-box mb-3 px-3 py-1.5 bg-emerald-100/80 border border-emerald-300 text-emerald-900 text-xs font-bold rounded-xl flex items-center gap-2 {{ ($profile && $profile->transcript_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-circle-check text-emerald-600"></i> File Sudah Terunggah
+                                        </div>
+                                        <a href="{{ ($profile && $profile->transcript_path) ? Storage::url($profile->transcript_path) : '#' }}" target="_blank" class="doc-link-btn z-20 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition transform hover:scale-105 mb-2 {{ ($profile && $profile->transcript_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat / Unduh Dokumen Terunggah
+                                        </a>
+                                        <p class="text-2xs text-gray-500 font-medium">Klik atau seret file baru jika ingin mengganti file</p>
+                                    </div>
+                                </div>
+
+                                <!-- Sertifikat -->
+                                <div x-show="activeTab === 'certificate'" style="display: none;" x-transition:enter="transition ease-out duration-300">
+                                    <div x-data="{ fileName: '' }" class="border-2 border-dashed border-emerald-300 rounded-2xl p-8 bg-emerald-50/40 hover:bg-emerald-50/90 transition flex flex-col items-center justify-center relative group text-center min-h-[220px]">
+                                        <input type="file" name="certificate_file" accept=".pdf,.zip" onchange="autoUploadDoc(event, 'certificate')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                        
+                                        <div class="text-emerald-600 mb-3 group-hover:scale-110 transition-transform">
+                                            <i class="fa-solid fa-award text-4xl"></i>
+                                        </div>
+                                        <p class="font-black text-base text-gray-900 mb-1">Sertifikat (PDF/ZIP)</p>
+                                        
+                                        <div class="doc-status-box mb-3 px-3 py-1.5 bg-emerald-100/80 border border-emerald-300 text-emerald-900 text-xs font-bold rounded-xl flex items-center gap-2 {{ ($profile && $profile->certificate_file_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-circle-check text-emerald-600"></i> File Sudah Terunggah
+                                        </div>
+                                        <a href="{{ ($profile && $profile->certificate_file_path) ? Storage::url($profile->certificate_file_path) : '#' }}" target="_blank" class="doc-link-btn z-20 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition transform hover:scale-105 mb-2 {{ ($profile && $profile->certificate_file_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat / Unduh Dokumen Terunggah
+                                        </a>
+                                        <p class="text-2xs text-gray-500 font-medium">Klik atau seret file baru jika ingin mengganti file</p>
+                                    </div>
+                                </div>
+
+                                <!-- Portofolio -->
+                                <div x-show="activeTab === 'portfolio'" style="display: none;" x-transition:enter="transition ease-out duration-300">
+                                    <div x-data="{ fileName: '' }" class="border-2 border-dashed border-emerald-300 rounded-2xl p-8 bg-emerald-50/40 hover:bg-emerald-50/90 transition flex flex-col items-center justify-center relative group text-center min-h-[220px]">
+                                        <input type="file" name="portfolio_file" accept=".pdf,.zip" onchange="autoUploadDoc(event, 'portfolio')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                        
+                                        <div class="text-emerald-600 mb-3 group-hover:scale-110 transition-transform">
+                                            <i class="fa-solid fa-briefcase text-4xl"></i>
+                                        </div>
+                                        <p class="font-black text-base text-gray-900 mb-1">Portofolio Karya (PDF/ZIP)</p>
+                                        
+                                        <div class="doc-status-box mb-3 px-3 py-1.5 bg-emerald-100/80 border border-emerald-300 text-emerald-900 text-xs font-bold rounded-xl flex items-center gap-2 {{ ($profile && $profile->portfolio_file_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-circle-check text-emerald-600"></i> File Sudah Terunggah
+                                        </div>
+                                        <a href="{{ ($profile && $profile->portfolio_file_path) ? Storage::url($profile->portfolio_file_path) : '#' }}" target="_blank" class="doc-link-btn z-20 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition transform hover:scale-105 mb-2 {{ ($profile && $profile->portfolio_file_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat / Unduh Dokumen Terunggah
+                                        </a>
+                                        <p class="text-2xs text-gray-500 font-medium">Klik atau seret file baru jika ingin mengganti file</p>
+                                    </div>
+                                </div>
+
+                                <!-- Surat Lamaran -->
+                                <div x-show="activeTab === 'cover_letter'" style="display: none;" x-transition:enter="transition ease-out duration-300">
+                                    <div x-data="{ fileName: '' }" class="border-2 border-dashed border-emerald-300 rounded-2xl p-8 bg-emerald-50/40 hover:bg-emerald-50/90 transition flex flex-col items-center justify-center relative group text-center min-h-[220px]">
+                                        <input type="file" name="cover_letter" accept=".pdf" onchange="autoUploadDoc(event, 'cover_letter')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                        
+                                        <div class="text-emerald-600 mb-3 group-hover:scale-110 transition-transform">
+                                            <i class="fa-solid fa-envelope-open-text text-4xl"></i>
+                                        </div>
+                                        <p class="font-black text-base text-gray-900 mb-1">Surat Lamaran (PDF)</p>
+                                        
+                                        <div class="doc-status-box mb-3 px-3 py-1.5 bg-emerald-100/80 border border-emerald-300 text-emerald-900 text-xs font-bold rounded-xl flex items-center gap-2 {{ ($profile && $profile->cover_letter_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-circle-check text-emerald-600"></i> File Sudah Terunggah
+                                        </div>
+                                        <a href="{{ ($profile && $profile->cover_letter_path) ? Storage::url($profile->cover_letter_path) : '#' }}" target="_blank" class="doc-link-btn z-20 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition transform hover:scale-105 mb-2 {{ ($profile && $profile->cover_letter_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat / Unduh Dokumen Terunggah
+                                        </a>
+                                        <p class="text-2xs text-gray-500 font-medium">Klik atau seret file baru jika ingin mengganti file</p>
+                                    </div>
+                                </div>
+
+                                <!-- SKCK -->
+                                <div x-show="activeTab === 'skck'" style="display: none;" x-transition:enter="transition ease-out duration-300">
+                                    <div x-data="{ fileName: '' }" class="border-2 border-dashed border-emerald-300 rounded-2xl p-8 bg-emerald-50/40 hover:bg-emerald-50/90 transition flex flex-col items-center justify-center relative group text-center min-h-[220px]">
+                                        <input type="file" name="skck" accept=".pdf,.jpg,.jpeg,.png" onchange="autoUploadDoc(event, 'skck')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                        
+                                        <div class="text-emerald-600 mb-3 group-hover:scale-110 transition-transform">
+                                            <i class="fa-solid fa-shield-halved text-4xl"></i>
+                                        </div>
+                                        <p class="font-black text-base text-gray-900 mb-1">SKCK (Image/PDF)</p>
+                                        
+                                        <div class="doc-status-box mb-3 px-3 py-1.5 bg-emerald-100/80 border border-emerald-300 text-emerald-900 text-xs font-bold rounded-xl flex items-center gap-2 {{ ($profile && $profile->skck_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-circle-check text-emerald-600"></i> File Sudah Terunggah
+                                        </div>
+                                        <a href="{{ ($profile && $profile->skck_path) ? Storage::url($profile->skck_path) : '#' }}" target="_blank" class="doc-link-btn z-20 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition transform hover:scale-105 mb-2 {{ ($profile && $profile->skck_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat / Unduh Dokumen Terunggah
+                                        </a>
+                                        <p class="text-2xs text-gray-500 font-medium">Klik atau seret file baru jika ingin mengganti file</p>
+                                    </div>
+                                </div>
+
+                                <!-- Surat Keterangan Sehat -->
+                                <div x-show="activeTab === 'health_certificate'" style="display: none;" x-transition:enter="transition ease-out duration-300">
+                                    <div x-data="{ fileName: '' }" class="border-2 border-dashed border-emerald-300 rounded-2xl p-8 bg-emerald-50/40 hover:bg-emerald-50/90 transition flex flex-col items-center justify-center relative group text-center min-h-[220px]">
+                                        <input type="file" name="health_certificate" accept=".pdf,.jpg,.jpeg,.png" onchange="autoUploadDoc(event, 'health_certificate')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                        
+                                        <div class="text-emerald-600 mb-3 group-hover:scale-110 transition-transform">
+                                            <i class="fa-solid fa-notes-medical text-4xl"></i>
+                                        </div>
+                                        <p class="font-black text-base text-gray-900 mb-1">Surat Keterangan Sehat (Image/PDF)</p>
+                                        
+                                        <div class="doc-status-box mb-3 px-3 py-1.5 bg-emerald-100/80 border border-emerald-300 text-emerald-900 text-xs font-bold rounded-xl flex items-center gap-2 {{ ($profile && $profile->health_certificate_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-circle-check text-emerald-600"></i> File Sudah Terunggah
+                                        </div>
+                                        <a href="{{ ($profile && $profile->health_certificate_path) ? Storage::url($profile->health_certificate_path) : '#' }}" target="_blank" class="doc-link-btn z-20 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition transform hover:scale-105 mb-2 {{ ($profile && $profile->health_certificate_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat / Unduh Dokumen Terunggah
+                                        </a>
+                                        <p class="text-2xs text-gray-500 font-medium">Klik atau seret file baru jika ingin mengganti file</p>
+                                    </div>
+                                </div>
+
+                                <!-- Surat Pernyataan Persetujuan -->
+                                <div x-show="activeTab === 'consent_letter'" style="display: none;" x-transition:enter="transition ease-out duration-300">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <p class="text-sm text-gray-600 flex-1">Unggah Surat Pernyataan Persetujuan yang sudah ditandatangani.</p>
+                                        <a href="{{ route('profile.candidate.consent.template') }}" class="ml-4 shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl transition border border-emerald-200">
+                                            <i class="fa-solid fa-file-download"></i> Download Template
+                                        </a>
+                                    </div>
+                                    <div x-data="{ fileName: '' }" class="border-2 border-dashed border-emerald-300 rounded-2xl p-8 bg-emerald-50/40 hover:bg-emerald-50/90 transition flex flex-col items-center justify-center relative group text-center min-h-[200px]">
+                                        <input type="file" name="consent_letter" accept=".pdf" onchange="autoUploadDoc(event, 'consent_letter')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                        
+                                        <div class="text-emerald-600 mb-3 group-hover:scale-110 transition-transform">
+                                            <i class="fa-solid fa-file-signature text-4xl"></i>
+                                        </div>
+                                        <p class="font-black text-base text-gray-900 mb-1">Surat Pernyataan Persetujuan (PDF)</p>
+                                        
+                                        <div class="doc-status-box mb-3 px-3 py-1.5 bg-emerald-100/80 border border-emerald-300 text-emerald-900 text-xs font-bold rounded-xl flex items-center gap-2 {{ ($profile && $profile->consent_letter_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-circle-check text-emerald-600"></i> File Sudah Terunggah
+                                        </div>
+                                        <a href="{{ ($profile && $profile->consent_letter_path) ? Storage::url($profile->consent_letter_path) : '#' }}" target="_blank" class="doc-link-btn z-20 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition transform hover:scale-105 mb-2 {{ ($profile && $profile->consent_letter_path) ? '' : 'hidden' }}">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat / Unduh Dokumen Terunggah
+                                        </a>
+                                        <p class="text-2xs text-gray-500 font-medium">Klik atau seret file baru jika ingin mengganti file</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>  </div>
+
+                        <!-- TAB NAVIGATION BUTTONS (NEXT/PREV) -->
+                        <div class="flex items-center justify-between pt-6 mt-6 border-t border-gray-200">
+                            <button type="button" @click="activeTab = Math.max(1, [1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13][Math.max(0, [1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13].indexOf(activeTab) - 1)])"
+                                :class="activeTab === 1 ? 'invisible' : ''"
+                                class="px-5 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                                Sebelumnya
+                            </button>
+                            
+                            <button type="submit" class="inline-flex items-center justify-center px-6 py-2.5 bg-emerald-600 border border-transparent rounded-lg font-bold text-sm text-white hover:bg-emerald-700 shadow-md transition whitespace-nowrap">
+                                Simpan Resume
+                            </button>
+
+                            <button type="button" @click="activeTab = [1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13][Math.min(10, [1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13].indexOf(activeTab) + 1)]"
+                                :class="activeTab === 13 ? 'invisible' : ''"
+                                class="px-5 py-2 text-sm font-semibold text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                Selanjutnya
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function resumeForm() {
+            return {
+                activeTab: 1,
+                tabs: [
+                    { id: 1, label: 'Informasi Pribadi' },
+                    { id: 2, label: 'Ringkasan Profil' },
+                    { id: 3, label: 'Riwayat Pendidikan' },
+                    { id: 4, label: 'Pengalaman Kerja' },
+                    { id: 5, label: 'Pengalaman Organisasi' },
+                    { id: 6, label: 'Keahlian & Bahasa' },
+                    { id: 8, label: 'Sertifikat' },
+                    { id: 9, label: 'Portofolio & Prestasi' },
+                    { id: 11, label: 'Referensi' },
+                    { id: 12, label: 'Preferensi & Sosial' },
+                    { id: 13, label: 'Dokumen' }
+                ],
+                universities: [],
+                init() {
+                    fetch('http://universities.hipolabs.com/search?country=Indonesia')
+                        .then(res => res.json())
+                        .then(data => {
+                            let names = data.map(item => item.name);
+                            this.universities = [...new Set(names)].sort();
+                        })
+                        .catch(err => console.error('Gagal mengambil data universitas:', err));
+                },
+                educations: {!! $getOldOrDb('educations', $defaultArray) !!},
+                experiences: {!! $getOldOrDb('experiences', '[]') !!},
+                organizations: {!! $getOldOrDb('organizations', '[]') !!},
+                skills: {!! $getOldOrDb('skills', '[]') !!},
+                languages: {!! $getOldOrDb('languages', '[]') !!},
+                certificates: {!! $getOldOrDb('certificates', '[]') !!},
+                portfolios: {!! $getOldOrDb('portfolios', '[]') !!},
+                achievements: {!! $getOldOrDb('achievements', '[]') !!},
+                references: {!! $getOldOrDb('references', '[]') !!},
+                prefs: {!! $getOldOrDb('job_preferences', $defaultObject) !!},
+                socials: {!! $getOldOrDb('social_links', $defaultObject) !!},
+                
+                addEdu() { this.educations.push({level:'', institution:'', major:'', degree:'', city:'', start_year:'', end_year:'', is_current:false, gpa:'', thesis_title:'', description:''}); },
+                removeEdu(i) { this.educations.splice(i, 1); },
+                
+                addExp() { this.experiences.push({company:'', position:'', industry:'', type:'', location:'', last_salary:'', start_date:'', end_date:'', is_current:false, supervisor_name:'', supervisor_contact:'', reason_for_leaving:'', description:'', achievements:''}); },
+                removeExp(i) { this.experiences.splice(i, 1); },
+                
+                addOrg() { this.organizations.push({name:'', position:'', level:'', location:'', start_date:'', end_date:'', is_current:false, period:'', description:''}); },
+                removeOrg(i) { this.organizations.splice(i, 1); },
+                
+                addSkill() { this.skills.push({name:'', level:'Beginner'}); },
+                removeSkill(i) { this.skills.splice(i, 1); },
+                
+                addLang() { this.languages.push({name:'', level:'Basic'}); },
+                removeLang(i) { this.languages.splice(i, 1); },
+                
+                addCert() { this.certificates.push({name:'', issuer:'', type:'', number:'', url:'', score:'', issue_date:'', expiry_date:'', does_not_expire:false, description:''}); },
+                removeCert(i) { this.certificates.splice(i, 1); },
+                
+                addPort() { this.portfolios.push({name:'', category:'', role:'', year:'', technologies:'', url:'', github_url:'', description:''}); },
+                removePort(i) { this.portfolios.splice(i, 1); },
+                
+                addAchieve() { this.achievements.push({name:'', level:'', issuer:'', rank:'', year:'', url:'', description:''}); },
+                removeAchieve(i) { this.achievements.splice(i, 1); },
+                
+                addRef() { this.references.push({name:'', position:'', company:'', relationship:'', email:'', phone:'', years_known:'', notes:''}); },
+                removeRef(i) { this.references.splice(i, 1); }
+            }
+        }
+
+        function previewCandidatePhoto(event) {
+            const input = event.target;
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+
+                const img = document.getElementById('candidate-photo-preview');
+                const placeholder = document.getElementById('candidate-photo-placeholder');
+                const spinner = document.getElementById('candidate-photo-spinner');
+                const badge = document.getElementById('photo-status-badge');
+
+                // 1. Render Local Preview Instantly
+                reader.onload = function(e) {
+                    if (img) {
+                        img.src = e.target.result;
+                        img.classList.remove('hidden');
+                    }
+                    if (placeholder) {
+                        placeholder.classList.add('hidden');
+                    }
+                }
+                reader.readAsDataURL(file);
+
+                // 2. Instant Auto-Upload via AJAX
+                if (spinner) spinner.classList.remove('hidden');
+                if (badge) badge.classList.add('hidden');
+
+                const formData = new FormData();
+                formData.append('photo', file);
+                formData.append('_token', '{{ csrf_token() }}');
+
+                fetch('{{ route('profile.candidate.upload-photo') }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (spinner) spinner.classList.add('hidden');
+                    if (data.success) {
+                        if (img && data.url) img.src = data.url;
+                        if (badge) {
+                            badge.textContent = '✅ Foto Tersimpan Otomatis!';
+                            badge.classList.remove('hidden');
+                        }
+                    } else {
+                        alert('Gagal mengunggah foto: ' + (data.message || 'Terjadi kesalahan'));
+                    }
+                })
+                .catch(err => {
+                    if (spinner) spinner.classList.add('hidden');
+                    console.error(err);
+                });
+            }
+        }
+
+        function autoUploadDoc(event, docType) {
+            const input = event.target;
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const cardBox = input.closest('.border-dashed');
+                
+                // Show animated spinner overlay
+                let spinner = cardBox.querySelector('.doc-spinner');
+                if (!spinner) {
+                    spinner = document.createElement('div');
+                    spinner.className = 'doc-spinner absolute inset-0 bg-emerald-900/70 backdrop-blur-xs rounded-2xl flex flex-col items-center justify-center text-white z-30 font-bold text-xs gap-2 transition-all';
+                    spinner.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-3xl"></i><span>Mengunggah & Menyimpan Dokumen...</span>';
+                    cardBox.appendChild(spinner);
+                }
+                spinner.classList.remove('hidden');
+
+                const formData = new FormData();
+                formData.append('document', file);
+                formData.append('document_type', docType);
+                formData.append('_token', '{{ csrf_token() }}');
+
+                fetch('{{ route('profile.candidate.upload-document') }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(async res => {
+                    const data = await res.json().catch(() => null);
+                    if (!res.ok) {
+                        const errorMsg = (data && data.message) ? data.message : `Status error HTTP ${res.status}`;
+                        throw new Error(errorMsg);
+                    }
+                    return data;
+                })
+                .then(data => {
+                    spinner.classList.add('hidden');
+                    if (data && data.success) {
+                        // Update status box & link button inside dropzone
+                        const statusBox = cardBox.querySelector('.doc-status-box');
+                        const linkBtn = cardBox.querySelector('.doc-link-btn');
+                        if (statusBox) statusBox.classList.remove('hidden');
+                        if (linkBtn) {
+                            linkBtn.href = data.url;
+                            linkBtn.classList.remove('hidden');
+                        }
+
+                        // Show success badge inside card
+                        let toast = cardBox.querySelector('.doc-toast');
+                        if (!toast) {
+                            toast = document.createElement('p');
+                            toast.className = 'doc-toast mt-2 text-xs text-emerald-700 font-bold bg-white px-3 py-1.5 rounded-lg border border-emerald-200 shadow-2xs z-20 flex items-center gap-1.5';
+                            cardBox.appendChild(toast);
+                        }
+                        toast.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i> File ' + file.name + ' Berhasil Tersimpan Otomatis!';
+                        toast.classList.remove('hidden');
+
+                        // Dynamically add checkmark to tab button header
+                        const tabBtn = document.querySelector(`button[data-doc-tab="${docType}"]`);
+                        if (tabBtn && !tabBtn.querySelector('.fa-circle-check')) {
+                            const checkIcon = document.createElement('i');
+                            checkIcon.className = 'fa-solid fa-circle-check text-emerald-600 text-xs ml-1';
+                            tabBtn.appendChild(checkIcon);
+                        }
+                    } else {
+                        alert('Gagal mengunggah dokumen: ' + (data ? data.message : 'Terjadi kesalahan'));
+                    }
+                })
+                .catch(err => {
+                    spinner.classList.add('hidden');
+                    console.error(err);
+                    alert('Gagal mengunggah dokumen: ' + (err.message || 'Silakan periksa koneksi atau ukuran file Anda.'));
+                });
+            }
+        }
+    </script>
+</x-app-layout>

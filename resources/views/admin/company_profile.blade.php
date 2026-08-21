@@ -1,0 +1,160 @@
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-bold text-2xl text-gray-800 leading-tight flex items-center gap-2">
+            <i class="fa-solid fa-building text-blue-600"></i> {{ __('Profil & Data Perusahaan') }}
+        </h2>
+    </x-slot>
+
+    <div class="py-8 sm:py-12">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            @if(session('success'))
+                <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl flex items-center gap-3 shadow-sm text-sm font-bold">
+                    <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-3xl border border-gray-100 p-6 sm:p-10">
+                <div class="border-b border-gray-100 pb-6 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-black text-gray-900">Kelola Informasi Resmi Perusahaan</h3>
+                        <p class="text-xs text-gray-500 font-medium mt-1">Unggah logo, identitas legalitas, dan profil perusahaan yang tampil di portal karir.</p>
+                    </div>
+                    <span class="px-3.5 py-1.5 bg-blue-50 text-blue-700 text-xs font-black rounded-full border border-blue-200/60 w-fit flex items-center gap-1.5">
+                        <i class="fa-solid fa-shield-halved text-blue-600"></i> Verifikasi Perusahaan
+                    </span>
+                </div>
+
+                <form action="{{ route('admin.company.profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                    @csrf
+
+                    <!-- Logo Upload Section -->
+                    <div class="p-6 bg-gray-50/70 rounded-2xl border border-gray-100 flex flex-col sm:flex-row items-center gap-6">
+                        <div class="shrink-0 relative group">
+                            <div id="logo-preview-box" class="w-20 h-20 rounded-2xl overflow-hidden border-2 border-white shadow-md relative transition-transform duration-300">
+                                @if($profile->logo_path)
+                                    <img id="logo-preview-img" src="{{ Storage::url($profile->logo_path) }}" alt="Company Logo" class="w-full h-full object-cover">
+                                @else
+                                    <div id="logo-preview-placeholder" class="w-full h-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-2xl rounded-2xl flex items-center justify-center">
+                                        {{ strtoupper(substr($profile->company_name ?? 'C', 0, 1)) }}
+                                    </div>
+                                    <img id="logo-preview-img" class="w-full h-full object-cover hidden">
+                                @endif
+                            </div>
+                            <div id="logo-upload-spinner" class="absolute inset-0 bg-blue-900/60 backdrop-blur-xs rounded-2xl flex items-center justify-center text-white hidden animate-fade-in">
+                                <i class="fa-solid fa-circle-notch fa-spin text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow text-center sm:text-left">
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Logo Resmi Perusahaan (PNG/JPG)</label>
+                            <input type="file" name="logo" accept="image/*" onchange="previewFile(event, 'logo-preview-img', 'logo-preview-placeholder', 'logo-status-badge')" class="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition cursor-pointer">
+                            <div class="flex items-center gap-2 mt-1">
+                                <p class="text-2xs text-gray-400">Maksimal 2MB (Rekomendasi rasio 1:1 / Persegi)</p>
+                                <span id="logo-status-badge" class="hidden text-2xs font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 animate-pulse">
+                                    ✨ Pratinjau Siap Simpan!
+                                </span>
+                            </div>
+                            @error('logo') <span class="text-xs text-red-500 mt-1 font-bold">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <!-- Grid Info Utama -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <x-input-label for="company_name" :value="__('Nama Resmi Perusahaan')" />
+                            <x-text-input id="company_name" name="company_name" type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('company_name', $profile->company_name)" required placeholder="Misal: PT TechNova Asia Digital" />
+                            @error('company_name') <span class="text-xs text-red-500 mt-1 font-bold">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <x-input-label for="industry" :value="__('Sektor & Industri')" />
+                            <x-text-input id="industry" name="industry" type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('industry', $profile->industry)" placeholder="Misal: Software, Fintech, E-Commerce" />
+                            @error('industry') <span class="text-xs text-red-500 mt-1 font-bold">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <x-input-label for="company_size" :value="__('Jumlah Karyawan / Ukuran Perusahaan')" />
+                            <select id="company_size" name="company_size" class="mt-1 block w-full border-gray-300 rounded-xl shadow-xs focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white transition text-sm">
+                                <option value="">Pilih Ukuran Perusahaan</option>
+                                <option value="1 - 10 Karyawan" {{ old('company_size', $profile->company_size) == '1 - 10 Karyawan' ? 'selected' : '' }}>1 - 10 Karyawan (Startup / Micro)</option>
+                                <option value="11 - 50 Karyawan" {{ old('company_size', $profile->company_size) == '11 - 50 Karyawan' ? 'selected' : '' }}>11 - 50 Karyawan (Small)</option>
+                                <option value="50 - 200 Karyawan" {{ old('company_size', $profile->company_size) == '50 - 200 Karyawan' ? 'selected' : '' }}>50 - 200 Karyawan (Medium)</option>
+                                <option value="200 - 1000 Karyawan" {{ old('company_size', $profile->company_size) == '200 - 1000 Karyawan' ? 'selected' : '' }}>200 - 1000 Karyawan (Large Enterprise)</option>
+                                <option value="1000+ Karyawan" {{ old('company_size', $profile->company_size) == '1000+ Karyawan' ? 'selected' : '' }}>1000+ Karyawan (Multinational)</option>
+                            </select>
+                            @error('company_size') <span class="text-xs text-red-500 mt-1 font-bold">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <x-input-label for="website" :value="__('Website Resmi Perusahaan')" />
+                            <x-text-input id="website" name="website" type="url" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('website', $profile->website)" placeholder="https://perusahaan.com" />
+                            @error('website') <span class="text-xs text-red-500 mt-1 font-bold">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <x-input-label for="phone" :value="__('Nomor Telepon Kantor')" />
+                            <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('phone', $profile->phone)" placeholder="021-55443322" />
+                            @error('phone') <span class="text-xs text-red-500 mt-1 font-bold">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <x-input-label for="legal_doc" :value="__('Dokumen Legalitas / NIB / SIUP (Opsional)')" />
+                            <input type="file" name="legal_doc" accept=".pdf,.jpg,.png" class="mt-1 block w-full text-xs text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-gray-800 file:text-white hover:file:bg-black transition">
+                            @if($profile->legal_doc_path)
+                                <a href="{{ Storage::url($profile->legal_doc_path) }}" target="_blank" class="text-2xs text-blue-600 font-bold hover:underline mt-1 inline-block">
+                                    <i class="fa-solid fa-file-pdf"></i> Lihat File Legalitas Terunggah
+                                </a>
+                            @endif
+                            @error('legal_doc') <span class="text-xs text-red-500 mt-1 font-bold">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <div>
+                        <x-input-label for="address" :value="__('Alamat Lengkap Kantor Utama')" />
+                        <textarea id="address" name="address" rows="2" class="mt-1 block w-full border-gray-300 rounded-xl shadow-xs focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white transition text-sm" placeholder="Jl. HR Rasuna Said, Jakarta Selatan...">{{ old('address', $profile->address) }}</textarea>
+                        @error('address') <span class="text-xs text-red-500 mt-1 font-bold">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <x-input-label for="description" :value="__('Deskripsi & Profil Singkat Perusahaan')" />
+                        <textarea id="description" name="description" rows="4" class="mt-1 block w-full border-gray-300 rounded-xl shadow-xs focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white transition text-sm" placeholder="Jelaskan bidang usaha, visi misi, dan budaya perusahaan Anda...">{{ old('description', $profile->description) }}</textarea>
+                        @error('description') <span class="text-xs text-red-500 mt-1 font-bold">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-100 flex justify-end">
+                        <button type="submit" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-2xl shadow-lg hover:shadow-xl transition transform hover:scale-105 text-xs flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Simpan Data Perusahaan
+                        </button>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function previewFile(event, imgId, placeholderId, badgeId) {
+            const input = event.target;
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById(imgId);
+                    const placeholder = document.getElementById(placeholderId);
+                    const badge = document.getElementById(badgeId);
+
+                    if (img) {
+                        img.src = e.target.result;
+                        img.classList.remove('hidden');
+                        img.classList.add('animate-fade-in');
+                    }
+                    if (placeholder) {
+                        placeholder.classList.add('hidden');
+                    }
+                    if (badge) {
+                        badge.classList.remove('hidden');
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+</x-app-layout>
