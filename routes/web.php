@@ -20,7 +20,19 @@ Route::get('/dashboard', function () {
     if ($user && ($user->hasRole('Super Admin') || $user->hasRole('HR') || $user->hasRole('Company Owner'))) {
         return redirect()->route('admin.dashboard');
     }
-    return view('dashboard');
+
+    $applications = \App\Models\Application::with(['job', 'offerLetter', 'messages'])->where('user_id', $user->id)->latest()->get();
+    $totalApplications = $applications->count();
+    $processingApplications = $applications->whereIn('status', ['pending', 'screening', 'test', 'interview', 'interview_hr', 'interview_user', 'background_check', 'offered'])->count();
+    $acceptedApplications = $applications->where('status', 'accepted')->count();
+    $rejectedApplications = $applications->where('status', 'rejected')->count();
+    $recentApplications = $applications;
+    $statusPopupApp = $applications->first(function($app) {
+        $st = is_object($app->status) ? $app->status->value : (string)$app->status;
+        return in_array($st, ['accepted', 'hired', 'offered', 'interview_hr', 'interview_user', 'interview', 'test', 'rejected']);
+    });
+
+    return view('dashboard', compact('totalApplications', 'processingApplications', 'acceptedApplications', 'rejectedApplications', 'recentApplications', 'statusPopupApp'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 use App\Http\Controllers\CandidateProfileController;
@@ -29,6 +41,14 @@ use App\Http\Controllers\CompanyDirectoryController;
 
 Route::get('/jobs', [JobListingController::class, 'index'])->name('jobs.index');
 Route::get('/jobs/{id}', [JobListingController::class, 'show'])->name('jobs.show');
+
+// Public Informational Pages (Help Center, Privacy Policy, Terms of Service)
+Route::view('/faq', 'pages.faq')->name('pages.faq');
+Route::view('/privacy-policy', 'pages.privacy')->name('pages.privacy');
+Route::view('/terms-of-service', 'pages.terms')->name('pages.terms');
+
+// Candidate Red Flag Report Submission
+Route::post('/company-reports', [\App\Http\Controllers\CompanyReportController::class, 'store'])->middleware('auth')->name('company-reports.store');
 
 // Public Company Directory & Company Vacancies Profile
 Route::get('/companies', [CompanyDirectoryController::class, 'index'])->name('companies.index');
@@ -74,6 +94,23 @@ Route::middleware('auth')->group(function () {
     Route::post('/candidate/tests/{job}/submit', [\App\Http\Controllers\CandidateTestController::class, 'submit'])->name('candidate.tests.submit');
     Route::post('/candidate/tests/{job}/submit-external', [\App\Http\Controllers\CandidateTestController::class, 'submitExternal'])->name('candidate.tests.submit-external');
 
+    // Candidate Onboarding & Employee Data routes (Only for Accepted/Hired Candidates)
+    Route::get('/candidate/onboarding/{application}', [\App\Http\Controllers\CandidateOnboardingController::class, 'create'])->name('candidate.onboarding.create');
+    Route::post('/candidate/onboarding/{application}', [\App\Http\Controllers\CandidateOnboardingController::class, 'store'])->name('candidate.onboarding.store');
+
+    // Digital Agreements & E-Signature routes
+    Route::get('/candidate/agreements/{agreement}', [\App\Http\Controllers\ApplicationAgreementController::class, 'show'])->name('candidate.agreements.show');
+    Route::post('/candidate/agreements/{agreement}/send-otp', [\App\Http\Controllers\ApplicationAgreementController::class, 'sendOtp'])->name('candidate.agreements.send-otp');
+    Route::post('/candidate/agreements/{agreement}/sign', [\App\Http\Controllers\ApplicationAgreementController::class, 'sign'])->name('candidate.agreements.sign');
+    Route::get('/agreements/{agreement}/download', [\App\Http\Controllers\ApplicationAgreementController::class, 'download'])->name('agreements.download');
+
+    // Internship Certificate, Transcript, and Termination/Paklaring routes for candidate
+    Route::get('/candidate/certificates/{certificate}', [\App\Http\Controllers\InternshipCertificateController::class, 'show'])->name('candidate.certificates.show');
+    Route::get('/candidate/transcripts/{transcript}', [\App\Http\Controllers\InternshipTranscriptController::class, 'show'])->name('candidate.transcripts.show');
+    Route::get('/candidate/terminations/{termination}', [\App\Http\Controllers\EmployeeTerminationController::class, 'show'])->name('candidate.terminations.show');
+    Route::post('/candidate/terminations/{termination}/send-otp', [\App\Http\Controllers\EmployeeTerminationController::class, 'sendOtp'])->name('candidate.terminations.send-otp');
+    Route::post('/candidate/terminations/{termination}/sign', [\App\Http\Controllers\EmployeeTerminationController::class, 'sign'])->name('candidate.terminations.sign');
+
     // Offer Letter & Live Chat routes
     Route::get('/offer-letters/{offerLetter}/download', [\App\Http\Controllers\Admin\OfferLetterController::class, 'download'])->name('offer-letters.download');
     Route::post('/offer-letters/{offerLetter}/respond', [\App\Http\Controllers\Admin\OfferLetterController::class, 'respond'])->name('offer-letters.respond');
@@ -87,6 +124,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+
+    // PDF CV Alias Routes
+    Route::get('/applications/{application}/cv/ats', function(\App\Models\Application $application) {
+        $user = $application->user;
+        $profile = $user->candidateProfile;
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.cv_ats', compact('user', 'profile'))->setPaper('a4', 'portrait');
+        return $pdf->download('CV_ATS_' . \Illuminate\Support\Str::slug($user->name) . '.pdf');
+    })->name('applications.cv.ats');
+
+    Route::get('/applications/{application}/cv/creative', function(\App\Models\Application $application) {
+        $user = $application->user;
+        $profile = $user->candidateProfile;
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.cv_creative', compact('user', 'profile'))->setPaper('a4', 'portrait');
+        return $pdf->download('CV_Creative_' . \Illuminate\Support\Str::slug($user->name) . '.pdf');
+    })->name('applications.cv.creative');
 });
 
 Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin')->name('admin.')->group(function () {
@@ -119,6 +171,24 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.cv_creative', compact('user', 'profile'))->setPaper('a4', 'portrait');
         return $pdf->download('CV_Creative_' . \Illuminate\Support\Str::slug($user->name) . '.pdf');
     })->name('applications.cv.creative');
+
+    Route::post('/applications/{application}/verify-onboarding', [\App\Http\Controllers\CandidateOnboardingController::class, 'verifyByHr'])->name('applications.verify-onboarding');
+
+    // HR Digital Agreement Builder routes
+    Route::get('/applications/{application}/agreements/create', [\App\Http\Controllers\ApplicationAgreementController::class, 'create'])->name('applications.agreements.create');
+    Route::post('/applications/{application}/agreements', [\App\Http\Controllers\ApplicationAgreementController::class, 'store'])->name('applications.agreements.store');
+
+    // HR Internship Certificate Builder routes
+    Route::get('/applications/{application}/certificates/create', [\App\Http\Controllers\InternshipCertificateController::class, 'create'])->name('applications.certificates.create');
+    Route::post('/applications/{application}/certificates', [\App\Http\Controllers\InternshipCertificateController::class, 'store'])->name('applications.certificates.store');
+
+    // HR Internship Academic Transcript Builder routes
+    Route::get('/applications/{application}/transcripts/create', [\App\Http\Controllers\InternshipTranscriptController::class, 'create'])->name('applications.transcripts.create');
+    Route::post('/applications/{application}/transcripts', [\App\Http\Controllers\InternshipTranscriptController::class, 'store'])->name('applications.transcripts.store');
+
+    // HR Termination & Recommendation Letter Builder routes
+    Route::get('/applications/{application}/terminations/create', [\App\Http\Controllers\EmployeeTerminationController::class, 'create'])->name('applications.terminations.create');
+    Route::post('/applications/{application}/terminations', [\App\Http\Controllers\EmployeeTerminationController::class, 'store'])->name('applications.terminations.store');
 
     // Online Test Builder for HR / Admin
     Route::get('/jobs/{job}/test', [\App\Http\Controllers\Admin\JobTestController::class, 'edit'])->name('jobs.test.edit');
@@ -167,6 +237,25 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
     // HR Cancellation Appeal Submission Route
     Route::post('/applications/{application}/cancel-acceptance', [\App\Http\Controllers\Admin\AcceptanceCancellationController::class, 'store'])->name('cancellation-tickets.store');
 
+    // Bulk Action Pipeline
+    Route::post('/applications/bulk-status', [\App\Http\Controllers\Admin\ApplicationController::class, 'bulkUpdateStatus'])->name('applications.bulk-status');
+
+    // Structured Interview Scorecard
+    Route::post('/applications/{application}/scorecards', [\App\Http\Controllers\Admin\InterviewScorecardController::class, 'store'])->name('applications.scorecards.store');
+    Route::delete('/scorecards/{scorecard}', [\App\Http\Controllers\Admin\InterviewScorecardController::class, 'destroy'])->name('scorecards.destroy');
+
+    // Company Team Activity Audit Logs
+    Route::get('/company-team/audit-logs', [\App\Http\Controllers\Admin\CompanyActivityAuditController::class, 'index'])->name('company-team.audit-logs');
+
+    // Headcount Budget & Recruitment Planning Hub
+    Route::get('/headcount-budgets', [\App\Http\Controllers\Admin\HeadcountBudgetController::class, 'index'])->name('headcount-budgets.index');
+    Route::post('/headcount-budgets', [\App\Http\Controllers\Admin\HeadcountBudgetController::class, 'store'])->name('headcount-budgets.store');
+    Route::delete('/headcount-budgets/{headcount_budget}', [\App\Http\Controllers\Admin\HeadcountBudgetController::class, 'destroy'])->name('headcount-budgets.destroy');
+
+    // HR Custom Report Builder (Excel & PDF Advanced Export)
+    Route::get('/reports/builder', [\App\Http\Controllers\Admin\CustomReportBuilderController::class, 'index'])->name('reports.builder.index');
+    Route::get('/reports/export', [\App\Http\Controllers\Admin\CustomReportBuilderController::class, 'export'])->name('reports.builder.export');
+
     // Super Admin Exclusive Control & Moderation
     Route::middleware('role:Super Admin')->group(function () {
         Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
@@ -200,7 +289,33 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
         Route::get('/cancellation-tickets', [\App\Http\Controllers\Admin\AcceptanceCancellationController::class, 'index'])->name('cancellation-tickets.index');
         Route::post('/cancellation-tickets/{ticket}/approve', [\App\Http\Controllers\Admin\AcceptanceCancellationController::class, 'approve'])->name('cancellation-tickets.approve');
         Route::post('/cancellation-tickets/{ticket}/reject', [\App\Http\Controllers\Admin\AcceptanceCancellationController::class, 'reject'])->name('cancellation-tickets.reject');
+
+        // System Announcements Broadcast Center
+        Route::get('/announcements', [\App\Http\Controllers\Admin\SystemAnnouncementController::class, 'index'])->name('announcements.index');
+        Route::post('/announcements', [\App\Http\Controllers\Admin\SystemAnnouncementController::class, 'store'])->name('announcements.store');
+        Route::patch('/announcements/{announcement}/toggle', [\App\Http\Controllers\Admin\SystemAnnouncementController::class, 'toggleActive'])->name('announcements.toggle');
+        Route::delete('/announcements/{announcement}', [\App\Http\Controllers\Admin\SystemAnnouncementController::class, 'destroy'])->name('announcements.destroy');
+
+        // Anti-Fraud Blacklist Manager
+        Route::get('/blacklists', [\App\Http\Controllers\Admin\BlacklistController::class, 'index'])->name('blacklists.index');
+        Route::post('/blacklists', [\App\Http\Controllers\Admin\BlacklistController::class, 'store'])->name('blacklists.store');
+        Route::delete('/blacklists/{blacklist}', [\App\Http\Controllers\Admin\BlacklistController::class, 'destroy'])->name('blacklists.destroy');
     });
+
+    // Alias routes for PDF CV Download (both with and without admin. prefix)
+    Route::get('/applications/{application}/cv/ats', function(\App\Models\Application $application) {
+        $user = $application->user;
+        $profile = $user->candidateProfile;
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.cv_ats', compact('user', 'profile'))->setPaper('a4', 'portrait');
+        return $pdf->download('CV_ATS_' . \Illuminate\Support\Str::slug($user->name) . '.pdf');
+    })->name('applications.cv.ats');
+
+    Route::get('/applications/{application}/cv/creative', function(\App\Models\Application $application) {
+        $user = $application->user;
+        $profile = $user->candidateProfile;
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.cv_creative', compact('user', 'profile'))->setPaper('a4', 'portrait');
+        return $pdf->download('CV_Creative_' . \Illuminate\Support\Str::slug($user->name) . '.pdf');
+    })->name('applications.cv.creative');
 });
 
 Route::middleware('guest')->group(function () {

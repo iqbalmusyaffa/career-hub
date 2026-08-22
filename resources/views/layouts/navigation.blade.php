@@ -68,7 +68,7 @@
                                             <i class="fa-solid fa-building text-amber-500 mr-2"></i> Kelola Perusahaan
                                         </x-dropdown-link>
                                         <x-dropdown-link :href="route('admin.settings.smtp.edit')">
-                                            <i class="fa-solid fa-envelope-gear text-emerald-600 mr-2"></i> Pengaturan SMTP
+                                            <i class="fa-solid fa-sliders text-emerald-600 mr-2"></i> Pengaturan SMTP
                                         </x-dropdown-link>
                                         <x-dropdown-link :href="route('admin.audit-logs.index')">
                                             <i class="fa-solid fa-list-check text-indigo-600 mr-2"></i> Audit Logs Activity

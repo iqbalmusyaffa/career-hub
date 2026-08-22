@@ -13,10 +13,32 @@ class JobRepository implements JobRepositoryInterface
 
         $user = auth()->user();
         if ($user && !$user->hasRole('Super Admin')) {
-            $companyName = $user->companyProfile ? $user->companyProfile->company_name : null;
-            if ($companyName) {
-                $query->where('company_name', $companyName);
+            $ownerId = $user->id;
+            $teamMember = \App\Models\CompanyTeamMember::where('user_id', $user->id)->first();
+            if ($teamMember) {
+                $ownerId = $teamMember->owner_id;
             }
+
+            $ownerProfile = \App\Models\CompanyProfile::where('user_id', $ownerId)->first();
+            $companyName = $ownerProfile ? $ownerProfile->company_name : ($user->companyProfile ? $user->companyProfile->company_name : null);
+
+            if ($companyName) {
+                $query->where('company_name', 'LIKE', '%' . $companyName . '%');
+            }
+        }
+
+        if (request()->filled('company_name')) {
+            $comp = request('company_name');
+            $query->where('company_name', 'like', "%{$comp}%");
+        }
+
+        if (request()->filled('major')) {
+            $major = request('major');
+            $query->where(function($q) use ($major) {
+                $q->where('major_requirement', 'like', "%{$major}%")
+                  ->orWhere('description', 'like', "%{$major}%")
+                  ->orWhere('requirements', 'like', "%{$major}%");
+            });
         }
 
         if (request()->filled('search')) {
@@ -44,7 +66,8 @@ class JobRepository implements JobRepositoryInterface
 
     public function findById($id)
     {
-        return Job::findOrFail($id);
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        return Job::findOrFail($realId);
     }
 
     public function create(array $data)
@@ -54,14 +77,16 @@ class JobRepository implements JobRepositoryInterface
 
     public function update($id, array $data)
     {
-        $job = Job::findOrFail($id);
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $job = Job::findOrFail($realId);
         $job->update($data);
         return $job;
     }
 
     public function delete($id)
     {
-        $job = Job::findOrFail($id);
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $job = Job::findOrFail($realId);
         return $job->delete();
     }
 }

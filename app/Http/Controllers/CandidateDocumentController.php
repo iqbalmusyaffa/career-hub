@@ -10,11 +10,47 @@ use Illuminate\Support\Facades\Storage;
 class CandidateDocumentController extends Controller
 {
     /**
-     * Display candidate's document vault interface.
+     * Display candidate's document vault interface with auto-synced onboarding docs.
      */
     public function index()
     {
         $user = Auth::user();
+
+        // Auto-sync any Onboarding Documents (NPWP, BPJS, KK, Surat Magang) into Document Vault
+        $onboardings = \App\Models\CandidateOnboarding::where('user_id', $user->id)->with('application.job')->get();
+        foreach ($onboardings as $ob) {
+            $companyName = $ob->application->job->company_name ?? 'Perusahaan';
+            
+            $items = [
+                'Dokumen NPWP' => $ob->npwp_doc_path,
+                'Kartu BPJS Kesehatan' => $ob->bpjs_kesehatan_doc_path,
+                'Kartu BPJS Ketenagakerjaan' => $ob->bpjs_ketenagakerjaan_doc_path,
+                'Kartu Keluarga (KK)' => $ob->family_card_doc_path,
+                'Surat Pengantar Magang Kampus' => $ob->internship_letter_doc_path,
+            ];
+
+            foreach ($items as $title => $path) {
+                if ($path) {
+                    $ext = pathinfo($path, PATHINFO_EXTENSION);
+                    $fullPath = storage_path('app/public/' . $path);
+                    $size = file_exists($fullPath) ? filesize($fullPath) : null;
+
+                    CandidateDocument::updateOrCreate(
+                        [
+                            'user_id' => $user->id,
+                            'file_path' => $path,
+                        ],
+                        [
+                            'document_type' => 'other',
+                            'title' => $title . " - " . $companyName,
+                            'file_size' => $size,
+                            'file_extension' => $ext,
+                        ]
+                    );
+                }
+            }
+        }
+
         $documents = CandidateDocument::where('user_id', $user->id)->latest()->get();
 
         return view('profile.documents', compact('documents'));

@@ -51,7 +51,10 @@ class AdminJobApiController extends Controller
         $query = Job::query();
 
         if (!$user->hasRole('Super Admin')) {
-            $query->where('user_id', $user->id);
+            $companyName = $user->companyProfile ? $user->companyProfile->company_name : null;
+            if ($companyName) {
+                $query->where('company_name', 'LIKE', '%' . $companyName . '%');
+            }
         }
 
         $jobs = $query->withCount('applications')->latest()->paginate(15);
@@ -265,5 +268,47 @@ class AdminJobApiController extends Controller
             'branches' => $branches,
             'team_members' => $team,
         ], 'Profil perusahaan berhasil diambil.');
+    }
+
+    public function manageTest(Request $request, $id)
+    {
+        $job = Job::with('questions')->find($id);
+        if (!$job) {
+            return $this->errorResponse('Lowongan tidak ditemukan.', 404);
+        }
+        return $this->successResponse($job, 'Soal ujian online lowongan berhasil diambil.');
+    }
+
+    public function updateTest(Request $request, $id)
+    {
+        $job = Job::find($id);
+        if (!$job) {
+            return $this->errorResponse('Lowongan tidak ditemukan.', 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'passing_percentage' => 'required|integer|min:0|max:100',
+            'questions' => 'required|array|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse('Validasi soal ujian gagal.', 422, $validator->errors());
+        }
+
+        $job->update(['passing_percentage' => $request->passing_percentage]);
+
+        $job->questions()->delete();
+        foreach ($request->questions as $q) {
+            $job->questions()->create([
+                'question_text' => $q['question_text'],
+                'option_a' => $q['option_a'],
+                'option_b' => $q['option_b'],
+                'option_c' => $q['option_c'],
+                'option_d' => $q['option_d'],
+                'correct_option' => $q['correct_option'],
+            ]);
+        }
+
+        return $this->successResponse($job->fresh('questions'), 'Soal ujian online lowongan berhasil diperbarui!');
     }
 }

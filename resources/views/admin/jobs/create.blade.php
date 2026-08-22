@@ -1,32 +1,40 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-bold text-2xl text-gray-800 leading-tight">
-            {{ __('Tambah Lowongan Pekerjaan') }}
-        </h2>
+        <div class="flex items-center gap-3">
+            <a href="{{ route('admin.jobs.index') }}" class="w-10 h-10 bg-white hover:bg-slate-100 text-slate-600 rounded-2xl border border-slate-200 flex items-center justify-center transition shadow-2xs">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="font-extrabold text-2xl text-slate-900 tracking-tight flex items-center gap-2">
+                    Tambah Lowongan Pekerjaan Baru
+                </h2>
+                <p class="text-xs text-slate-500 mt-0.5">Publikasikan posisi pekerjaan baru untuk menjaring talenta terbaik.</p>
+            </div>
+        </div>
     </x-slot>
 
-    <div class="py-12 bg-gray-50 min-h-screen">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-2xl border border-gray-100 p-8 sm:p-10 text-gray-900 space-y-6">
+    <div class="py-8 bg-slate-50/60 min-h-screen">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-2xs border border-slate-200/80 space-y-6">
                 <form action="{{ route('admin.jobs.store') }}" method="POST" class="space-y-6">
                     @csrf
 
-                    <div class="border-b border-gray-100 pb-4">
-                        <h3 class="font-bold text-lg text-gray-900 flex items-center gap-2">
-                            <i class="fa-solid fa-briefcase text-blue-600"></i> Informasi Dasar Lowongan
+                    <div class="border-b border-slate-100 pb-4">
+                        <h3 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-briefcase text-blue-600"></i> Informasi Utama Lowongan
                         </h3>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <x-input-label for="title" :value="__('Posisi / Judul Pekerjaan')" />
-                            <x-text-input id="title" name="title" type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('title')" placeholder="Misal: Senior Backend Developer" required autofocus />
+                            <x-text-input id="title" name="title" type="text" class="mt-1 block w-full rounded-xl text-xs font-medium border-slate-300 focus:ring-blue-500 focus:border-blue-500" :value="old('title')" placeholder="Misal: Senior Backend Developer" required autofocus />
                             <x-input-error class="mt-2" :messages="$errors->get('title')" />
                         </div>
 
                         <div>
                             <x-input-label for="division" :value="__('Kategori / Divisi Perusahaan')" />
-                            <x-text-input id="division" name="division" type="text" list="division_options" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('division')" placeholder="Pilih atau ketik divisi baru..." required />
+                            <x-text-input id="division" name="division" type="text" list="division_options" class="mt-1 block w-full rounded-xl text-xs font-medium border-slate-300 focus:ring-blue-500 focus:border-blue-500" :value="old('division')" placeholder="Pilih atau ketik divisi baru..." required />
                             <datalist id="division_options">
                                 <option value="Engineering">
                                 <option value="Design">
@@ -82,7 +90,7 @@
                         }" class="relative" x-init="init()">
                             <x-input-label for="location" :value="__('Lokasi Penempatan (Kota / Wilayah)')" />
                             <div class="relative mt-1">
-                                <x-text-input id="location" name="location" type="text" x-model="location" @focus="open = true; fetchCities()" @input.debounce.300ms="fetchCities(); checkUmk(); open = true" @click.away="open = false" autocomplete="off" class="block w-full bg-gray-50 focus:bg-white pr-10" placeholder="Ketik/pilih kota penempatan..." required />
+                                <x-text-input id="location" name="location" type="text" x-model="location" @focus="open = true; fetchCities()" @input.debounce.300ms="fetchCities(); checkUmk(); open = true" @click.away="open = false" autocomplete="off" class="block w-full rounded-xl text-xs font-medium border-slate-300 focus:ring-blue-500 focus:border-blue-500 pr-10" placeholder="Ketik/pilih kota penempatan..." required />
                                 <div class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                                     <i class="fa-solid fa-location-dot"></i>
                                 </div>
@@ -113,13 +121,13 @@
 
                         <div>
                             <x-input-label for="google_maps_link" :value="__('Link Google Maps Kantor / Sematan Lokasi')" />
-                            <x-text-input id="google_maps_link" name="google_maps_link" type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('google_maps_link')" placeholder="https://maps.google.com/?q=..." />
+                            <x-text-input id="google_maps_link" name="google_maps_link" type="text" class="mt-1 block w-full rounded-xl text-xs font-medium border-slate-300 focus:ring-blue-500 focus:border-blue-500" :value="old('google_maps_link')" placeholder="https://maps.google.com/?q=..." />
                             <x-input-error class="mt-2" :messages="$errors->get('google_maps_link')" />
                         </div>
                         
                         <div>
                             <x-input-label for="work_type" :value="__('Sistem & Tipe Kerja')" />
-                            <select id="work_type" name="work_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white transition-colors" required>
+                            <select id="work_type" name="work_type" class="mt-1 block w-full rounded-xl text-xs font-bold border-slate-300 focus:ring-blue-500 focus:border-blue-500 bg-white" required>
                                 <option value="Full-time" {{ old('work_type') == 'Full-time' ? 'selected' : '' }}>Full-Time (WFO)</option>
                                 <option value="Hybrid" {{ old('work_type') == 'Hybrid' ? 'selected' : '' }}>Hybrid (WFO & Remote)</option>
                                 <option value="Remote" {{ old('work_type') == 'Remote' ? 'selected' : '' }}>Remote (100% Work from Anywhere)</option>
@@ -132,7 +140,7 @@
 
                         <div>
                             <x-input-label for="experience_level" :value="__('Tingkat Pengalaman Kerja')" />
-                            <select id="experience_level" name="experience_level" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white transition-colors">
+                            <select id="experience_level" name="experience_level" class="mt-1 block w-full rounded-xl text-xs font-bold border-slate-300 focus:ring-blue-500 focus:border-blue-500 bg-white">
                                 <option value="Semua Tingkat" {{ old('experience_level') == 'Semua Tingkat' ? 'selected' : '' }}>Semua Tingkat Pengalaman</option>
                                 <option value="Fresh Graduate" {{ old('experience_level') == 'Fresh Graduate' ? 'selected' : '' }}>Fresh Graduate (0-1 Tahun)</option>
                                 <option value="Junior Level" {{ old('experience_level') == 'Junior Level' ? 'selected' : '' }}>Junior Level (1-3 Tahun)</option>
@@ -146,7 +154,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <div>
                             <x-input-label for="education_level" :value="__('Minimal Pendidikan')" />
-                            <select id="education_level" name="education_level" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white transition-colors">
+                            <select id="education_level" name="education_level" class="mt-1 block w-full rounded-xl text-xs font-bold border-slate-300 focus:ring-blue-500 focus:border-blue-500 bg-white">
                                 <option value="Semua Jenjang" {{ old('education_level') == 'Semua Jenjang' ? 'selected' : '' }}>Semua Jenjang / Tanpa Minimal</option>
                                 <option value="SMA/SMK" {{ old('education_level') == 'SMA/SMK' ? 'selected' : '' }}>SMA / SMK Sederajat</option>
                                 <option value="D3" {{ old('education_level') == 'D3' ? 'selected' : '' }}>D3 (Diploma 3)</option>
@@ -157,25 +165,13 @@
 
                         <div>
                             <x-input-label for="major_requirement" :value="__('Jurusan / Bidang Studi')" />
-                            <x-text-input id="major_requirement" name="major_requirement" type="text" list="major_options" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('major_requirement')" placeholder="Misal: Teknik Informatika / Semua Jurusan" />
-                            <datalist id="major_options">
-                                <option value="Semua Jurusan">
-                                <option value="Teknik Informatika / Ilmu Komputer">
-                                <option value="Sistem Informasi">
-                                <option value="Teknik Komputer / Elektro">
-                                <option value="Manajemen / Bisnis">
-                                <option value="Akuntansi / Keuangan">
-                                <option value="Desain Komunikasi Visual (DKV)">
-                                <option value="Ilmu Komunikasi / PR">
-                                <option value="Psikologi / HR">
-                                <option value="Hukum">
-                                <option value="Teknik Industri">
-                            </datalist>
+                            <x-text-input id="major_requirement" name="major_requirement" type="text" list="indonesia-majors-list" class="mt-1 block w-full rounded-xl text-xs font-medium border-slate-300 focus:ring-blue-500 focus:border-blue-500" :value="old('major_requirement')" placeholder="Cari / Pilih Jurusan (Misal: Teknik Informatika, Akuntansi...)" />
+                            <x-indonesia-majors-datalist />
                         </div>
 
                         <div>
                             <x-input-label for="gender_requirement" :value="__('Kriteria Gender')" />
-                            <select id="gender_requirement" name="gender_requirement" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white transition-colors">
+                            <select id="gender_requirement" name="gender_requirement" class="mt-1 block w-full rounded-xl text-xs font-bold border-slate-300 focus:ring-blue-500 focus:border-blue-500 bg-white">
                                 <option value="Pria & Wanita" {{ old('gender_requirement') == 'Pria & Wanita' ? 'selected' : '' }}>Pria & Wanita (Terbuka Umum)</option>
                                 <option value="Khusus Pria" {{ old('gender_requirement') == 'Khusus Pria' ? 'selected' : '' }}>Khusus Pria</option>
                                 <option value="Khusus Wanita" {{ old('gender_requirement') == 'Khusus Wanita' ? 'selected' : '' }}>Khusus Wanita</option>
@@ -184,14 +180,14 @@
 
                         <div>
                             <x-input-label for="age_range" :value="__('Batasan Usia')" />
-                            <x-text-input id="age_range" name="age_range" type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('age_range')" placeholder="Misal: 21 - 35 Tahun" />
+                            <x-text-input id="age_range" name="age_range" type="text" class="mt-1 block w-full rounded-xl text-xs font-medium border-slate-300 focus:ring-blue-500 focus:border-blue-500" :value="old('age_range')" placeholder="Misal: 21 - 35 Tahun" />
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <x-input-label for="salary" :value="__('Kisaran Gaji / Uang Saku (Bebas Diatur HR)')" />
-                            <x-text-input id="salary" name="salary" type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('salary')" placeholder="Misal: Rp 2.500.000 (Uang Saku Magang) / Sesuai UMK" />
+                            <x-input-label for="salary" :value="__('Kisaran Gaji / Uang Saku')" />
+                            <x-text-input id="salary" name="salary" type="text" class="mt-1 block w-full rounded-xl text-xs font-medium border-slate-300 focus:ring-blue-500 focus:border-blue-500" :value="old('salary')" placeholder="Misal: Rp 2.500.000 (Uang Saku Magang) / Sesuai UMK" />
                             <div class="mt-1.5 flex flex-wrap items-center gap-1.5 text-4xs font-bold text-slate-600">
                                 <button type="button" onclick="document.getElementById('salary').value = 'Gaji Negosiasi'" class="px-2 py-0.5 rounded bg-slate-200 hover:bg-slate-300 transition">Gaji Negosiasi</button>
                                 <button type="button" onclick="document.getElementById('salary').value = 'Sesuai UMK 2026 Wilayah'" class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition">Sesuai UMK 2026</button>
@@ -203,44 +199,44 @@
 
                         <div>
                             <x-input-label for="quota" :value="__('Batas Kuota Pelamar (Opsional)')" />
-                            <x-text-input id="quota" name="quota" type="number" min="1" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('quota')" placeholder="Kosongkan jika tak terbatas (Contoh: 10)" />
+                            <x-text-input id="quota" name="quota" type="number" min="1" class="mt-1 block w-full rounded-xl text-xs font-medium border-slate-300 focus:ring-blue-500 focus:border-blue-500" :value="old('quota')" placeholder="Kosongkan jika tak terbatas (Contoh: 10)" />
                             <x-input-error class="mt-2" :messages="$errors->get('quota')" />
                         </div>
 
                         <div>
                             <x-input-label for="deadline" :value="__('Tanggal Batas Akhir (Deadline)')" />
-                            <x-text-input id="deadline" name="deadline" type="date" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('deadline', date('Y-m-d', strtotime('+30 days')))" required />
+                            <x-text-input id="deadline" name="deadline" type="date" class="mt-1 block w-full rounded-xl text-xs font-bold border-slate-300 focus:ring-blue-500 focus:border-blue-500" :value="old('deadline', date('Y-m-d', strtotime('+30 days')))" required />
                             <x-input-error class="mt-2" :messages="$errors->get('deadline')" />
                         </div>
                     </div>
 
                     <div>
                         <x-input-label for="skills_required" :value="__('Kata Kunci Skill Utama (Pisahkan dengan koma)')" />
-                        <x-text-input id="skills_required" name="skills_required" type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white" :value="old('skills_required')" placeholder="Misal: PHP, Laravel, MySQL, REST API, Docker" />
-                        <p class="text-xs text-blue-600 mt-1">*Skill ini akan dipakai oleh algoritma pencocokan otomatis (Match Score %) kandidat.</p>
+                        <x-text-input id="skills_required" name="skills_required" type="text" class="mt-1 block w-full rounded-xl text-xs font-medium border-slate-300 focus:ring-blue-500 focus:border-blue-500" :value="old('skills_required')" placeholder="Misal: PHP, Laravel, MySQL, REST API, Docker" />
+                        <p class="text-3xs text-blue-600 font-semibold mt-1">*Skill ini akan dipakai oleh algoritma pencocokan otomatis (Match Score %) kandidat.</p>
                     </div>
 
                     <div>
                         <x-input-label for="description" :value="__('Deskripsi Pekerjaan')" />
-                        <textarea id="description" name="description" rows="5" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white" required placeholder="Tuliskan peran dan tanggung jawab utama...">{{ old('description') }}</textarea>
+                        <textarea id="description" name="description" rows="5" class="mt-1 block w-full rounded-xl text-xs font-medium border-slate-300 focus:ring-blue-500 focus:border-blue-500" required placeholder="Tuliskan peran dan tanggung jawab utama...">{{ old('description') }}</textarea>
                         <x-input-error class="mt-2" :messages="$errors->get('description')" />
                     </div>
 
                     <div>
                         <x-input-label for="requirements" :value="__('Persyaratan & Keahlian (Kualifikasi Detail)')" />
-                        <textarea id="requirements" name="requirements" rows="5" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white" required placeholder="Tuliskan kualifikasi, pengalaman, dan keahlian yang dibutuhkan...">{{ old('requirements') }}</textarea>
+                        <textarea id="requirements" name="requirements" rows="5" class="mt-1 block w-full rounded-xl text-xs font-medium border-slate-300 focus:ring-blue-500 focus:border-blue-500" required placeholder="Tuliskan kualifikasi, pengalaman, dan keahlian yang dibutuhkan...">{{ old('requirements') }}</textarea>
                         <x-input-error class="mt-2" :messages="$errors->get('requirements')" />
                     </div>
 
                     <div>
                         <x-input-label for="benefits" :value="__('Tunjangan & Benefit (Opsional)')" />
-                        <textarea id="benefits" name="benefits" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white" placeholder="Misal: Asuransi Swasta, Laptop Kerja, Jam Kerja Fleksibel, Bonus Kinerja...">{{ old('benefits') }}</textarea>
+                        <textarea id="benefits" name="benefits" rows="3" class="mt-1 block w-full rounded-xl text-xs font-medium border-slate-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Misal: Asuransi Swasta, Laptop Kerja, Jam Kerja Fleksibel, Bonus Kinerja...">{{ old('benefits') }}</textarea>
                         <x-input-error class="mt-2" :messages="$errors->get('benefits')" />
                     </div>
 
                     <div>
                         <x-input-label for="status" :value="__('Status Lowongan')" />
-                        <select id="status" name="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white transition-colors" required>
+                        <select id="status" name="status" class="mt-1 block w-full rounded-xl text-xs font-bold border-slate-300 focus:ring-blue-500 focus:border-blue-500 bg-white" required>
                             <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Aktif (Tayang)</option>
                             <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Non-Aktif (Draf)</option>
                             <option value="closed" {{ old('status') == 'closed' ? 'selected' : '' }}>Ditutup</option>
@@ -248,11 +244,13 @@
                         <x-input-error class="mt-2" :messages="$errors->get('status')" />
                     </div>
 
-                    <div class="flex items-center gap-4 mt-8 pt-6 border-t border-gray-100">
-                        <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-md transition">
-                            🚀 Simpan & Tayangkan Lowongan
+                    <div class="flex items-center gap-3 mt-8 pt-6 border-t border-slate-100">
+                        <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow-2xs transition flex items-center gap-2 border border-blue-600">
+                            <i class="fa-solid fa-paper-plane"></i> Simpan & Tayangkan Lowongan
                         </button>
-                        <a href="{{ route('admin.jobs.index') }}" class="text-gray-600 hover:text-gray-900 font-medium text-sm transition">Batal</a>
+                        <a href="{{ route('admin.jobs.index') }}" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition border border-slate-200">
+                            Batal
+                        </a>
                     </div>
                 </form>
             </div>

@@ -58,7 +58,8 @@ class CandidateTestApiController extends Controller
     )]
     public function showTest(Request $request, $jobId)
     {
-        $job = Job::find($jobId);
+        $realJobId = \App\Helpers\IdHasher::decode($jobId) ?? $jobId;
+        $job = Job::find($realJobId);
 
         if (!$job) {
             return $this->errorResponse('Lowongan pekerjaan tidak ditemukan.', 404);
@@ -137,7 +138,8 @@ class CandidateTestApiController extends Controller
     )]
     public function submitTest(Request $request, $jobId)
     {
-        $test = JobTest::with('questions')->where('job_id', $jobId)->first();
+        $realJobId = \App\Helpers\IdHasher::decode($jobId) ?? $jobId;
+        $test = JobTest::with('questions')->where('job_id', $realJobId)->first();
 
         if (!$test) {
             return $this->errorResponse('Tes online tidak ditemukan.', 404);

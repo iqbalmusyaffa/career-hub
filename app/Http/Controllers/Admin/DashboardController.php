@@ -88,6 +88,7 @@ class DashboardController extends Controller
         $totalApplicants = Application::distinct('user_id')->count('user_id');
         $totalApplications = Application::count();
         $newApplications = Application::where('status', 'pending')->count();
+        $reviewingApplications = Application::where('status', 'reviewing')->count();
         $acceptedApplications = Application::where('status', 'accepted')->count();
         $rejectedApplications = Application::where('status', 'rejected')->count();
         $interviewApplications = Application::where('status', 'interview')->count();
@@ -96,11 +97,39 @@ class DashboardController extends Controller
 
         $statusCounts = [
             'pending' => $newApplications,
-            'reviewing' => Application::where('status', 'reviewing')->count(),
+            'reviewing' => $reviewingApplications,
             'interview' => $interviewApplications,
             'accepted' => $acceptedApplications,
             'rejected' => $rejectedApplications,
         ];
+
+        // Conversion Rate Percentages for Recruitment Funnel
+        $conversionRate = $totalApplications > 0 ? round(($acceptedApplications / $totalApplications) * 100, 1) : 0;
+
+        // Work Type Breakdown
+        $workTypeBreakdown = [
+            'fulltime' => Job::whereIn('work_type', ['fulltime', 'WFO', 'Full-time'])->count(),
+            'remote' => Job::whereIn('work_type', ['remote', 'WFH', 'Remote'])->count(),
+            'hybrid' => Job::whereIn('work_type', ['hybrid', 'Hybrid'])->count(),
+            'internship' => Job::whereIn('work_type', ['internship', 'Magang', 'Internship'])->count(),
+        ];
+
+        // Documents Issued Statistics
+        $agreementsCount = \App\Models\ApplicationAgreement::count();
+        $certificatesCount = \App\Models\InternshipCertificate::count();
+        $transcriptsCount = \App\Models\InternshipTranscript::count();
+        $terminationsCount = \App\Models\EmployeeTermination::count();
+
+        // Monthly Applicant Trend (Last 6 Months)
+        $monthlyTrendLabels = [];
+        $monthlyTrendData = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $monthlyTrendLabels[] = $date->format('M Y');
+            $monthlyTrendData[] = Application::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+        }
 
         $topJobs = Job::withCount('applications')
             ->orderBy('applications_count', 'desc')
@@ -115,7 +144,9 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', compact(
             'totalJobs', 'activeJobs', 'totalApplicants', 'totalApplications', 
-            'newApplications', 'latestApplications', 'statusCounts', 'topJobs', 'upcomingInterviews'
+            'newApplications', 'latestApplications', 'statusCounts', 'topJobs', 'upcomingInterviews',
+            'conversionRate', 'workTypeBreakdown', 'agreementsCount', 'certificatesCount',
+            'transcriptsCount', 'terminationsCount', 'monthlyTrendLabels', 'monthlyTrendData'
         ));
     }
 }

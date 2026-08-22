@@ -1,38 +1,38 @@
 @php
     $user = auth()->user();
     $roleName = 'Admin';
-    $roleBadgeClass = 'bg-blue-600';
+    $roleBadgeClass = 'bg-blue-500/15 text-blue-400 border-blue-500/30';
     if ($user->hasRole('Super Admin')) {
         $roleName = 'Super Admin';
-        $roleBadgeClass = 'bg-red-600';
+        $roleBadgeClass = 'bg-rose-500/15 text-rose-400 border-rose-500/30';
     } elseif ($user->hasRole('Company Owner')) {
         $roleName = 'Company Owner';
-        $roleBadgeClass = 'bg-amber-500';
+        $roleBadgeClass = 'bg-amber-500/15 text-amber-400 border-amber-500/30';
     } elseif ($user->hasRole('HR')) {
         $roleName = 'HR Manager';
-        $roleBadgeClass = 'bg-indigo-600';
+        $roleBadgeClass = 'bg-blue-500/15 text-blue-400 border-blue-500/30';
     }
 @endphp
 
-<div x-data="{ sidebarOpen: false }" class="flex h-screen bg-gray-50 overflow-hidden font-sans">
+<div x-data="{ sidebarOpen: false }" class="flex h-screen bg-slate-50 overflow-hidden font-sans">
 
     <!-- Mobile Sidebar Backdrop -->
-    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-transition.opacity class="fixed inset-0 z-40 bg-gray-900/50 lg:hidden"></div>
+    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-transition.opacity class="fixed inset-0 z-40 bg-slate-900/50 lg:hidden"></div>
 
     <!-- LEFT SIDEBAR -->
-    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-300 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col justify-between shrink-0 shadow-xl border-r border-slate-800">
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-y-0 left-0 z-50 w-68 bg-slate-900 text-slate-300 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col justify-between shrink-0 shadow-xl border-r border-slate-800">
         
         <div class="flex flex-col h-full">
             <!-- Brand Logo Header -->
-            <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800/80 bg-slate-950/40">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-base shadow-md">
+            <div class="py-5 px-6 border-b border-slate-800/80 bg-slate-950/50 flex items-center justify-between">
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-2xl bg-blue-600 text-white font-black text-lg flex items-center justify-center shadow-md shrink-0 border border-blue-500/30">
                         T
                     </div>
-                    <div>
-                        <span class="font-black text-lg text-white tracking-tight">TalentFlow</span>
-                        <div class="flex items-center gap-1 mt-0.5">
-                            <span class="px-2 py-0.2 text-3xs font-black rounded-md text-white uppercase tracking-wider {{ $roleBadgeClass }}">
+                    <div class="flex flex-col justify-center">
+                        <span class="font-black text-base text-white tracking-tight leading-none">TalentFlow</span>
+                        <div class="mt-1">
+                            <span class="inline-block px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider border leading-none {{ $roleBadgeClass }}">
                                 {{ $roleName }}
                             </span>
                         </div>
@@ -44,13 +44,13 @@
             </div>
 
             <!-- Navigation Links -->
-            <div class="flex-1 overflow-y-auto py-6 px-4 space-y-6">
+            <div class="flex-1 overflow-y-auto py-6 px-5 space-y-7">
 
                 <!-- GROUP 1: UTAMA -->
-                <div class="space-y-1">
-                    <div class="px-3 text-3xs font-black uppercase tracking-wider text-slate-400 mb-2">Utama</div>
+                <div class="space-y-1.5">
+                    <div class="px-3 text-3xs font-black uppercase tracking-wider text-slate-400 mb-2.5">Utama</div>
 
-                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.dashboard') || request()->routeIs('dashboard') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.dashboard') || request()->routeIs('dashboard') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
                         <i class="fa-solid fa-chart-pie text-sm w-5 text-center"></i>
                         <span>Dashboard</span>
                     </a>
@@ -85,10 +85,25 @@
                         <span>Template Email HR</span>
                     </a>
 
+                    <a href="{{ route('admin.headcount-budgets.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.headcount-budgets.*') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="fa-solid fa-coins text-sm w-5 text-center text-emerald-400"></i>
+                        <span>Headcount Planning</span>
+                    </a>
+
+                    <a href="{{ route('admin.reports.builder.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.reports.builder.*') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="fa-solid fa-chart-pie text-sm w-5 text-center text-cyan-400"></i>
+                        <span>Custom Report Builder</span>
+                    </a>
+
                     @if(!$user->hasRole('Super Admin'))
-                    <a href="{{ route('admin.company-team.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.company-team.*') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                    <a href="{{ route('admin.company-team.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.company-team.index') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                         <i class="fa-solid fa-users-gear text-sm w-5 text-center text-blue-400"></i>
                         <span>Tim HR Perusahaan</span>
+                    </a>
+
+                    <a href="{{ route('admin.company-team.audit-logs') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.company-team.audit-logs') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="fa-solid fa-clock-rotate-left text-sm w-5 text-center text-indigo-400"></i>
+                        <span>Log Aktivitas Tim HR</span>
                     </a>
 
                     <a href="{{ route('admin.company.profile.edit') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.company.profile.*') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
@@ -101,34 +116,49 @@
                 <!-- GROUP 3: SUPER ADMIN CONTROL (Super Admin Only) -->
                 @if($user->hasRole('Super Admin'))
                 <div class="space-y-1 pt-2 border-t border-slate-800">
-                    <div class="px-3 text-3xs font-black uppercase tracking-wider text-red-400 mb-2">Super Admin Control</div>
+                    <div class="px-3 text-3xs font-black uppercase tracking-wider text-rose-400 mb-2">Super Admin Control</div>
 
-                    <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.users.*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                        <i class="fa-solid fa-user-shield text-sm w-5 text-center text-red-400"></i>
+                    <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.users.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="fa-solid fa-user-shield text-sm w-5 text-center text-rose-400"></i>
                         <span>Kelola Pengguna</span>
                     </a>
 
-                    <a href="{{ route('admin.companies.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.companies.*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                    <a href="{{ route('admin.companies.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.companies.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                         <i class="fa-solid fa-building-circle-check text-sm w-5 text-center text-amber-400"></i>
                         <span>Kelola Perusahaan</span>
                     </a>
 
-                    <a href="{{ route('admin.settings.smtp.edit') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.settings.smtp.*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                        <i class="fa-solid fa-envelope-gear text-sm w-5 text-center text-emerald-400"></i>
+                    <a href="{{ route('admin.settings.smtp.edit') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.settings.smtp.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="fa-solid fa-sliders text-sm w-5 text-center text-emerald-400"></i>
                         <span>Pengaturan SMTP</span>
                     </a>
 
-                    <a href="{{ route('admin.settings.seo.edit') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.settings.seo.*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                    <a href="{{ route('admin.settings.seo.edit') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.settings.seo.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                         <i class="fa-solid fa-bullhorn text-sm w-5 text-center text-blue-400"></i>
                         <span>Branding & SEO Web</span>
                     </a>
 
-                    <a href="{{ route('admin.audit-logs.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.audit-logs.*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                    <a href="{{ route('admin.audit-logs.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.audit-logs.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                         <i class="fa-solid fa-list-check text-sm w-5 text-center text-indigo-400"></i>
                         <span>Audit Logs Activity</span>
                     </a>
 
-                    <a href="{{ route('admin.cancellation-tickets.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.cancellation-tickets.*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                    <a href="{{ route('admin.analytics.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.analytics.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="fa-solid fa-chart-line text-sm w-5 text-center text-blue-400"></i>
+                        <span>Executive Analytics</span>
+                    </a>
+
+                    <a href="{{ route('admin.announcements.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.announcements.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="fa-solid fa-bullhorn text-sm w-5 text-center text-amber-400"></i>
+                        <span>Broadcast Center</span>
+                    </a>
+
+                    <a href="{{ route('admin.blacklists.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.blacklists.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="fa-solid fa-user-shield text-sm w-5 text-center text-rose-400"></i>
+                        <span>Anti-Fraud Blacklist</span>
+                    </a>
+
+                    <a href="{{ route('admin.cancellation-tickets.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.cancellation-tickets.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                         <i class="fa-solid fa-shield-halved text-sm w-5 text-center text-rose-400"></i>
                         <span>Aduan Pembatalan</span>
                     </a>
@@ -152,7 +182,7 @@
                     <i class="fa-solid fa-ellipsis-vertical text-slate-500 group-hover:text-slate-300 ml-2 transition"></i>
                 </button>
 
-                <!-- Interactive Popover Menu (Appears upwards) -->
+                <!-- Interactive Popover Menu -->
                 <div x-show="userMenuOpen" @click.away="userMenuOpen = false" x-transition.origin.bottom.left class="absolute bottom-full left-3 mb-2 w-56 bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl py-2 z-50 divide-y divide-slate-700/60" style="display: none;">
                     <div class="px-4 py-2 text-3xs font-black uppercase text-slate-400">
                         Akun Terhubung: <span class="text-white font-bold">{{ $roleName }}</span>
@@ -190,15 +220,15 @@
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
         
         <!-- Top Navbar Header -->
-        <header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 sm:px-8 shrink-0 shadow-2xs">
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 shrink-0 shadow-2xs">
             <div class="flex items-center gap-3">
-                <button @click="sidebarOpen = true" class="lg:hidden p-2 rounded-xl text-gray-600 hover:bg-gray-100">
+                <button @click="sidebarOpen = true" class="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100">
                     <i class="fa-solid fa-bars text-lg"></i>
                 </button>
-                <h1 class="text-sm font-black text-gray-900 hidden sm:block">Panel Kontrol Dashboard Enterprise</h1>
+                <h1 class="text-sm font-extrabold text-slate-900 hidden sm:block">Panel Kontrol Dashboard Enterprise</h1>
             </div>
 
-            <!-- Top Header Actions: Notification Bell & Profile Dropdown -->
+            <!-- Top Header Actions -->
             <div class="flex items-center gap-4">
 
                 <!-- Real-time Notification Bell Component -->
@@ -239,27 +269,27 @@
                     }
                 }" x-init="fetchNotifications(); setInterval(() => fetchNotifications(), 15000);" class="relative">
 
-                    <button @click="open = !open" class="relative p-2 text-gray-500 hover:text-blue-600 focus:outline-none transition rounded-full hover:bg-gray-100">
+                    <button @click="open = !open" class="relative p-2 text-slate-500 hover:text-blue-600 focus:outline-none transition rounded-full hover:bg-slate-100">
                         <i class="fa-solid fa-bell text-lg"></i>
                         <template x-if="unreadCount > 0">
-                            <span class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-3xs font-black text-white ring-2 ring-white animate-pulse" x-text="unreadCount"></span>
+                            <span class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-600 text-3xs font-black text-white ring-2 ring-white animate-pulse" x-text="unreadCount"></span>
                         </template>
                     </button>
 
                     <!-- Dropdown Drawer -->
-                    <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-3xl shadow-xl border border-gray-100 z-50 overflow-hidden" style="display: none;">
-                        <div class="p-4 bg-gray-900 text-white flex justify-between items-center">
+                    <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-3xl shadow-xl border border-slate-200 z-50 overflow-hidden" style="display: none;">
+                        <div class="p-4 bg-slate-900 text-white flex justify-between items-center">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-bell text-amber-400"></i>
                                 <span class="font-black text-xs">Notifikasi Platform</span>
-                                <span x-show="unreadCount > 0" class="px-2 py-0.5 bg-red-600 text-white rounded-full text-3xs font-black" x-text="unreadCount + ' Baru'"></span>
+                                <span x-show="unreadCount > 0" class="px-2 py-0.5 bg-rose-600 text-white rounded-full text-3xs font-black" x-text="unreadCount + ' Baru'"></span>
                             </div>
-                            <button @click="markAllAsRead()" class="text-3xs font-bold text-gray-300 hover:text-white underline">
+                            <button @click="markAllAsRead()" class="text-3xs font-bold text-slate-300 hover:text-white underline">
                                 Tandai Semua Dibaca
                             </button>
                         </div>
 
-                        <div class="max-h-80 overflow-y-auto divide-y divide-gray-100">
+                        <div class="max-h-80 overflow-y-auto divide-y divide-slate-100">
                             <template x-for="notif in notifications" :key="notif.id">
                                 <div @click="markAsRead(notif.id, notif.link)" class="p-3.5 hover:bg-blue-50/50 transition cursor-pointer flex gap-3 items-start" :class="{'bg-blue-50/30': !notif.is_read}">
                                     <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs mt-0.5"
@@ -276,16 +306,16 @@
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex justify-between items-center">
-                                            <h4 class="font-bold text-xs text-gray-900 truncate" x-text="notif.title"></h4>
-                                            <span class="text-3xs text-gray-400 shrink-0 ml-2" x-text="notif.created_at_human"></span>
+                                            <h4 class="font-bold text-xs text-slate-900 truncate" x-text="notif.title"></h4>
+                                            <span class="text-3xs text-slate-400 shrink-0 ml-2" x-text="notif.created_at_human"></span>
                                         </div>
-                                        <p class="text-2xs text-gray-600 mt-0.5 line-clamp-2" x-text="notif.message"></p>
+                                        <p class="text-2xs text-slate-600 mt-0.5 line-clamp-2" x-text="notif.message"></p>
                                     </div>
                                 </div>
                             </template>
 
                             <template x-if="notifications.length === 0">
-                                <div class="p-8 text-center text-gray-400 text-xs font-medium">
+                                <div class="p-8 text-center text-slate-400 text-xs font-medium">
                                     Belum ada notifikasi baru.
                                 </div>
                             </template>
@@ -296,22 +326,22 @@
                 <!-- User Profile & Logout Dropdown -->
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="flex items-center gap-2 text-xs font-bold text-gray-700 hover:text-blue-600 transition">
+                        <button class="flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-blue-600 transition">
                             <div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shadow-2xs">
                                 {{ strtoupper(substr($user->name, 0, 1)) }}
                             </div>
-                            <span class="hidden sm:inline">{{ $user->name }}</span>
-                            <i class="fa-solid fa-chevron-down text-2xs text-gray-400"></i>
+                            <span class="hidden sm:inline font-bold">{{ $user->name }}</span>
+                            <i class="fa-solid fa-chevron-down text-2xs text-slate-400"></i>
                         </button>
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')" class="flex items-center gap-2">
-                            <i class="fa-solid fa-user-gear text-gray-400"></i> {{ __('Pengaturan Akun') }}
+                        <x-dropdown-link :href="route('profile.edit')" class="flex items-center gap-2 text-xs font-semibold">
+                            <i class="fa-solid fa-user-gear text-slate-400"></i> {{ __('Pengaturan Akun') }}
                         </x-dropdown-link>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <x-dropdown-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();" class="flex items-center gap-2 text-red-600">
+                            <x-dropdown-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();" class="flex items-center gap-2 text-xs font-bold text-rose-600">
                                 <i class="fa-solid fa-right-from-bracket"></i> {{ __('Keluar / Logout') }}
                             </x-dropdown-link>
                         </form>
@@ -322,11 +352,37 @@
         </header>
 
         <!-- Main Content Area Scrollable -->
-        <div class="flex-1 overflow-y-auto bg-gray-50 flex flex-col justify-between">
+        <div class="flex-1 overflow-y-auto bg-slate-50/60 flex flex-col justify-between">
             <div>
+                <!-- ACTIVE GLOBAL ANNOUNCEMENT BANNERS -->
+                @php
+                    $activeAnnouncements = \App\Models\SystemAnnouncement::getActiveAnnouncementsForUser(auth()->user());
+                @endphp
+                @if($activeAnnouncements->count() > 0)
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 space-y-3">
+                        @foreach($activeAnnouncements as $ann)
+                            <div class="p-4 rounded-2xl border shadow-2xs flex items-start justify-between gap-4 text-xs font-bold
+                                {{ $ann->type === 'danger' ? 'bg-rose-50 border-rose-200 text-rose-900' : '' }}
+                                {{ $ann->type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-900' : '' }}
+                                {{ $ann->type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : '' }}
+                                {{ $ann->type === 'info' ? 'bg-blue-50 border-blue-200 text-blue-900' : '' }}">
+                                <div class="flex items-start gap-3">
+                                    <div class="text-base mt-0.5">
+                                        @if($ann->type === 'danger') 🚨 @elseif($ann->type === 'warning') ⚠️ @elseif($ann->type === 'success') 📢 @else ℹ️ @endif
+                                    </div>
+                                    <div>
+                                        <h4 class="font-extrabold text-xs uppercase tracking-wide">{{ $ann->title }}</h4>
+                                        <p class="font-medium text-xs mt-0.5 opacity-90 leading-relaxed">{{ $ann->content }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+
                 <!-- Optional Header Slot -->
                 @if (isset($header))
-                    <header class="bg-white border-b border-gray-100 shadow-2xs">
+                    <header class="bg-white border-b border-slate-200/80 shadow-2xs">
                         <div class="max-w-7xl mx-auto py-5 px-4 sm:px-6 lg:px-8">
                             {{ $header }}
                         </div>

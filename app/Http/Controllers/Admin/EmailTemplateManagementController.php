@@ -82,12 +82,13 @@ class EmailTemplateManagementController extends Controller
     public function broadcast(Request $request)
     {
         $request->validate([
-            'application_id' => 'required|exists:applications,id',
+            'application_id' => 'required',
             'subject' => 'required|string|max:255',
             'body_content' => 'required|string',
         ]);
 
-        $application = Application::with(['user', 'job'])->findOrFail($request->application_id);
+        $realAppId = \App\Helpers\IdHasher::decode($request->application_id) ?? $request->application_id;
+        $application = Application::with(['user', 'job'])->findOrFail($realAppId);
         $candidateEmail = $application->user->email;
 
         try {
@@ -101,7 +102,7 @@ class EmailTemplateManagementController extends Controller
                 $application->user_id,
                 $request->subject,
                 "Email dari HR: " . substr(strip_tags($request->body_content), 0, 150) . "...",
-                route('jobs.show', $application->job_id),
+                route('jobs.show', $application->job),
                 'info'
             );
 

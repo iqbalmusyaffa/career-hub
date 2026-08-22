@@ -213,9 +213,9 @@
                     <div>
                         <h3 class="text-3xs font-bold text-slate-300 tracking-wider uppercase mb-4">Dukungan & Legal</h3>
                         <ul class="space-y-2 text-3xs">
-                            <li><a href="#" class="hover:text-white transition">Pusat Bantuan & FAQ</a></li>
-                            <li><a href="#" class="hover:text-white transition">Kebijakan Privasi & Data</a></li>
-                            <li><a href="#" class="hover:text-white transition">Syarat & Ketentuan Layanan</a></li>
+                            <li><a href="{{ route('pages.faq') }}" class="hover:text-white transition">Pusat Bantuan & FAQ</a></li>
+                            <li><a href="{{ route('pages.privacy') }}" class="hover:text-white transition">Kebijakan Privasi & Data</a></li>
+                            <li><a href="{{ route('pages.terms') }}" class="hover:text-white transition">Syarat & Ketentuan Layanan</a></li>
                             <li><a href="mailto:support@talentflow.com" class="hover:text-white transition text-slate-300 font-medium">✉️ support@talentflow.com</a></li>
                         </ul>
                     </div>

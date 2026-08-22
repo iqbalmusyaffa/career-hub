@@ -83,4 +83,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(CandidateDocument::class);
     }
+
+    public function jobs()
+    {
+        return $this->hasMany(Job::class);
+    }
 }

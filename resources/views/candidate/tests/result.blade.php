@@ -53,7 +53,7 @@
                 </div>
 
                 <div class="pt-4">
-                    <a href="{{ route('jobs.show', $job->id) }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition text-sm">
+                    <a href="{{ route('jobs.show', $job) }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition text-sm">
                         &larr; Kembali ke Halaman Lowongan
                     </a>
                 </div>

@@ -30,10 +30,31 @@ class JobController extends Controller
 
     public function store(StoreJobRequest $request)
     {
-        $job = $this->jobService->createJob($request->validated());
+        $data = $request->validated();
+        $message = 'Lowongan kerja berhasil dipublikasikan!';
+
+        // Moderasi Otomatis untuk Lowongan Full-Time di Bawah UMK
+        $umk = \App\Models\UmkReference::findByLocation($data['location'] ?? '');
+        if ($umk && strtolower($data['work_type'] ?? '') === 'full-time') {
+            preg_match_all('/\d[\d\.\,]*/', $data['salary'] ?? '', $matches);
+            $numSalary = 0;
+            if (!empty($matches[0])) {
+                $rawNum = str_replace(['.', ','], '', $matches[0][0]);
+                $numSalary = (float)$rawNum;
+                if ($numSalary > 0 && $numSalary < 100) {
+                    $numSalary = $numSalary * 1000000;
+                }
+            }
+            if ($numSalary > 0 && $numSalary < (float)$umk->umk_amount && !auth()->user()->hasRole('Super Admin')) {
+                $data['status'] = 'inactive';
+                $message = '⚠️ Lowongan berhasil disimpan sebagai DRAF (Menunggu Review) karena gaji di bawah UMK 2026 Wilayah ' . $umk->city_district . ' (' . $umk->formatted_umk . '). Memerlukan persetujuan Super Admin sebelum ditayangkan.';
+            }
+        }
+
+        $job = $this->jobService->createJob($data);
         AuditLog::record('job_created', 'Mempublikasikan lowongan kerja baru: ' . $request->title);
 
-        return redirect()->route('admin.jobs.index')->with('success', 'Job created successfully.');
+        return redirect()->route('admin.jobs.index')->with('success', $message);
     }
 
     public function edit($id)

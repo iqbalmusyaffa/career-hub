@@ -1,160 +1,153 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-black text-2xl text-gray-900 leading-tight flex items-center gap-3">
-            <i class="fa-solid fa-chart-pie text-blue-600"></i> {{ __('Dasbor Analisis & Rekap KPI Rekrutmen') }}
-        </h2>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h2 class="font-black text-2xl text-slate-900 leading-tight flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-blue-600"></i> Executive Analytics & Command Center
+                </h2>
+                <p class="text-xs text-slate-500 mt-1 font-medium">Analisis makro performa rekrutmen, konversi pelamar, dan efisiensi platform.</p>
+            </div>
+            <a href="{{ route('admin.dashboard') }}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-xl text-xs transition border border-slate-200">
+                &larr; Kembali ke Dashboard
+            </a>
+        </div>
     </x-slot>
 
-    <!-- Include Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <div class="py-8 bg-slate-50/60 min-h-screen">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
-    <div class="py-10 bg-gray-50/50 min-h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
-
-            <!-- Summary KPI Cards -->
+            <!-- KPI Summary Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Lowongan Aktif</span>
-                        <div class="text-3xl font-black text-blue-600 mt-1">{{ number_format($totalActiveJobs) }}</div>
-                    </div>
-                    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
-                        <i class="fa-solid fa-briefcase"></i>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Pelamar</span>
-                        <div class="text-3xl font-black text-indigo-600 mt-1">{{ number_format($totalApplications) }}</div>
-                    </div>
-                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl font-bold">
-                        <i class="fa-solid fa-users"></i>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Lolos Hired</span>
-                        <div class="text-3xl font-black text-emerald-600 mt-1">{{ number_format($stageStats['Diterima (Hired)'] ?? 0) }}</div>
-                    </div>
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
-                        <i class="fa-solid fa-user-check"></i>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Tingkat Kelulusan</span>
-                        <div class="text-3xl font-black text-purple-600 mt-1">
-                            {{ $totalApplications > 0 ? round(($stageStats['Diterima (Hired)'] / $totalApplications) * 100, 1) : 0 }}%
+                <!-- Total Applications -->
+                <div class="bg-white p-6 rounded-3xl shadow-2xs border border-slate-200/80 space-y-2">
+                    <div class="flex items-center justify-between text-slate-400">
+                        <span class="text-3xs font-extrabold uppercase tracking-wider text-slate-500">Total Lamaran Masuk</span>
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm border border-blue-100">
+                            <i class="fa-solid fa-users"></i>
                         </div>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl font-bold">
-                        <i class="fa-solid fa-chart-line"></i>
+                    <div class="text-3xl font-black text-slate-900 tracking-tight">{{ number_format($totalApplications) }}</div>
+                    <p class="text-3xs text-slate-500 font-medium">Melalui portal karir platform</p>
+                </div>
+
+                <!-- Conversion Rate -->
+                <div class="bg-white p-6 rounded-3xl shadow-2xs border border-slate-200/80 space-y-2">
+                    <div class="flex items-center justify-between text-slate-400">
+                        <span class="text-3xs font-extrabold uppercase tracking-wider text-slate-500">Conversion Hired Rate</span>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm border border-emerald-100">
+                            <i class="fa-solid fa-chart-pie"></i>
+                        </div>
                     </div>
+                    <div class="text-3xl font-black text-emerald-600 tracking-tight">{{ $conversionRate }}%</div>
+                    <p class="text-3xs text-emerald-700 font-bold">Rasio Pelamar ➔ Diterima Kerja</p>
+                </div>
+
+                <!-- Avg Time to Hire -->
+                <div class="bg-white p-6 rounded-3xl shadow-2xs border border-slate-200/80 space-y-2">
+                    <div class="flex items-center justify-between text-slate-400">
+                        <span class="text-3xs font-extrabold uppercase tracking-wider text-slate-500">Rata-rata Waktu Rekrutmen</span>
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm border border-indigo-100">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-black text-indigo-600 tracking-tight">{{ $avgDaysToHire }} <span class="text-sm font-bold text-slate-500">Hari</span></div>
+                    <p class="text-3xs text-indigo-700 font-bold">Time-to-Hire Rata-rata</p>
+                </div>
+
+                <!-- Total Companies -->
+                <div class="bg-white p-6 rounded-3xl shadow-2xs border border-slate-200/80 space-y-2">
+                    <div class="flex items-center justify-between text-slate-400">
+                        <span class="text-3xs font-extrabold uppercase tracking-wider text-slate-500">Perusahaan Terdaftar</span>
+                        <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-sm border border-purple-100">
+                            <i class="fa-solid fa-building"></i>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-black text-purple-600 tracking-tight">{{ number_format($totalCompanies) }}</div>
+                    <p class="text-3xs text-slate-500 font-medium">Perusahaan aktif di platform</p>
                 </div>
             </div>
 
-            <!-- Visual Charts Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Chart 1: Pipeline Conversion -->
-                <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-gray-100">
-                    <h3 class="font-black text-lg text-gray-900 mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-filter text-blue-600"></i> Konversi Tahapan Pipeline Rekrutmen
-                    </h3>
-                    <div class="h-64">
-                        <canvas id="pipelineChart"></canvas>
+            <!-- Pipeline Breakdown & Top Hiring Companies -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Funnel Stage Distribution (2 Cols) -->
+                <div class="bg-white rounded-3xl shadow-2xs border border-slate-200/80 p-6 space-y-6 lg:col-span-2">
+                    <div class="border-b border-slate-100 pb-4">
+                        <h3 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-filter-circle-dollar text-blue-600"></i> Distribusi Tahapan Funnel Rekrutmen Global
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5 font-medium">Breakdown status lamaran di seluruh perusahaan.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
+                        <div class="p-4 bg-amber-50 rounded-2xl border border-amber-200/80 space-y-1">
+                            <span class="text-3xs font-black uppercase text-amber-700 block">Reviewing</span>
+                            <div class="text-2xl font-black text-amber-900">{{ number_format($pendingCount) }}</div>
+                            <span class="text-3xs text-amber-700 font-medium">Menunggu</span>
+                        </div>
+                        <div class="p-4 bg-indigo-50 rounded-2xl border border-indigo-200/80 space-y-1">
+                            <span class="text-3xs font-black uppercase text-indigo-700 block">Ujian Tes</span>
+                            <div class="text-2xl font-black text-indigo-900">{{ number_format($testCount) }}</div>
+                            <span class="text-3xs text-indigo-700 font-medium">Tes Online</span>
+                        </div>
+                        <div class="p-4 bg-purple-50 rounded-2xl border border-purple-200/80 space-y-1">
+                            <span class="text-3xs font-black uppercase text-purple-700 block">Wawancara</span>
+                            <div class="text-2xl font-black text-purple-900">{{ number_format($interviewCount) }}</div>
+                            <span class="text-3xs text-purple-700 font-medium">Interview</span>
+                        </div>
+                        <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-200/80 space-y-1">
+                            <span class="text-3xs font-black uppercase text-emerald-700 block">Hired</span>
+                            <div class="text-2xl font-black text-emerald-900">{{ number_format($hiredCount) }}</div>
+                            <span class="text-3xs text-emerald-700 font-bold">Diterima</span>
+                        </div>
+                        <div class="p-4 bg-rose-50 rounded-2xl border border-rose-200/80 space-y-1">
+                            <span class="text-3xs font-black uppercase text-rose-700 block">Rejected</span>
+                            <div class="text-2xl font-black text-rose-900">{{ number_format($rejectedCount) }}</div>
+                            <span class="text-3xs text-rose-700 font-medium">Gagal</span>
+                        </div>
+                    </div>
+
+                    <!-- Top Categories -->
+                    <div class="pt-4 border-t border-slate-100 space-y-3">
+                        <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">🔥 Kategori Divisi Paling Banyak Dibuka</h4>
+                        <div class="space-y-2">
+                            @foreach($topDivisions as $div)
+                                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold text-slate-800">
+                                    <span>{{ $div->division ?? 'Umum' }}</span>
+                                    <span class="px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-lg text-3xs font-black">{{ $div->count }} Lowongan</span>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
 
-                <!-- Chart 2: Education Demographics -->
-                <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-gray-100">
-                    <h3 class="font-black text-lg text-gray-900 mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-graduation-cap text-indigo-600"></i> Demografi Pendidikan Pelamar
-                    </h3>
-                    <div class="h-64 flex justify-center">
-                        <canvas id="educationChart"></canvas>
+                <!-- Top Hiring Companies Sidebar -->
+                <div class="bg-white rounded-3xl shadow-2xs border border-slate-200/80 p-6 space-y-6">
+                    <div class="border-b border-slate-100 pb-4">
+                        <h3 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-trophy text-amber-500"></i> Top Hiring Companies
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5 font-medium">Perusahaan teraktif membuka lowongan.</p>
                     </div>
-                </div>
-            </div>
 
-            <!-- Popular Jobs Table -->
-            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100">
-                <h3 class="font-black text-lg text-gray-900 mb-6 flex items-center gap-2">
-                    <i class="fa-solid fa-fire text-amber-500"></i> 5 Lowongan Paling Populer (Jumlah Pelamar)
-                </h3>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-gray-100 text-3xs font-extrabold text-gray-400 uppercase tracking-wider">
-                                <th class="pb-3">Posisi Pekerjaan</th>
-                                <th class="pb-3">Divisi</th>
-                                <th class="pb-3">Lokasi</th>
-                                <th class="pb-3 text-right">Jumlah Pelamar</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50 text-sm">
-                            @forelse($popularJobs as $job)
-                                <tr>
-                                    <td class="py-3 font-extrabold text-gray-900">{{ $job->title }}</td>
-                                    <td class="py-3 text-xs font-semibold text-gray-600">{{ $job->division }}</td>
-                                    <td class="py-3 text-xs font-semibold text-blue-600">{{ $job->location }}</td>
-                                    <td class="py-3 text-right font-black text-indigo-600">{{ $job->applications_count }} Pelamar</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="py-6 text-center text-xs text-gray-400">Belum ada data pelamar.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                    <div class="space-y-3">
+                        @foreach($topCompanies as $idx => $comp)
+                            <div class="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200/80 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0">
+                                    #{{ $idx + 1 }}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h4 class="font-extrabold text-xs text-slate-900 truncate">{{ $comp->company_name }}</h4>
+                                    <p class="text-3xs text-slate-500 mt-0.5 font-medium truncate">{{ $comp->industry ?? 'Software & Tech' }}</p>
+                                </div>
+                                @if($comp->is_verified)
+                                    <i class="fa-solid fa-circle-check text-blue-600 text-xs shrink-0" title="Perusahaan Terverifikasi"></i>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             </div>
 
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Pipeline Conversion Bar Chart
-            const ctxPipeline = document.getElementById('pipelineChart').getContext('2d');
-            new Chart(ctxPipeline, {
-                type: 'bar',
-                data: {
-                    labels: {!! json_encode(array_keys($stageStats)) !!},
-                    datasets: [{
-                        label: 'Jumlah Pelamar',
-                        data: {!! json_encode(array_values($stageStats)) !!},
-                        backgroundColor: ['#3b82f6', '#6366f1', '#8b5cf6', '#ec4899', '#10b981', '#059669', '#ef4444'],
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
-
-            // Education Doughnut Chart
-            const ctxEducation = document.getElementById('educationChart').getContext('2d');
-            new Chart(ctxEducation, {
-                type: 'doughnut',
-                data: {
-                    labels: {!! json_encode(array_keys($educationStats)) !!},
-                    datasets: [{
-                        data: {!! json_encode(array_values($educationStats)) !!},
-                        backgroundColor: ['#60a5fa', '#818cf8', '#a78bfa', '#c084fc']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        });
-    </script>
 </x-app-layout>

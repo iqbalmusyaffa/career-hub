@@ -1,0 +1,300 @@
+{
+  "system_info": "Katalog Resmi Jurusan & Program Studi Perguruan Tinggi Seluruh Indonesia (D3 Vokasi, D4 Sarjana Terapan, S1 Sarjana, S2 & Profesi)",
+  "total_categories": 14,
+  "total_majors": 315,
+  "last_updated": "2026-08-22",
+  "country": "Indonesia",
+  "accreditation_standard": "Kemendikbudristek PDDikti, BAN-PT & Standardisasi Portal Kerja Enterprise (JobStreet, Glints, Kalibrr)",
+  "degree_levels": [
+    { "code": "D3", "title": "Diploma III (Ahli Madya - A.Md)" },
+    { "code": "D4", "title": "Diploma IV / Sarjana Terapan (S.Tr)" },
+    { "code": "S1", "title": "Sarjana (S1 - S.Kom, S.T, S.E, S.H, S.Ked, dll)" },
+    { "code": "S2", "title": "Magister (S2 - M.Kom, M.T, M.M, M.H, dll)" },
+    { "code": "Profesi", "title": "Program Profesi (Apoteker, Ners, Dokter, Akuntan, Insinyur)" }
+  ],
+  "data": [
+    {
+      "category": "Teknologi, Komputer & Rekayasa (Engineering & IT)",
+      "degrees_available": ["D3", "D4", "S1", "S2"],
+      "majors": [
+        "S1 / D4 Teknik Informatika",
+        "S1 / D4 Sistem Informasi",
+        "S1 Ilmu Komputer (Computer Science)",
+        "S1 / D4 Rekayasa Perangkat Lunak (Software Engineering)",
+        "S1 / D4 Sains Data (Data Science)",
+        "S1 Kecerdasan Buatan (Artificial Intelligence & Robotics)",
+        "S1 / D4 Keamanan Siber (Cyber Security & Digital Forensics)",
+        "S1 / D3 / D4 Teknik Elektro",
+        "S1 / D3 / D4 Teknik Mesin",
+        "S1 / D3 / D4 Teknik Sipil",
+        "S1 / D3 / D4 Teknik Industri",
+        "S1 / D4 Teknik Kimia",
+        "S1 / D4 Teknik Lingkungan",
+        "S1 Teknik Biomedis",
+        "S1 / D4 Teknik Arsitektur",
+        "S1 Teknik Pertambangan",
+        "S1 Teknik Perminyakan",
+        "S1 Teknik Geologi",
+        "S1 / D4 Teknik Geodesi & Geomatika (GIS & Remote Sensing)",
+        "S1 Teknik Kelautan (Offshore Engineering)",
+        "S1 Teknik Nuklir",
+        "S1 Teknik Penerbangan (Aeronotika & Astronotika)",
+        "S1 Teknik Perkapalan",
+        "S1 / D4 Teknik Mechatronics (Mekatronika)",
+        "S1 / D3 / D4 Teknik Telekomunikasi",
+        "S1 / D3 / D4 Teknik Otomotif & Konversi Energi",
+        "S1 Teknik Fisika",
+        "S1 / D4 Teknik Pengolahan Sawit & Hasil Perkebunan",
+        "S1 / D4 Teknik Logistik & Rantai Pasok",
+        "S1 Teknik Metalurgi & Material",
+        "S1 / D4 Teknik Keselamatan Industri (Safety Engineering / K3)",
+        "S1 Bioinformatika (Bioinformatics)",
+        "D3 / D4 / S1 Teknik Komputer & Jaringan"
+      ]
+    },
+    {
+      "category": "Ekonomi, Bisnis, Keuangan & Manajemen",
+      "degrees_available": ["D3", "D4", "S1", "S2", "Profesi"],
+      "majors": [
+        "S1 / D4 Manajemen",
+        "S1 / D3 / D4 Akuntansi",
+        "S1 Ekonomi Pembangunan",
+        "S1 / D4 Bisnis Digital (Digital Business)",
+        "S1 Kewirausahaan (Entrepreneurship)",
+        "S1 / D4 Manajemen Keuangan",
+        "S1 / D4 Manajemen Pemasaran (Marketing & Brand Strategy)",
+        "S1 Manajemen Sumber Daya Manusia (MSDM)",
+        "S1 Ekonomi Syariah / Perbankan Syariah",
+        "S1 / D3 Perbankan & Keuangan Pasar Modal",
+        "S1 Bisnis Internasional (International Business)",
+        "S1 / D4 Manajemen Logistik & Rantai Pasok (Supply Chain)",
+        "S1 Aktuaria (Actuarial Science)",
+        "S1 Ekonomi Bisnis",
+        "D3 / D4 / S1 Perpajakan (Taxation)",
+        "D4 / S1 Akuntansi Sektor Publik",
+        "D3 / D4 Manajemen Operasional & Ritel",
+        "D3 / D4 Manajemen Aset & Penilaian Properti",
+        "S1 Manajemen Risiko & Kepatuhan (Risk Management)",
+        "Profesi Akuntan (PPAk)"
+      ]
+    },
+    {
+      "category": "Kesehatan, Kedokteran & Farmasi",
+      "degrees_available": ["D3", "D4", "S1", "Profesi"],
+      "majors": [
+        "S1 / Profesi Kedokteran Umum",
+        "S1 / Profesi Kedokteran Gigi",
+        "S1 / Profesi Farmasi (Apoteker)",
+        "D3 / S1 / Profesi Keperawatan (Ners)",
+        "D3 / D4 Kebidanan",
+        "S1 Kesehatan Masyarakat (Kesmas)",
+        "S1 / D4 Ilmu Gizi & Dietetika",
+        "S1 / Profesi Kedokteran Hewan",
+        "D3 / D4 / S1 Fisioterapi",
+        "D3 / D4 Radiologi & Perekam Medis",
+        "D3 / D4 Teknologi Laboratorium Medik (Analis Kesehatan)",
+        "S1 Psikologi Klinis",
+        "S1 / S2 Administrasi Rumah Sakit (KARS)",
+        "D4 / S1 Keselamatan & Kesehatan Kerja (K3 / HSE)",
+        "S1 Kesehatan Lingkungan (Kesling)",
+        "D3 / D4 Optometri & Refraksi Optisi",
+        "D3 / D4 Teknik Elektromedis",
+        "D3 / D4 Terapi Okupasi",
+        "D3 Perekam Medis & Informasi Kesehatan (PMIK)",
+        "S1 Farmasi Klinik & Komunitas"
+      ]
+    },
+    {
+      "category": "Matematika & Sains Murni (MIPA)",
+      "degrees_available": ["S1", "S2"],
+      "majors": [
+        "S1 Matematika Murni",
+        "S1 / D4 Statistika & Terapan Data",
+        "S1 Fisika Murni",
+        "S1 Kimia Murni",
+        "S1 Biologi",
+        "S1 Bioteknologi",
+        "S1 Geofisika",
+        "S1 Astronomi & Sains Atmosfer",
+        "S1 Oseanografi",
+        "S1 Meteorologi & Klimatologi",
+        "S1 Geografi Lingkungan",
+        "S1 Sains Komputasi",
+        "S1 Nanoteknologi",
+        "S1 Sains Bahan"
+      ]
+    },
+    {
+      "category": "Hukum, Sosial & Politik",
+      "degrees_available": ["S1", "S2"],
+      "majors": [
+        "S1 Ilmu Hukum",
+        "S1 Hukum Siber (Cyber Law & Technology Law)",
+        "S1 Hubungan Internasional (HI)",
+        "S1 / D4 Ilmu Komunikasi",
+        "S1 Psikologi Organisasi & Industri (PIO)",
+        "S1 Sosiologi",
+        "S1 Ilmu Politik",
+        "S1 Ilmu Pemerintahan",
+        "S1 Administrasi Publik / Negara",
+        "S1 / D4 Administrasi Bisnis / Niaga",
+        "S1 Kriminologi",
+        "S1 Antropologi Sosial & Budaya",
+        "S1 Kesejahteraan Sosial (Kesos)",
+        "S1 Pembangunan Sosial & Kesejahteraan",
+        "D3 / D4 / S1 Hubungan Masyarakat (Public Relations)",
+        "D3 / D4 / S1 Jurnalistik & Media Digital"
+      ]
+    },
+    {
+      "category": "Sastra, Bahasa & Budaya",
+      "degrees_available": ["D3", "S1"],
+      "majors": [
+        "S1 Sastra Inggris",
+        "S1 Sastra Indonesia",
+        "S1 Sastra Jepang",
+        "S1 Sastra Mandarin / Studi Tiongkok",
+        "S1 Sastra Arab",
+        "S1 Sastra Korea",
+        "S1 Sastra Jerman",
+        "S1 Sastra Prancis",
+        "S1 Sastra Rusia",
+        "S1 Sastra Daerah (Jawa/Sunda/Bali)",
+        "S1 Linguistik Terapan",
+        "S1 Arkeologi",
+        "D3 / S1 Ilmu Perpustakaan & Informasi"
+      ]
+    },
+    {
+      "category": "Seni, Desain & Media Kreatif",
+      "degrees_available": ["D3", "D4", "S1"],
+      "majors": [
+        "S1 / D4 Desain Komunikasi Visual (DKV)",
+        "S1 / D4 Desain Interior",
+        "S1 / D4 Desain Produk (Industrial Design)",
+        "S1 Seni Rupa Murni (Patung/Lukis)",
+        "D3 / D4 / S1 Film & Televisi (Broadcasting)",
+        "D3 / S1 Fotografi & Media Rekam",
+        "D4 / S1 Desain Animasi & Pengembang Game",
+        "D3 / D4 Multimedia Interaktif",
+        "S1 Seni Musik & Komposisi",
+        "S1 Seni Tari & Karawitan",
+        "S1 Seni Pertunjukan / Teater",
+        "D3 / D4 / S1 Desain Mode / Fashion Design",
+        "D3 / S1 Kriya Seni (Keramik/Tekstil/Kayu)"
+      ]
+    },
+    {
+      "category": "Pendidikan & Keguruan (FKIP / Tarbiyah)",
+      "degrees_available": ["S1", "S2", "Profesi"],
+      "majors": [
+        "S1 Pendidikan Bahasa Inggris",
+        "S1 Pendidikan Matematika",
+        "S1 Pendidikan Guru Sekolah Dasar (PGSD)",
+        "S1 Pendidikan Anak Usia Dini (PAUD)",
+        "S1 Pendidikan Agama Islam (PAI)",
+        "S1 Pendidikan Agama Kristen / Katolik / Hindu / Buddha",
+        "S1 Pendidikan IPA",
+        "S1 Pendidikan IPS",
+        "S1 Pendidikan Bahasa Indonesia",
+        "S1 Pendidikan Jasmani, Olahraga & Kesehatan (PJOK)",
+        "S1 Pendidikan Fisika",
+        "S1 Pendidikan Kimia",
+        "S1 Pendidikan Biologi",
+        "S1 Pendidikan Sejarah",
+        "S1 Pendidikan Geografi",
+        "S1 Pendidikan Ekonomi",
+        "S1 Pendidikan Teknik Informatika & Komputer (PTIK)",
+        "S1 Pendidikan Luar Biasa (PLB)",
+        "S1 Bimbingan & Konseling (BK)",
+        "Profesi Pendidikan Guru (PPG)"
+      ]
+    },
+    {
+      "category": "Pertanian, Peternakan, Kehutanan & Kelautan",
+      "degrees_available": ["D3", "D4", "S1"],
+      "majors": [
+        "S1 / D4 Agroteknologi / Agronomi",
+        "S1 Agribisnis",
+        "S1 Ilmu Tanah",
+        "S1 Proteksi Tanaman (Hama & Penyakit)",
+        "S1 Kehutanan & Konservasi Alam",
+        "S1 / D3 Peternakan & Teknologi Pakan",
+        "S1 / D4 Teknologi Hasil Pertanian (THP)",
+        "S1 Teknologi Industri Pertanian (TIP)",
+        "S1 / D4 Budidaya Perairan / Akuakultur",
+        "S1 Manajemen Sumber Daya Perairan (MSDP)",
+        "S1 Ilmu Kelautan & Biologi Laut",
+        "D3 / D4 / S1 Teknologi Hasil Perikanan"
+      ]
+    },
+    {
+      "category": "Kemaritiman & Pelayaran Niaga (Maritime Studies)",
+      "degrees_available": ["D3", "D4", "S1"],
+      "majors": [
+        "D3 / D4 Nautika (Nautical Studies - Kapten / Mualim)",
+        "D3 / D4 Teknika Kapal (Marine Engineering - Masinis Kapal)",
+        "D3 / D4 Ketatalaksanaan Pelayaran Niaga (KPLN / Port Management)",
+        "S1 Teknologi Kelautan & Perkapalan",
+        "D4 / S1 Manajemen Kepelabuhanan & Maritim"
+      ]
+    },
+    {
+      "category": "Pariwisata, Perhotelan & Transportasi",
+      "degrees_available": ["D3", "D4", "S1"],
+      "majors": [
+        "D3 / D4 / S1 Manajemen Pariwisata & Destinasi",
+        "D3 / D4 Perhotelan & Hospitality Management",
+        "D3 / D4 Seni Kuliner / Tata Boga (Culinary Arts)",
+        "D3 / D4 Manajemen Transportasi Darat/Laut/Udara",
+        "D3 / D4 Penerbangan (Penerbang / Pilot)",
+        "D4 / S1 Manajemen Acara & MICE (Event Management)",
+        "D3 / D4 Manajemen Penerbangan & Ground Handling",
+        "D4 Kepariwisataan Bahari"
+      ]
+    },
+    {
+      "category": "Sekolah Kedinasan & Ilmu Kepolisian/Militer",
+      "degrees_available": ["D3", "D4", "S1"],
+      "majors": [
+        "D3 / D4 Kebijakan & Manajemen Keuangan Negara (PKN STAN)",
+        "D4 Statistik Terapan & Komputasi Statistik (STIS)",
+        "S1 Ilmu Kepolisian & Terorisme (STIK / Akpol)",
+        "D4 Administrasi Pembangunan Daerah (IPDN)",
+        "D4 Geofisika & Klimatologi Kedinasan (STMKG)",
+        "D4 Ilmu Pemasyarakatan & Keimigrasian (Poltekip / Poltekim)",
+        "S1 Manajemen Pertahanan & Militer (Akmil / Unhan)",
+        "D4 Transportasi Darat & Perkeretaapian (STTD)",
+        "D4 Sandi & Keamanan Informasi Negara (Poltek SSN)"
+      ]
+    },
+    {
+      "category": "Studi Agama & Humaniora Syariah",
+      "degrees_available": ["S1", "S2"],
+      "majors": [
+        "S1 Hukum Ekonomi Syariah (Muamalah)",
+        "S1 Hukum Keluarga Islam (Ahwal Syakhshiyyah)",
+        "S1 Komunikasi & Penyiaran Islam (KPI)",
+        "S1 Manajemen Dakwah & Haji/Umrah",
+        "S1 Manajemen Zakat & Wakaf",
+        "S1 Ilmu Al-Qur'an & Tafsir (IAT)",
+        "S1 Perbandingan Agama & Filsafat Islam",
+        "S1 Ilmu Hadis"
+      ]
+    },
+    {
+      "category": "Program Vokasi & Diploma Terapan Khusus (D3 / D4)",
+      "degrees_available": ["D3", "D4"],
+      "majors": [
+        "D3 Sekretaris & Administrasi Perkantoran",
+        "D3 Broadcasting & Penyiaran Radio/TV",
+        "D4 Rekayasa Sistem Komputer",
+        "D3 Penilaian Properti & Pertanahan",
+        "D4 Manajemen Bisnis Pariwisata",
+        "D3 Tata Rias & Kecantikan",
+        "D4 Kebidanan Terapan",
+        "D4 Keperawatan Anestesiologi"
+      ]
+    }
+  ]
+}

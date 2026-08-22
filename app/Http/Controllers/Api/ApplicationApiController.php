@@ -28,6 +28,7 @@ class ApplicationApiController extends Controller
                 schema: new OA\Schema(
                     properties: [
                         new OA\Property(property: "cover_letter", type: "string", example: "Saya berminat bergabung di posisi ini..."),
+                        new OA\Property(property: "screening_video_url", type: "string", example: "https://youtube.com/watch?v=..."),
                         new OA\Property(property: "resume", type: "string", format: "binary")
                     ]
                 )
@@ -69,7 +70,8 @@ class ApplicationApiController extends Controller
     )]
     public function apply(Request $request, $id)
     {
-        $job = Job::find($id);
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $job = Job::find($realId);
 
         if (!$job || $job->status !== 'active') {
             return $this->errorResponse('Lowongan kerja tidak tersedia atau sudah ditutup.', 404);
@@ -203,7 +205,8 @@ class ApplicationApiController extends Controller
     )]
     public function fetchMessages(Request $request, $id)
     {
-        $application = Application::find($id);
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::find($realId);
 
         if (!$application) {
             return $this->errorResponse('Lamaran tidak ditemukan.', 404);
@@ -263,7 +266,8 @@ class ApplicationApiController extends Controller
     )]
     public function sendMessage(Request $request, $id)
     {
-        $application = Application::find($id);
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::find($realId);
 
         if (!$application) {
             return $this->errorResponse('Lamaran tidak ditemukan.', 404);
@@ -289,5 +293,194 @@ class ApplicationApiController extends Controller
         ]);
 
         return $this->successResponse($msg->load('sender'), 'Pesan berhasil terkirim.', 201);
+    }
+
+    #[OA\Get(
+        path: "/candidate/applications/{id}/onboarding",
+        summary: "Ambil Data Onboarding & Rekening Bank (Kandidat Lolos/Accepted)",
+        description: "Mengambil data formulir onboarding bank, NPWP, dan BPJS untuk kandidat yang telah diterima kerja.",
+        security: [["bearerAuth" => []]],
+        tags: ["Candidate Applications"],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "string", example: "BVrl94ufFAW1yoGqJ6ACiQ"))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Data onboarding kandidat",
+                content: new OA\JsonContent(
+                    example: [
+                        "success" => true,
+                        "message" => "Data onboarding kandidat berhasil diambil.",
+                        "data" => [
+                            "bank_name" => "BCA",
+                            "bank_account_number" => "1234567890",
+                            "bank_account_holder" => "Budi Pratama",
+                            "verification_status" => "pending"
+                        ],
+                        "errors" => null
+                    ]
+                )
+            )
+        ]
+    )]
+    public function getOnboarding(Request $request, $id)
+    {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::with(['job', 'onboarding'])->where('user_id', $request->user()->id)->find($realId);
+
+        if (!$application) {
+            return $this->errorResponse('Lamaran tidak ditemukan.', 404);
+        }
+
+        $statusStr = is_object($application->status) ? $application->status->value : (string)$application->status;
+        if (!in_array($statusStr, ['accepted', 'hired'])) {
+            return $this->errorResponse('Akses ditolak. Formulir data onboarding hanya dapat diakses oleh kandidat yang telah DITERIMA kerja (Accepted/Hired).', 403);
+        }
+
+        return $this->successResponse([
+            'application' => $application,
+            'onboarding' => $application->onboarding,
+        ], 'Data onboarding kandidat berhasil diambil.');
+    }
+
+    #[OA\Post(
+        path: "/candidate/applications/{id}/onboarding",
+        summary: "Kirim Formulir & Berkas Onboarding (Bank, NPWP, BPJS PDF/PNG/JPG)",
+        description: "Mengirimkan data rekening bank, NPWP, BPJS, dan lampiran berkas onboarding kandidat yang lolos seleksi.",
+        security: [["bearerAuth" => []]],
+        tags: ["Candidate Applications"],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "string", example: "BVrl94ufFAW1yoGqJ6ACiQ"))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Berhasil menyimpan data onboarding",
+                content: new OA\JsonContent(
+                    example: [
+                        "success" => true,
+                        "message" => "Data onboarding, bank & BPJS berhasil disimpan!",
+                        "data" => [
+                            "id" => 1,
+                            "bank_name" => "BCA",
+                            "bank_account_number" => "1234567890",
+                            "verification_status" => "pending"
+                        ],
+                        "errors" => null
+                    ]
+                )
+            )
+        ]
+    )]
+    public function storeOnboarding(Request $request, $id)
+    {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::where('user_id', $request->user()->id)->find($realId);
+
+        if (!$application) {
+            return $this->errorResponse('Lamaran tidak ditemukan.', 404);
+        }
+
+        $statusStr = is_object($application->status) ? $application->status->value : (string)$application->status;
+        if (!in_array($statusStr, ['accepted', 'hired'])) {
+            return $this->errorResponse('Akses ditolak. Formulir data onboarding hanya dapat diisi oleh kandidat yang DITERIMA kerja.', 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'bank_name' => 'required|string|max:100',
+            'bank_account_number' => 'required|string|max:50',
+            'bank_account_holder' => 'required|string|max:255',
+            'npwp_number' => 'nullable|string|max:50',
+            'npwp_doc' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:5120',
+            'bpjs_kesehatan_number' => 'nullable|string|max:50',
+            'bpjs_kesehatan_doc' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:5120',
+            'bpjs_ketenagakerjaan_number' => 'nullable|string|max:50',
+            'bpjs_ketenagakerjaan_doc' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:5120',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse('Validasi data onboarding gagal.', 422, $validator->errors());
+        }
+
+        $onboarding = \App\Models\CandidateOnboarding::firstOrNew([
+            'application_id' => $application->id,
+            'user_id' => $request->user()->id,
+        ]);
+
+        $onboarding->bank_name = $request->bank_name;
+        $onboarding->bank_account_number = $request->bank_account_number;
+        $onboarding->bank_account_holder = $request->bank_account_holder;
+        $onboarding->npwp_number = $request->npwp_number;
+        $onboarding->bpjs_kesehatan_number = $request->bpjs_kesehatan_number;
+        $onboarding->bpjs_ketenagakerjaan_number = $request->bpjs_ketenagakerjaan_number;
+
+        $docDir = 'onboarding_docs';
+        if ($request->hasFile('npwp_doc')) {
+            $onboarding->npwp_doc_path = $request->file('npwp_doc')->store($docDir, 'public');
+        }
+        if ($request->hasFile('bpjs_kesehatan_doc')) {
+            $onboarding->bpjs_kesehatan_doc_path = $request->file('bpjs_kesehatan_doc')->store($docDir, 'public');
+        }
+        if ($request->hasFile('bpjs_ketenagakerjaan_doc')) {
+            $onboarding->bpjs_ketenagakerjaan_doc_path = $request->file('bpjs_ketenagakerjaan_doc')->store($docDir, 'public');
+        }
+
+        $onboarding->verification_status = 'pending';
+        $onboarding->save();
+
+        return $this->successResponse($onboarding, 'Data onboarding, bank & BPJS berhasil disimpan!');
+    }
+
+    /**
+     * Get Candidate Agreements (Digital Contracts) via REST API.
+     */
+    public function myAgreements(Request $request)
+    {
+        $agreements = \App\Models\ApplicationAgreement::where('user_id', $request->user()->id)
+            ->with('application.job')
+            ->latest()
+            ->get();
+
+        return $this->successResponse($agreements, 'Daftar Surat Perjanjian Kerja / Magang Digital berhasil diambil.');
+    }
+
+    /**
+     * Get Candidate Certificates via REST API.
+     */
+    public function myCertificates(Request $request)
+    {
+        $certificates = \App\Models\InternshipCertificate::where('user_id', $request->user()->id)
+            ->with('application.job')
+            ->latest()
+            ->get();
+
+        return $this->successResponse($certificates, 'Daftar Sertifikat Kelulusan Magang berhasil diambil.');
+    }
+
+    /**
+     * Get Candidate Academic Transcripts via REST API.
+     */
+    public function myTranscripts(Request $request)
+    {
+        $transcripts = \App\Models\InternshipTranscript::where('user_id', $request->user()->id)
+            ->with('application.job')
+            ->latest()
+            ->get();
+
+        return $this->successResponse($transcripts, 'Daftar Transkrip Nilai Evaluasi Magang berhasil diambil.');
+    }
+
+    /**
+     * Get Candidate Terminations & Recommendations via REST API.
+     */
+    public function myTerminations(Request $request)
+    {
+        $terminations = \App\Models\EmployeeTermination::where('user_id', $request->user()->id)
+            ->with('application.job')
+            ->latest()
+            ->get();
+
+        return $this->successResponse($terminations, 'Daftar Surat Rekomendasi Kerja, Paklaring & PHK berhasil diambil.');
     }
 }

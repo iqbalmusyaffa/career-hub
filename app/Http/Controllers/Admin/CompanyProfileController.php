@@ -37,6 +37,7 @@ class CompanyProfileController extends Controller
     {
         $request->validate([
             'company_name' => 'required|string|max:255',
+            'tagline' => 'nullable|string|max:255',
             'industry' => 'nullable|string|max:255',
             'company_size' => 'nullable|string|max:255',
             'website' => 'nullable|url|max:255',
@@ -47,7 +48,10 @@ class CompanyProfileController extends Controller
             'bank_account_name' => 'nullable|string|max:255',
             'npwp_number' => 'nullable|string|max:100',
             'description' => 'nullable|string',
+            'culture_description' => 'nullable|string',
+            'benefits' => 'nullable|array',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,svg,webp|max:2048',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,svg,webp|max:4096',
             'legal_doc' => 'nullable|mimes:pdf,jpg,png|max:5120',
         ]);
 
@@ -63,6 +67,7 @@ class CompanyProfileController extends Controller
 
         $data = [
             'company_name' => $request->company_name,
+            'tagline' => $request->tagline,
             'industry' => $request->industry,
             'company_size' => $request->company_size,
             'website' => $request->website,
@@ -73,6 +78,8 @@ class CompanyProfileController extends Controller
             'bank_account_name' => $request->bank_account_name,
             'npwp_number' => $request->npwp_number,
             'description' => $request->description,
+            'culture_description' => $request->culture_description,
+            'benefits' => $request->benefits ?? [],
         ];
 
         $companyFolder = 'company_files/' . \Illuminate\Support\Str::slug($request->company_name);
@@ -85,6 +92,14 @@ class CompanyProfileController extends Controller
             $data['logo_path'] = $request->file('logo')->store($companyFolder, 'public');
         }
 
+        // Handle cover image upload
+        if ($request->hasFile('cover_image')) {
+            if ($profile->cover_image_path) {
+                Storage::disk('public')->delete($profile->cover_image_path);
+            }
+            $data['cover_image_path'] = $request->file('cover_image')->store($companyFolder, 'public');
+        }
+
         // Handle legal document upload (NIB / SIUP)
         if ($request->hasFile('legal_doc')) {
             if ($profile->legal_doc_path) {
@@ -95,6 +110,6 @@ class CompanyProfileController extends Controller
 
         $profile->update($data);
 
-        return back()->with('success', 'Profil Perusahaan berhasil diperbarui!');
+        return back()->with('success', 'Profil & Halaman Karir Perusahaan berhasil diperbarui!');
     }
 }

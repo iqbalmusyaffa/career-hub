@@ -491,7 +491,8 @@
                                         </div>
                                         <div>
                                             <label class="block text-sm font-bold text-gray-700 mb-1">Jurusan / Program Studi</label>
-                                            <input type="text" x-model="item.major" :name="`educations[${index}][major]`" placeholder="Contoh: Teknik Informatika / Akuntansi" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                            <input type="text" x-model="item.major" list="indonesia-majors-list" :name="`educations[${index}][major]`" placeholder="Cari / Pilih Jurusan (Misal: Teknik Informatika, Akuntansi...)" class="mt-1 block w-full border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                            <x-indonesia-majors-datalist />
                                         </div>
                                         <div>
                                             <label class="block text-sm font-bold text-gray-700 mb-1">Gelar Akademis (Opsional)</label>

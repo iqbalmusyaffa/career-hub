@@ -68,6 +68,9 @@
                                     <td class="p-4 whitespace-nowrap">
                                         <div class="font-bold text-gray-900 text-sm">{{ $ticket->application->user->name ?? 'Kandidat' }}</div>
                                         <div class="text-2xs text-gray-500 mt-0.5">{{ $ticket->application->job->title ?? '-' }}</div>
+                                        <a href="{{ route('admin.applications.show', $ticket->application_id) }}" target="_blank" class="text-3xs font-extrabold text-blue-600 hover:underline inline-flex items-center gap-1 mt-1">
+                                            <i class="fa-solid fa-eye"></i> Periksa Berkas & Rekam Seleksi &rarr;
+                                        </a>
                                     </td>
                                     <td class="p-4 whitespace-nowrap">
                                         <div class="font-bold text-gray-900">{{ $ticket->hrUser->name ?? 'HR' }}</div>

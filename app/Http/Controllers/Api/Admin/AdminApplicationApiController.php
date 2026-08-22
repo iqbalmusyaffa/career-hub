@@ -59,8 +59,11 @@ class AdminApplicationApiController extends Controller
         $query = Application::with(['user.candidateProfile', 'job']);
 
         if (!$user->hasRole('Super Admin')) {
-            $userJobIds = \App\Models\Job::where('user_id', $user->id)->pluck('id');
-            $query->whereIn('job_id', $userJobIds);
+            $companyName = $user->companyProfile ? $user->companyProfile->company_name : null;
+            if ($companyName) {
+                $userJobIds = \App\Models\Job::where('company_name', 'LIKE', '%' . $companyName . '%')->pluck('id');
+                $query->whereIn('job_id', $userJobIds);
+            }
         }
 
         if ($request->filled('job_id')) {
@@ -116,8 +119,9 @@ class AdminApplicationApiController extends Controller
     )]
     public function show(Request $request, $id)
     {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
         $application = Application::with(['user.candidateProfile', 'user.candidateDocuments', 'job', 'evaluations', 'internalNotes', 'interviews', 'offerLetter'])
-            ->find($id);
+            ->find($realId);
 
         if (!$application) {
             return $this->errorResponse('Lamaran tidak ditemukan.', 404);
@@ -164,7 +168,8 @@ class AdminApplicationApiController extends Controller
     )]
     public function updateStatus(Request $request, $id)
     {
-        $application = Application::find($id);
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::find($realId);
 
         if (!$application) {
             return $this->errorResponse('Lamaran tidak ditemukan.', 404);
@@ -225,7 +230,8 @@ class AdminApplicationApiController extends Controller
     )]
     public function scheduleInterview(Request $request, $id)
     {
-        $application = Application::find($id);
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::find($realId);
 
         if (!$application) {
             return $this->errorResponse('Lamaran tidak ditemukan.', 404);
@@ -296,7 +302,8 @@ class AdminApplicationApiController extends Controller
     )]
     public function storeEvaluation(Request $request, $id)
     {
-        $application = Application::find($id);
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::find($realId);
 
         if (!$application) {
             return $this->errorResponse('Lamaran tidak ditemukan.', 404);
@@ -368,7 +375,8 @@ class AdminApplicationApiController extends Controller
     )]
     public function issueOfferLetter(Request $request, $id)
     {
-        $application = Application::find($id);
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::find($realId);
 
         if (!$application) {
             return $this->errorResponse('Lamaran tidak ditemukan.', 404);
@@ -400,5 +408,266 @@ class AdminApplicationApiController extends Controller
         $application->update(['status' => 'hired']);
 
         return $this->successResponse($offer, 'Surat Penawaran Kerja (Offer Letter) berhasil diterbitkan!', 201);
+    }
+
+    public function cancelAcceptance(Request $request, $id)
+    {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::find($realId);
+
+        if (!$application) {
+            return $this->errorResponse('Lamaran tidak ditemukan.', 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'reason' => 'required|string|min:10',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse('Alasan pembatalan minimal 10 karakter.', 422, $validator->errors());
+        }
+
+        $ticket = \App\Models\AcceptanceCancellationTicket::create([
+            'application_id' => $application->id,
+            'hr_user_id' => auth()->id(),
+            'reason' => $request->reason,
+            'status' => 'pending',
+        ]);
+
+        return $this->successResponse($ticket, 'Permohonan pembatalan penerimaan kandidat berhasil dikirim ke Super Admin.', 201);
+    }
+
+    public function verifyOnboarding(Request $request, $id)
+    {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::with('onboarding')->find($realId);
+
+        if (!$application || !$application->onboarding) {
+            return $this->errorResponse('Data onboarding tidak ditemukan.', 404);
+        }
+
+        $status = $request->input('action') === 'reject' ? 'rejected' : 'verified';
+        $application->onboarding->update([
+            'verification_status' => $status,
+            'rejection_note' => $request->input('rejection_note'),
+        ]);
+
+        return $this->successResponse($application->onboarding, 'Status verifikasi data onboarding berhasil diperbarui.');
+    }
+
+    public function createAgreement(Request $request, $id)
+    {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::find($realId);
+
+        if (!$application) {
+            return $this->errorResponse('Lamaran tidak ditemukan.', 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'agreement_number' => 'required|string|max:255',
+            'contract_type' => 'required|string|in:PKWT,PKWTT,Magang',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date',
+            'job_title' => 'required|string',
+            'monthly_salary' => 'required|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse('Validasi kontrak kerja gagal.', 422, $validator->errors());
+        }
+
+        $agreement = \App\Models\ApplicationAgreement::create([
+            'application_id' => $application->id,
+            'agreement_number' => $request->agreement_number,
+            'contract_type' => $request->contract_type,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'job_title' => $request->job_title,
+            'monthly_salary' => $request->monthly_salary,
+            'status' => 'active',
+            'created_by' => auth()->id(),
+        ]);
+
+        return $this->successResponse($agreement, 'Kontrak kerja digital berhasil diterbitkan!', 201);
+    }
+
+    public function storeInternalNote(Request $request, $id)
+    {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::find($realId);
+
+        if (!$application) {
+            return $this->errorResponse('Lamaran tidak ditemukan.', 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'note' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse('Catatan tidak boleh kosong.', 422, $validator->errors());
+        }
+
+        $note = \App\Models\HrInternalNote::create([
+            'application_id' => $application->id,
+            'hr_user_id' => auth()->id(),
+            'note' => $request->note,
+        ]);
+
+        return $this->successResponse($note, 'Catatan internal HR berhasil disimpan!', 201);
+    }
+
+    public function createCertificate(Request $request, $id)
+    {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::find($realId);
+
+        if (!$application) {
+            return $this->errorResponse('Lamaran tidak ditemukan.', 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'certificate_number' => 'required|string|max:255',
+            'internship_title' => 'required|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+            'performance_predicate' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse('Validasi sertifikat magang gagal.', 422, $validator->errors());
+        }
+
+        $cert = \App\Models\InternshipCertificate::create([
+            'application_id' => $application->id,
+            'certificate_number' => $request->certificate_number,
+            'internship_title' => $request->internship_title,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'performance_predicate' => $request->performance_predicate,
+            'issued_by' => auth()->id(),
+        ]);
+
+        return $this->successResponse($cert, 'Sertifikat magang resmi berhasil diterbitkan!', 201);
+    }
+
+    public function createTranscript(Request $request, $id)
+    {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::find($realId);
+
+        if (!$application) {
+            return $this->errorResponse('Lamaran tidak ditemukan.', 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'final_score' => 'required|numeric|min:0|max:100',
+            'grade_letter' => 'required|string|max:5',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse('Validasi transkrip magang gagal.', 422, $validator->errors());
+        }
+
+        $transcript = \App\Models\InternshipTranscript::create([
+            'application_id' => $application->id,
+            'final_score' => $request->final_score,
+            'grade_letter' => $request->grade_letter,
+            'evaluator_id' => auth()->id(),
+        ]);
+
+        return $this->successResponse($transcript, 'Transkrip nilai magang berhasil diterbitkan!', 201);
+    }
+
+    public function createTermination(Request $request, $id)
+    {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = Application::find($realId);
+
+        if (!$application) {
+            return $this->errorResponse('Lamaran tidak ditemukan.', 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'termination_type' => 'required|string',
+            'effective_date' => 'required|date',
+            'reason' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse('Validasi surat pemberhentian gagal.', 422, $validator->errors());
+        }
+
+        $term = \App\Models\EmployeeTermination::create([
+            'application_id' => $application->id,
+            'termination_type' => $request->termination_type,
+            'effective_date' => $request->effective_date,
+            'reason' => $request->reason,
+            'created_by' => auth()->id(),
+        ]);
+
+        return $this->successResponse($term, 'Surat pemberhentian kerja berhasil diterbitkan!', 201);
+    }
+
+    public function bulkStatus(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'application_ids' => 'required|array|min:1',
+            'status' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse('Validasi masukan gagal.', 422, $validator->errors());
+        }
+
+        $count = 0;
+        foreach ($request->application_ids as $id) {
+            $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+            $app = Application::find($realId);
+            if ($app) {
+                $app->update(['status' => $request->status]);
+                $count++;
+            }
+        }
+
+        return $this->successResponse(null, "Status {$count} pelamar berhasil diperbarui menjadi " . strtoupper($request->status) . '!');
+    }
+
+    public function getScorecards($id)
+    {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $scorecards = \App\Models\InterviewScorecard::where('application_id', $realId)->with('evaluator')->latest()->get();
+        return $this->successResponse($scorecards, 'Daftar scorecard wawancara kandidat.');
+    }
+
+    public function storeScorecard(Request $request, $id)
+    {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $validator = Validator::make($request->all(), [
+            'technical_score' => 'required|integer|min:1|max:5',
+            'communication_score' => 'required|integer|min:1|max:5',
+            'problem_solving_score' => 'required|integer|min:1|max:5',
+            'culture_fit_score' => 'required|integer|min:1|max:5',
+            'recommendation' => 'required|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse('Validasi masukan gagal.', 422, $validator->errors());
+        }
+
+        $scorecard = \App\Models\InterviewScorecard::create([
+            'application_id' => $realId,
+            'evaluator_id' => $request->user()->id,
+            'technical_score' => $request->technical_score,
+            'communication_score' => $request->communication_score,
+            'problem_solving_score' => $request->problem_solving_score,
+            'culture_fit_score' => $request->culture_fit_score,
+            'recommendation' => $request->recommendation,
+            'notes' => $request->notes,
+        ]);
+
+        return $this->successResponse($scorecard, 'Scorecard wawancara berhasil disimpan!', 201);
     }
 }

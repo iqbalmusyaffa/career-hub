@@ -309,4 +309,126 @@ class AdminSuperApiController extends Controller
 
         return $this->successResponse($logs, 'Log audit sistem berhasil diambil.');
     }
+
+    public function analytics()
+    {
+        $data = [
+            'total_companies' => \App\Models\CompanyProfile::count(),
+            'total_jobs' => \App\Models\Job::count(),
+            'total_applications' => \App\Models\Application::count(),
+            'hired_count' => \App\Models\Application::whereIn('status', ['accepted', 'hired'])->count(),
+            'interview_count' => \App\Models\Application::where('status', 'interview')->count(),
+            'test_count' => \App\Models\Application::where('status', 'test')->count(),
+            'pending_count' => \App\Models\Application::where('status', 'pending')->count(),
+            'rejected_count' => \App\Models\Application::where('status', 'rejected')->count(),
+            'conversion_rate' => \App\Models\Application::count() > 0 ? round((\App\Models\Application::whereIn('status', ['accepted', 'hired'])->count() / \App\Models\Application::count()) * 100, 1) : 0,
+        ];
+
+        return $this->successResponse($data, 'Data Executive Analytics berhasil diambil.');
+    }
+
+    public function announcements()
+    {
+        $announcements = \App\Models\SystemAnnouncement::with('creator')->latest()->paginate(20);
+        return $this->successResponse($announcements, 'Daftar pengumuman global berhasil diambil.');
+    }
+
+    public function storeAnnouncement(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'target_role' => 'required|string|in:all,company_owner,hr,candidate',
+            'type' => 'required|string|in:info,warning,success,danger',
+        ]);
+
+        $announcement = \App\Models\SystemAnnouncement::create([
+            'title' => $request->title,
+            'content' => $request->content,
+            'target_role' => $request->target_role,
+            'type' => $request->type,
+            'is_active' => true,
+            'created_by' => auth()->id(),
+        ]);
+
+        return $this->successResponse($announcement, 'Pengumuman global berhasil dipublikasikan.');
+    }
+
+    public function blacklists()
+    {
+        $blacklists = \App\Models\Blacklist::with('blocker')->latest()->paginate(20);
+        return $this->successResponse($blacklists, 'Daftar blacklist berhasil diambil.');
+    }
+
+    public function storeBlacklist(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|string|in:email,ip,phone,company_name',
+            'value' => 'required|string|max:255',
+            'reason' => 'required|string|min:5',
+        ]);
+
+        $val = strtolower(trim($request->value));
+        $item = \App\Models\Blacklist::create([
+            'type' => $request->type,
+            'value' => $val,
+            'reason' => $request->reason,
+            'blocked_by' => auth()->id(),
+        ]);
+
+        return $this->successResponse($item, 'Item blacklist berhasil ditambahkan.');
+    }
+
+    public function calendarEvents(Request $request)
+    {
+        $events = \App\Models\Interview::with(['application.user', 'application.job'])
+            ->latest()
+            ->take(50)
+            ->get();
+
+        return $this->successResponse($events, 'Jadwal kalender rekrutmen berhasil diambil.');
+    }
+
+    public function cancellationTickets(Request $request)
+    {
+        $tickets = \App\Models\AcceptanceCancellationTicket::with(['application.user', 'application.job', 'hrUser'])
+            ->latest()
+            ->paginate(20);
+
+        return $this->successResponse($tickets, 'Daftar permohonan pembatalan penerimaan berhasil diambil.');
+    }
+
+    public function approveCancellationTicket(Request $request, $id)
+    {
+        $ticket = \App\Models\AcceptanceCancellationTicket::find($id);
+        if (!$ticket) {
+            return $this->errorResponse('Tiket pembatalan tidak ditemukan.', 404);
+        }
+
+        $ticket->update([
+            'status' => 'approved',
+            'superadmin_note' => $request->input('superadmin_note', 'Permohonan pembatalan disetujui.'),
+            'handled_by' => auth()->id(),
+        ]);
+
+        $ticket->application->update(['status' => 'rejected']);
+
+        return $this->successResponse($ticket, 'Permohonan pembatalan penerimaan disetujui.');
+    }
+
+    public function rejectCancellationTicket(Request $request, $id)
+    {
+        $ticket = \App\Models\AcceptanceCancellationTicket::find($id);
+        if (!$ticket) {
+            return $this->errorResponse('Tiket pembatalan tidak ditemukan.', 404);
+        }
+
+        $ticket->update([
+            'status' => 'rejected',
+            'superadmin_note' => $request->input('superadmin_note', 'Permohonan pembatalan ditolak oleh Super Admin.'),
+            'handled_by' => auth()->id(),
+        ]);
+
+        return $this->successResponse($ticket, 'Permohonan pembatalan penerimaan ditolak.');
+    }
 }

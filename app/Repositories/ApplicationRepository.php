@@ -23,14 +23,30 @@ class ApplicationRepository implements ApplicationRepositoryInterface
             $companyName = $ownerProfile ? $ownerProfile->company_name : ($user->companyProfile ? $user->companyProfile->company_name : null);
 
             if ($companyName) {
-                $query->whereHas('job', function($j) use ($companyName, $ownerId, $user) {
-                    $j->where('company_name', $companyName)
-                      ->orWhere('user_id', $ownerId)
-                      ->orWhere('user_id', $user->id)
-                      ->orWhereNull('company_name')
-                      ->orWhere('company_name', '');
+                $query->whereHas('job', function($j) use ($companyName) {
+                    $j->where('company_name', 'LIKE', '%' . $companyName . '%');
                 });
             }
+        }
+
+        if (request()->filled('job_id')) {
+            $query->where('job_id', request('job_id'));
+        }
+
+        if (request()->filled('company_name')) {
+            $comp = request('company_name');
+            $query->whereHas('job', function($j) use ($comp) {
+                $j->where('company_name', 'like', "%{$comp}%");
+            });
+        }
+
+        if (request()->filled('major')) {
+            $major = request('major');
+            $query->whereHas('user.candidateProfile', function($cp) use ($major) {
+                $cp->where('last_education', 'like', "%{$major}%")
+                   ->orWhere('major', 'like', "%{$major}%")
+                   ->orWhere('educations', 'like', "%{$major}%");
+            });
         }
 
         if (request()->filled('search')) {

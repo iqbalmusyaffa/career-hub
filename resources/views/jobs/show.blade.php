@@ -54,6 +54,20 @@
                                     <span class="px-2.5 py-0.5 bg-slate-100 text-slate-800 text-3xs font-bold rounded-md border border-slate-200 uppercase">
                                         💻 {{ ucfirst($job->work_type) }}
                                     </span>
+
+                                    @php $umkCheck = $job->umk_check; @endphp
+                                    @if($umkCheck['has_umk'])
+                                        @if($umkCheck['is_below'])
+                                            <span class="px-2.5 py-0.5 bg-amber-50 text-amber-900 border border-amber-300 text-3xs font-extrabold rounded-md flex items-center gap-1 shadow-2xs" title="Gaji yang ditawarkan di bawah UMK 2026 Wilayah {{ $umkCheck['city_district'] }} ({{ $umkCheck['formatted_umk'] }})">
+                                                ⚠️ Di Bawah UMK 2026 ({{ $umkCheck['formatted_umk'] }})
+                                            </span>
+                                        @else
+                                            <span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-900 border border-emerald-300 text-3xs font-extrabold rounded-md flex items-center gap-1 shadow-2xs" title="Gaji yang ditawarkan memenuhi standar UMK 2026 Wilayah {{ $umkCheck['city_district'] }}">
+                                                ✅ Sesuai UMK 2026 ({{ $umkCheck['formatted_umk'] }})
+                                            </span>
+                                        @endif
+                                    @endif
+
                                     <span class="text-3xs text-slate-400 font-medium">
                                         Diposting {{ $job->created_at->diffForHumans() }}
                                     </span>
@@ -126,19 +140,26 @@
 
                                                 @if($job->test && $job->test->is_active)
                                                     @if($testResult)
-                                                        <a href="{{ route('candidate.tests.show', $job->id) }}" class="w-full lg:w-auto px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold text-xs rounded-xl border border-slate-300 text-center transition">
+                                                        <a href="{{ route('candidate.tests.show', $job) }}" class="w-full lg:w-auto px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold text-xs rounded-xl border border-slate-300 text-center transition">
                                                             📊 Hasil Tes: {{ $testResult->score }}% ({{ $testResult->passed ? 'Lulus' : 'Belum Lulus' }})
                                                         </a>
                                                     @else
-                                                        <a href="{{ route('candidate.tests.show', $job->id) }}" class="w-full lg:w-auto px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl text-center shadow-2xs transition flex items-center justify-center gap-2 border border-slate-900">
+                                                        <a href="{{ route('candidate.tests.show', $job) }}" class="w-full lg:w-auto px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl text-center shadow-2xs transition flex items-center justify-center gap-2 border border-slate-900">
                                                             <i class="fa-solid fa-pen-to-square"></i> Ikuti Tes Online Seleksi
                                                         </a>
                                                     @endif
                                                 @endif
                                             </div>
                                         @else
-                                            <form action="{{ route('jobs.apply', $job->id) }}" method="POST">
+                                            <form action="{{ route('jobs.apply', $job) }}" method="POST" class="space-y-3">
                                                 @csrf
+                                                <div class="space-y-1 text-left">
+                                                    <label class="block text-3xs font-extrabold uppercase text-slate-500">
+                                                        🎥 Link Video Screening (Opsional)
+                                                    </label>
+                                                    <input type="url" name="screening_video_url" placeholder="https://youtube.com/watch?v=... / Loom / Drive" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-slate-900 bg-slate-50">
+                                                    <p class="text-3xs text-slate-400">Sertakan link video perkenalan 1-2 menit untuk memperbesar peluang lolos screening.</p>
+                                                </div>
                                                 <button type="submit" onclick="return confirm('Apakah Anda yakin ingin melamar posisi ini? Pastikan profil dan CV Anda sudah terbaru.')" class="w-full lg:w-auto px-7 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-2xs transition border border-slate-900">
                                                     🚀 Lamar Sekarang
                                                 </button>
@@ -160,7 +181,10 @@
                                     <div class="text-center text-xs font-bold text-slate-800 bg-slate-100 p-2 rounded-xl border border-slate-200">
                                         🎯 Match Score: <strong>{{ $matchScore }}%</strong>
                                     </div>
-                                @endif
+                            @auth
+                                <button type="button" onclick="document.getElementById('reportModal').style.display='flex'" class="w-full text-center py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-800 font-extrabold text-xs rounded-xl border border-rose-200 transition flex items-center justify-center gap-1.5 mt-2 cursor-pointer">
+                                    <i class="fa-solid fa-flag text-rose-600"></i> Laporkan Indikasi Red Flag
+                                </button>
                             @endauth
                         </div>
                     </div>
@@ -299,4 +323,54 @@
 
         </div>
     </div>
+
+    <!-- Red Flag Report Modal -->
+    @auth
+    <div id="reportModal" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                <h3 class="font-extrabold text-slate-900 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Laporkan Indikasi Red Flag
+                </h3>
+                <button type="button" onclick="document.getElementById('reportModal').style.display='none'" class="text-slate-400 hover:text-slate-600 text-sm">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('company-reports.store') }}" class="space-y-4 text-xs">
+                @csrf
+                <input type="hidden" name="job_id" value="{{ $job->id }}">
+                <input type="hidden" name="company_name" value="{{ $job->company_name }}">
+
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1">Perusahaan yang Dilaporkan</label>
+                    <input type="text" readonly value="{{ $job->company_name }} (Posisi: {{ $job->title }})" class="w-full bg-slate-100 border-slate-200 rounded-xl font-bold text-slate-700">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1">Kategori Indikasi Red Flag</label>
+                    <select name="report_category" required class="w-full border-slate-300 rounded-xl font-medium focus:ring-rose-500 focus:border-rose-500">
+                        <option value="deposit_fee">💸 Meminta Uang Jaminan / Biaya Rekrutmen (Scam)</option>
+                        <option value="diploma_withholding">📜 Penahanan Ijazah Asli Tanpa Syarat Sah</option>
+                        <option value="under_umk">⚠️ Gaji Di Bawah UMK & Jam Kerja Unfair</option>
+                        <option value="fake_company">🏢 Perusahaan Fiktif / Alamat Palsu</option>
+                        <option value="harassment">🚨 Perlakuan Diskriminatif / Pelecehan</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1">Kronologi / Penjelasan Laporan</label>
+                    <textarea name="reason_description" rows="4" required placeholder="Jelaskan secara rinci kronologi kejadian atau alasan indikasi Red Flag..." class="w-full border-slate-300 rounded-xl font-medium focus:ring-rose-500 focus:border-rose-500"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+                    <button type="button" onclick="document.getElementById('reportModal').style.display='none'" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 font-bold text-slate-700 rounded-xl">Batal</button>
+                    <button type="submit" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 font-extrabold text-white rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim Laporan Rahasia
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endauth
 </x-public-layout>

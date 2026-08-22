@@ -14,6 +14,7 @@ class CompanyProfile extends Model
     protected $casts = [
         'is_verified' => 'boolean',
         'is_suspended' => 'boolean',
+        'benefits' => 'array',
     ];
 
     public function user()

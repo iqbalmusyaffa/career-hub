@@ -18,31 +18,24 @@
     <div class="-mt-14 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 relative z-20">
         <div class="bg-white rounded-2xl shadow-2xs p-5 sm:p-7 border border-slate-200">
             <form action="{{ route('jobs.index') }}" method="GET" class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3.5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-3">
                     <!-- Search Keyword -->
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                             <i class="fa-solid fa-magnifying-glass text-xs text-slate-400"></i>
                         </div>
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Posisi / kata kunci..." class="block w-full pl-10 pr-3 py-2.5 border-slate-300 rounded-xl focus:border-slate-800 focus:ring-slate-800 bg-slate-50/50 hover:bg-white transition text-xs md:text-sm font-medium">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Posisi / kata kunci..." class="block w-full pl-10 pr-3 py-2 border-slate-300 rounded-xl focus:border-slate-800 focus:ring-slate-800 bg-slate-50/50 hover:bg-white transition text-xs font-medium">
                     </div>
 
+                    <!-- Major Requirement Filter -->
+                    <x-indonesia-majors-select name="major" value="{{ request('major') }}" placeholder="Semua Jurusan..." />
+
                     <!-- Location Filter -->
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                            <i class="fa-solid fa-location-dot text-xs text-slate-400"></i>
-                        </div>
-                        <select name="location" class="block w-full pl-10 pr-3 py-2.5 border-slate-300 rounded-xl focus:border-slate-800 focus:ring-slate-800 bg-slate-50/50 hover:bg-white transition text-xs md:text-sm font-medium">
-                            <option value="">Semua Lokasi</option>
-                            @foreach($locations as $loc)
-                                <option value="{{ $loc }}" {{ request('location') == $loc ? 'selected' : '' }}>📍 {{ $loc }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    <x-indonesia-cities-select name="location" value="{{ request('location') }}" placeholder="Semua Lokasi..." />
 
                     <!-- Division Filter -->
                     <div>
-                        <select name="division" class="block w-full px-3 py-2.5 border-slate-300 rounded-xl focus:border-slate-800 focus:ring-slate-800 bg-slate-50/50 hover:bg-white transition text-xs md:text-sm font-medium">
+                        <select name="division" class="block w-full px-3 py-2 border-slate-300 rounded-xl focus:border-slate-800 focus:ring-slate-800 bg-slate-50/50 hover:bg-white transition text-xs font-medium">
                             <option value="">Semua Divisi</option>
                             @foreach($divisions as $div)
                                 <option value="{{ $div }}" {{ request('division') == $div ? 'selected' : '' }}>🏢 {{ $div }}</option>
@@ -52,20 +45,31 @@
 
                     <!-- Work Type Filter -->
                     <div>
-                        <select name="work_type" class="block w-full px-3 py-2.5 border-slate-300 rounded-xl focus:border-slate-800 focus:ring-slate-800 bg-slate-50/50 hover:bg-white transition text-xs md:text-sm font-medium">
+                        <select name="work_type" class="block w-full px-3 py-2 border-slate-300 rounded-xl focus:border-slate-800 focus:ring-slate-800 bg-slate-50/50 hover:bg-white transition text-xs font-medium">
                             <option value="">Semua Tipe Kerja</option>
                             <option value="Full-time" {{ request('work_type') == 'Full-time' ? 'selected' : '' }}>💻 Full-time</option>
                             <option value="Part-time" {{ request('work_type') == 'Part-time' ? 'selected' : '' }}>⏱️ Part-time</option>
                             <option value="Remote" {{ request('work_type') == 'Remote' ? 'selected' : '' }}>🏠 Remote</option>
                             <option value="Hybrid" {{ request('work_type') == 'Hybrid' ? 'selected' : '' }}>🏢 Hybrid</option>
                             <option value="Contract" {{ request('work_type') == 'Contract' ? 'selected' : '' }}>📝 Contract</option>
-                            <option value="Internship" {{ request('work_type') == 'Internship' ? 'selected' : '' }}>🎓 Internship / Magang</option>
+                            <option value="Internship" {{ request('work_type') == 'Internship' ? 'selected' : '' }}>🎓 Magang</option>
+                        </select>
+                    </div>
+
+                    <!-- Salary Range Filter -->
+                    <div>
+                        <select name="salary_range" class="block w-full px-3 py-2 border-slate-300 rounded-xl focus:border-slate-800 focus:ring-slate-800 bg-slate-50/50 hover:bg-white transition text-xs font-medium">
+                            <option value="">Semua Rentang Gaji</option>
+                            <option value="under_5m" {{ request('salary_range') == 'under_5m' ? 'selected' : '' }}>💰 &lt; Rp 5 Juta</option>
+                            <option value="5m_10m" {{ request('salary_range') == '5m_10m' ? 'selected' : '' }}>💰 Rp 5 - 10 Juta</option>
+                            <option value="10m_20m" {{ request('salary_range') == '10m_20m' ? 'selected' : '' }}>💰 Rp 10 - 20 Juta</option>
+                            <option value="above_20m" {{ request('salary_range') == 'above_20m' ? 'selected' : '' }}>💰 &gt; Rp 20 Juta</option>
                         </select>
                     </div>
 
                     <!-- Sorting Filter -->
                     <div>
-                        <select name="sort" class="block w-full px-3 py-2.5 border-slate-300 rounded-xl focus:border-slate-800 focus:ring-slate-800 bg-slate-50/50 hover:bg-white transition text-xs md:text-sm font-medium">
+                        <select name="sort" class="block w-full px-3 py-2 border-slate-300 rounded-xl focus:border-slate-800 focus:ring-slate-800 bg-slate-50/50 hover:bg-white transition text-xs font-medium">
                             <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>✨ Terbaru</option>
                             <option value="deadline_asc" {{ request('sort') == 'deadline_asc' ? 'selected' : '' }}>⏳ Deadline Terdekat</option>
                             <option value="title_asc" {{ request('sort') == 'title_asc' ? 'selected' : '' }}>🔤 Judul (A-Z)</option>
@@ -80,11 +84,11 @@
                         <a href="{{ route('jobs.index', ['search' => 'Backend']) }}" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition font-bold border border-slate-200">Backend</a>
                         <a href="{{ route('jobs.index', ['search' => 'React']) }}" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition font-bold border border-slate-200">React</a>
                         <a href="{{ route('jobs.index', ['search' => 'UI/UX']) }}" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition font-bold border border-slate-200">UI/UX</a>
-                        <a href="{{ route('jobs.index', ['search' => 'Remote']) }}" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition font-bold border border-slate-200">Remote</a>
+                        <a href="{{ route('jobs.index', ['salary_range' => '10m_20m']) }}" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition font-bold border border-slate-200">Gaji 10-20 Juta</a>
                     </div>
 
                     <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-                        @if(request()->anyFilled(['search', 'location', 'division', 'work_type', 'sort']))
+                        @if(request()->anyFilled(['search', 'major', 'location', 'division', 'work_type', 'salary_range', 'sort']))
                             <a href="{{ route('jobs.index') }}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1 transition border border-slate-300">
                                 ✕ Reset Filter
                             </a>
@@ -132,7 +136,7 @@
                                         {{ ucfirst($job->work_type) }}
                                     </span>
                                     @auth
-                                        <form action="{{ route('jobs.bookmark', $job->id) }}" method="POST" class="inline">
+                                        <form action="{{ route('jobs.bookmark', $job) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit" title="{{ $isBookmarked ? 'Batal simpan' : 'Simpan lowongan' }}" class="p-2 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition border border-transparent">
                                                 <i class="fa-solid fa-bookmark text-sm {{ $isBookmarked ? 'text-slate-900' : '' }}"></i>
@@ -143,7 +147,7 @@
                             </div>
                             
                             <!-- Title & Division -->
-                            <a href="{{ route('jobs.show', $job->id) }}" class="group-hover:text-slate-700 transition">
+                            <a href="{{ route('jobs.show', $job) }}" class="group-hover:text-slate-700 transition">
                                 <h3 class="text-base font-bold text-slate-900 mb-1 leading-snug line-clamp-2">{{ $job->title }}</h3>
                             </a>
                             <p class="text-xs font-semibold text-slate-600 mb-2 flex items-center gap-1.5">
@@ -207,7 +211,7 @@
                                 <span class="text-3xs uppercase tracking-wider text-slate-400 font-bold block">Gaji Offer</span>
                                 <span class="text-xs font-bold text-slate-900 block truncate">{{ $job->salary ?? 'Negosiasi' }}</span>
                             </div>
-                            <a href="{{ route('jobs.show', $job->id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl border border-slate-900 shadow-2xs transition shrink-0 w-full sm:w-auto text-center">
+                            <a href="{{ route('jobs.show', $job) }}" class="inline-flex items-center justify-center px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl border border-slate-900 shadow-2xs transition shrink-0 w-full sm:w-auto text-center">
                                 Detail Posisi &rarr;
                             </a>
                         </div>

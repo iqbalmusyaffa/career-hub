@@ -50,4 +50,21 @@ class ApplicationController extends Controller
 
         return $pdf->download('Laporan_Pelamar_' . date('Y-m-d') . '.pdf');
     }
+
+    public function bulkUpdateStatus(Request $request)
+    {
+        $request->validate([
+            'application_ids' => 'required|array|min:1',
+            'status' => 'required|string',
+        ]);
+
+        $count = 0;
+        foreach ($request->application_ids as $id) {
+            $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+            $this->applicationService->updateApplicationStatus($realId, $request->status);
+            $count++;
+        }
+
+        return redirect()->back()->with('success', "Status {$count} pelamar berhasil diperbarui menjadi " . strtoupper($request->status) . '!');
+    }
 }

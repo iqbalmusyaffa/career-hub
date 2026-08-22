@@ -18,11 +18,11 @@ class CandidateTestController extends Controller
         $test = $job->test()->with('questions')->first();
 
         if (!$test || !$test->is_active) {
-            return redirect()->route('jobs.show', $job->id)->with('error', 'Lowongan ini tidak memerlukan tes online saat ini.');
+            return redirect()->route('jobs.show', $job)->with('error', 'Lowongan ini tidak memerlukan tes online saat ini.');
         }
 
         if ($test->test_mode === 'internal' && $test->questions->count() === 0) {
-            return redirect()->route('jobs.show', $job->id)->with('error', 'Lowongan ini belum memiliki bank soal tes aktif.');
+            return redirect()->route('jobs.show', $job)->with('error', 'Lowongan ini belum memiliki bank soal tes aktif.');
         }
 
         $user = Auth::user();
@@ -97,7 +97,7 @@ class CandidateTestController extends Controller
                 $user->id,
                 "🎉 Selamat! Lolos Tes Online",
                 "Anda berhasil menyelesaikan tes online untuk {$job->title} dengan skor {$score}% (KKM: {$test->passing_score}%).",
-                route('candidate.tests.show', $job->id),
+                route('candidate.tests.show', $job),
                 'success'
             );
         } else {
@@ -105,14 +105,14 @@ class CandidateTestController extends Controller
                 $user->id,
                 "❌ Hasil Tes Online Belum Memenuhi KKM",
                 "Tes online untuk {$job->title} telah selesai. Skor Anda {$score}% (KKM minimal: {$test->passing_score}%).",
-                route('candidate.tests.show', $job->id),
+                route('candidate.tests.show', $job),
                 'warning'
             );
         }
 
         \App\Models\AuditLog::record('test_completed', "Kandidat {$user->name} menyelesaikan tes online {$job->title} (Skor: {$score}%, Status: " . ($passed ? 'Lolos' : 'Gagal') . ")");
 
-        return redirect()->route('candidate.tests.show', $job->id)
+        return redirect()->route('candidate.tests.show', $job)
             ->with('success', 'Tes Online Berhasil Diselesaikan!');
     }
 
@@ -153,11 +153,11 @@ class CandidateTestController extends Controller
             $user->id,
             "✅ Tes Psikotes Eksternal Dikonfirmasi",
             "Terima kasih telah mengerjakan Tes Psikotes Eksternal untuk {$job->title}. Tim HR akan memeriksa hasil pengerjaan Anda.",
-            route('candidate.tests.show', $job->id),
+            route('candidate.tests.show', $job),
             'success'
         );
 
-        return redirect()->route('candidate.tests.show', $job->id)
+        return redirect()->route('candidate.tests.show', $job)
             ->with('success', 'Konfirmasi Pengerjaan Tes Psikotes Eksternal Berhasil Disimpan!');
     }
 }

@@ -91,7 +91,7 @@ class OfferLetterController extends Controller
             // Ignore email errors gracefully if SMTP is not configured
         }
 
-        return redirect()->route('admin.applications.show', $application->id)
+        return redirect()->route('admin.applications.show', $application)
             ->with('success', 'Surat Penawaran Kerja (Offer Letter PDF) berhasil dibuat, dikirim via Email, dan dilampirkan!');
     }
 

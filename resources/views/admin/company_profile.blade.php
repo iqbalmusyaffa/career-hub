@@ -150,13 +150,78 @@
 
                     <div>
                         <x-input-label for="description" :value="__('Deskripsi & Profil Singkat Perusahaan')" />
-                        <textarea id="description" name="description" rows="4" class="mt-1 block w-full border-gray-300 rounded-xl shadow-xs focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white transition text-sm" placeholder="Jelaskan bidang usaha, visi misi, dan budaya perusahaan Anda...">{{ old('description', $profile->description) }}</textarea>
+                        <textarea id="description" name="description" rows="3" class="mt-1 block w-full border-gray-300 rounded-xl shadow-xs focus:border-blue-500 focus:ring-blue-500 bg-gray-50 focus:bg-white transition text-sm" placeholder="Jelaskan bidang usaha, visi misi, dan budaya perusahaan Anda...">{{ old('description', $profile->description) }}</textarea>
                         @error('description') <span class="text-xs text-red-500 mt-1 font-bold">{{ $message }}</span> @enderror
+                    </div>
+
+                    <!-- KUSTOMISASI PORTAL KARIR PUBLIK PERUSAHAAN (CAREER PAGE BUILDER) -->
+                    <div class="p-6 bg-slate-900 text-white rounded-3xl space-y-6 shadow-md border border-slate-800">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-3">
+                            <div>
+                                <h4 class="font-black text-base text-white tracking-tight flex items-center gap-2">
+                                    <i class="fa-solid fa-globe text-blue-400"></i> Public Career Page Builder
+                                </h4>
+                                <p class="text-xs text-slate-400 font-medium mt-0.5">Kustomisasi halaman portal karir publik perusahaan Anda yang dilihat oleh para pencari kerja.</p>
+                            </div>
+                            <a href="{{ route('companies.show', urlencode($profile->company_name)) }}" target="_blank" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition shadow-2xs flex items-center gap-2 shrink-0">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat Portal Karir Publik &rarr;
+                            </a>
+                        </div>
+
+                        <!-- Cover Banner Upload -->
+                        <div class="space-y-2">
+                            <label class="block text-xs font-bold text-slate-300">Gambar Cover / Header Banner Perusahaan (Opsional)</label>
+                            <input type="file" name="cover_image" accept="image/*" class="block w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 transition cursor-pointer border border-slate-700 rounded-xl">
+                            @if($profile->cover_image_path)
+                                <div class="w-full h-36 rounded-2xl overflow-hidden border border-slate-700 mt-2 relative">
+                                    <img src="{{ Storage::url($profile->cover_image_path) }}" class="w-full h-full object-cover">
+                                    <div class="absolute bottom-2 left-2 px-2.5 py-1 bg-slate-900/80 backdrop-blur-xs text-white text-3xs font-extrabold rounded-lg">Banner Cover Aktif</div>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Tagline Perusahaan -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1">Tagline Perusahaan (Slogan Utama)</label>
+                            <input type="text" name="tagline" value="{{ old('tagline', $profile->tagline) }}" placeholder="Misal: Building Future Tech Pioneers Across Southeast Asia" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:ring-2 focus:ring-blue-500 font-medium">
+                        </div>
+
+                        <!-- Budaya Kerja -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1">Budaya & Suasana Kerja (Workplace Culture)</label>
+                            <textarea name="culture_description" rows="3" placeholder="Jelaskan lingkungan kerja, nilai-nilai utama, dan kebiasaan tim di perusahaan Anda..." class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:ring-2 focus:ring-blue-500 font-medium">{{ old('culture_description', $profile->culture_description) }}</textarea>
+                        </div>
+
+                        <!-- Benefit Karyawan Checkboxes -->
+                        <div class="space-y-2">
+                            <label class="block text-xs font-bold text-slate-300">Tunjangan & Benefit Karyawan (Fasilitas Perusahaan)</label>
+                            @php
+                                $existingBenefits = is_array($profile->benefits) ? $profile->benefits : [];
+                                $defaultBenefits = [
+                                    'Asuransi Kesehatan & BPJS',
+                                    'Jam Kerja Fleksibel / Hybrid',
+                                    'Laptop Kerja Perusahaan',
+                                    'Makan Siang & Snack Gratis',
+                                    'Bonus Kinerja & THR',
+                                    'Pelatihan & Sertifikasi Industri',
+                                    'Cuti Tahunan Tambahan',
+                                    'Fasilitas Olahraga / Gym'
+                                ];
+                            @endphp
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                @foreach($defaultBenefits as $b)
+                                    <label class="flex items-center gap-2 p-2.5 bg-slate-800/80 rounded-xl border border-slate-700/80 cursor-pointer hover:bg-slate-800 transition">
+                                        <input type="checkbox" name="benefits[]" value="{{ $b }}" {{ in_array($b, $existingBenefits) ? 'checked' : '' }} class="rounded text-blue-600 focus:ring-blue-500">
+                                        <span class="text-slate-200 font-semibold text-xs">{{ $b }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
 
                     <div class="pt-4 border-t border-gray-100 flex justify-end">
                         <button type="submit" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-2xl shadow-lg hover:shadow-xl transition transform hover:scale-105 text-xs flex items-center gap-2">
-                            <i class="fa-solid fa-floppy-disk"></i> Simpan Data Perusahaan
+                            <i class="fa-solid fa-floppy-disk"></i> Simpan Data & Portal Karir Perusahaan
                         </button>
                     </div>
             </div>

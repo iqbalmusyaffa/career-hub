@@ -40,6 +40,59 @@ class JobListingController extends Controller
             $query->where('work_type', $request->work_type);
         }
 
+        if ($request->filled('major')) {
+            $major = $request->major;
+            $query->where(function($q) use ($major) {
+                $q->where('major_requirement', 'like', "%{$major}%")
+                  ->orWhere('description', 'like', "%{$major}%")
+                  ->orWhere('requirements', 'like', "%{$major}%");
+            });
+        }
+
+        if ($request->filled('experience_level')) {
+            $exp = $request->experience_level;
+            $query->where(function($q) use ($exp) {
+                $q->where('experience_level', $exp)
+                  ->orWhere('requirements', 'like', "%{$exp}%")
+                  ->orWhere('title', 'like', "%{$exp}%");
+            });
+        }
+
+        if ($request->filled('salary_range')) {
+            $sal = $request->salary_range;
+            if ($sal === 'under_5m') {
+                $query->where(function($q) {
+                    $q->where('salary', 'like', '%3.%')
+                      ->orWhere('salary', 'like', '%4.%')
+                      ->orWhere('salary', 'like', '%Rp 3%')
+                      ->orWhere('salary', 'like', '%Rp 4%');
+                });
+            } elseif ($sal === '5m_10m') {
+                $query->where(function($q) {
+                    $q->where('salary', 'like', '%5.%')
+                      ->orWhere('salary', 'like', '%6.%')
+                      ->orWhere('salary', 'like', '%7.%')
+                      ->orWhere('salary', 'like', '%8.%')
+                      ->orWhere('salary', 'like', '%9.%');
+                });
+            } elseif ($sal === '10m_20m') {
+                $query->where(function($q) {
+                    $q->where('salary', 'like', '%10.%')
+                      ->orWhere('salary', 'like', '%12.%')
+                      ->orWhere('salary', 'like', '%14.%')
+                      ->orWhere('salary', 'like', '%15.%')
+                      ->orWhere('salary', 'like', '%18.%');
+                });
+            } elseif ($sal === 'above_20m') {
+                $query->where(function($q) {
+                    $q->where('salary', 'like', '%20.%')
+                      ->orWhere('salary', 'like', '%22.%')
+                      ->orWhere('salary', 'like', '%25.%')
+                      ->orWhere('salary', 'like', '%30.%');
+                });
+            }
+        }
+
         // Exclude expired jobs automatically
         $query->where(function($q) {
             $q->whereNull('deadline')->orWhere('deadline', '>=', now()->startOfDay());
@@ -61,6 +114,7 @@ class JobListingController extends Controller
         $divisions = Job::where('status', 'active')->distinct()->pluck('division')->filter();
         $locations = Job::where('status', 'active')->distinct()->pluck('location')->filter();
         $workTypes = Job::where('status', 'active')->distinct()->pluck('work_type')->filter();
+        $experienceLevels = ['Magang / Intern', 'Junior (1-2 Tahun)', 'Mid-Level (2-5 Tahun)', 'Senior / Lead (5+ Tahun)'];
 
         // Pass saved job IDs for current user if logged in
         $savedJobIds = [];
@@ -68,18 +122,19 @@ class JobListingController extends Controller
             $savedJobIds = auth()->user()->bookmarkedJobs()->pluck('job_postings.id')->toArray();
         }
 
-        return view('jobs.index', compact('jobs', 'divisions', 'locations', 'workTypes', 'savedJobIds'));
+        return view('jobs.index', compact('jobs', 'divisions', 'locations', 'workTypes', 'experienceLevels', 'savedJobIds'));
     }
 
     public function show($id)
     {
-        $job = Job::with(['test.questions', 'applications'])->where('status', 'active')->findOrFail($id);
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $job = Job::with(['test.questions', 'applications'])->where('status', 'active')->findOrFail($realId);
         
         $hasApplied = false;
         $testResult = null;
         if (auth()->check()) {
-            $hasApplied = \App\Models\Application::where('user_id', auth()->id())->where('job_id', $id)->exists();
-            $testResult = \App\Models\CandidateTestResult::where('user_id', auth()->id())->where('job_id', $id)->first();
+            $hasApplied = \App\Models\Application::where('user_id', auth()->id())->where('job_id', $job->id)->exists();
+            $testResult = \App\Models\CandidateTestResult::where('user_id', auth()->id())->where('job_id', $job->id)->first();
         }
 
         $compName = $job->company_name ?: 'PT TechNova Asia Digital';
@@ -90,8 +145,10 @@ class JobListingController extends Controller
         return view('jobs.show', compact('job', 'hasApplied', 'testResult', 'companyJobsCount', 'compName', 'umk'));
     }
 
-    public function apply($id)
+    public function apply(Request $request, $id)
     {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $job = Job::where('status', 'active')->findOrFail($realId);
         $user = auth()->user();
         
         // Ensure profile and CV exist
@@ -99,11 +156,29 @@ class JobListingController extends Controller
             return redirect()->route('profile.edit')->with('error', 'Silakan lengkapi profil dan unggah CV terlebih dahulu sebelum melamar.');
         }
 
+        $screeningVideoUrl = $request->input('screening_video_url');
+
         try {
-            $this->applicationService->applyForJob($user->id, $id);
-            return redirect()->route('jobs.show', $id)->with('success', 'Berhasil melamar pekerjaan ini.');
+            $this->applicationService->applyForJob($user->id, $job->id, $screeningVideoUrl);
+            return redirect()->route('jobs.show', $job)->with('success', 'Berhasil melamar pekerjaan ini.');
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->route('jobs.show', $id)->with('error', $e->getMessage());
+            return redirect()->route('jobs.show', $job)->with('error', $e->getMessage());
         }
+    }
+
+    public function updateVideoScreening(Request $request, $id)
+    {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = \App\Models\Application::where('user_id', auth()->id())->findOrFail($realId);
+        
+        $request->validate([
+            'screening_video_url' => 'required|url|max:500',
+        ]);
+
+        $application->update([
+            'screening_video_url' => $request->screening_video_url,
+        ]);
+
+        return back()->with('success', 'Link video perkenalan screening berhasil diperbarui.');
     }
 }

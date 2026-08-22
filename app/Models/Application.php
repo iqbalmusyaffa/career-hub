@@ -16,6 +16,7 @@ class Application extends Model
         'user_id',
         'job_id',
         'status',
+        'screening_video_url',
     ];
 
     protected $casts = [
@@ -61,5 +62,35 @@ class Application extends Model
     public function internalNotes()
     {
         return $this->hasMany(HrInternalNote::class);
+    }
+
+    public function onboarding()
+    {
+        return $this->hasOne(CandidateOnboarding::class);
+    }
+
+    public function scorecards()
+    {
+        return $this->hasMany(InterviewScorecard::class);
+    }
+
+    public function agreements()
+    {
+        return $this->hasMany(ApplicationAgreement::class);
+    }
+
+    public function certificates()
+    {
+        return $this->hasMany(InternshipCertificate::class);
+    }
+
+    public function transcripts()
+    {
+        return $this->hasMany(InternshipTranscript::class);
+    }
+
+    public function terminations()
+    {
+        return $this->hasMany(EmployeeTermination::class);
     }
 }

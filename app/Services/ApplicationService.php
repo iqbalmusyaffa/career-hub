@@ -15,7 +15,7 @@ class ApplicationService
         $this->applicationRepository = $applicationRepository;
     }
 
-    public function applyForJob($userId, $jobId)
+    public function applyForJob($userId, $jobId, $screeningVideoUrl = null)
     {
         $job = \App\Models\Job::findOrFail($jobId);
 
@@ -33,6 +33,7 @@ class ApplicationService
             'user_id' => $userId,
             'job_id' => $jobId,
             'status' => \App\Enums\ApplicationStatus::PENDING,
+            'screening_video_url' => $screeningVideoUrl,
         ]);
     }
 

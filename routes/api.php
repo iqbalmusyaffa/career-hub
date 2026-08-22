@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\AdminApplicationApiController;
+use App\Http\Controllers\Api\Admin\AdminCompanyTeamApiController;
 use App\Http\Controllers\Api\Admin\AdminJobApiController;
 use App\Http\Controllers\Api\Admin\AdminSuperApiController;
 use App\Http\Controllers\Api\ApplicationApiController;
@@ -40,16 +41,19 @@ Route::prefix('v1')->middleware(['throttle:api'])->group(function () {
     });
 
     // ==========================================
-    // 2. PUBLIC JOBS & SEARCH API
+    // 2. PUBLIC JOBS, COMPANIES & SEARCH API
     // ==========================================
     Route::get('/jobs', [JobApiController::class, 'index']);
     Route::get('/jobs/{id}', [JobApiController::class, 'show']);
+    Route::get('/companies', [JobApiController::class, 'companies']);
+    Route::get('/companies/{name}', [JobApiController::class, 'companyShow']);
 
     // ==========================================
-    // 3. REGIONAL UMK 2026 & CITIES API
+    // 3. REGIONAL UMK 2026, CITIES & MAJORS API
     // ==========================================
     Route::get('/umk-lookup', [UmkController::class, 'lookup']);
     Route::get('/regions/cities', [UmkController::class, 'cities']);
+    Route::get('/regions/majors', [UmkController::class, 'majors']);
 
     // ==========================================
     // 4. CANDIDATE PROTECTED APIS (auth:sanctum)
@@ -81,6 +85,16 @@ Route::prefix('v1')->middleware(['throttle:api'])->group(function () {
         Route::post('/candidate/tests/{jobId}/submit', [CandidateTestApiController::class, 'submitTest']);
         Route::post('/candidate/offer-letters/{id}/respond', [CandidateTestApiController::class, 'respondOffer']);
 
+        // Candidate Onboarding & Employee Data (Only for Accepted/Hired Candidates)
+        Route::get('/candidate/applications/{id}/onboarding', [ApplicationApiController::class, 'getOnboarding']);
+        Route::post('/candidate/applications/{id}/onboarding', [ApplicationApiController::class, 'storeOnboarding']);
+
+        // Candidate Digital Contracts, Certificates, Transcripts & Terminations API
+        Route::get('/candidate/agreements', [ApplicationApiController::class, 'myAgreements']);
+        Route::get('/candidate/certificates', [ApplicationApiController::class, 'myCertificates']);
+        Route::get('/candidate/transcripts', [ApplicationApiController::class, 'myTranscripts']);
+        Route::get('/candidate/terminations', [ApplicationApiController::class, 'myTerminations']);
+
         // In-App Bell Notifications
         Route::get('/notifications', [NotificationApiController::class, 'index']);
         Route::post('/notifications/{id}/read', [NotificationApiController::class, 'markAsRead']);
@@ -97,15 +111,46 @@ Route::prefix('v1')->middleware(['throttle:api'])->group(function () {
         Route::post('/jobs', [AdminJobApiController::class, 'store']);
         Route::put('/jobs/{id}', [AdminJobApiController::class, 'update']);
         Route::delete('/jobs/{id}', [AdminJobApiController::class, 'destroy']);
+        Route::get('/jobs/{id}/test', [AdminJobApiController::class, 'manageTest']);
+        Route::post('/jobs/{id}/test', [AdminJobApiController::class, 'updateTest']);
         Route::get('/company-profile', [AdminJobApiController::class, 'companyProfile']);
 
         // Recruitment Pipeline Management
         Route::get('/applications', [AdminApplicationApiController::class, 'index']);
         Route::get('/applications/{id}', [AdminApplicationApiController::class, 'show']);
         Route::patch('/applications/{id}/status', [AdminApplicationApiController::class, 'updateStatus']);
+        Route::post('/applications/bulk-status', [AdminApplicationApiController::class, 'bulkStatus']);
         Route::post('/applications/{id}/schedule-interview', [AdminApplicationApiController::class, 'scheduleInterview']);
         Route::post('/applications/{id}/evaluations', [AdminApplicationApiController::class, 'storeEvaluation']);
+        Route::get('/applications/{id}/scorecards', [AdminApplicationApiController::class, 'getScorecards']);
+        Route::post('/applications/{id}/scorecards', [AdminApplicationApiController::class, 'storeScorecard']);
         Route::post('/applications/{id}/offer-letter', [AdminApplicationApiController::class, 'issueOfferLetter']);
+        Route::post('/applications/{id}/cancel-acceptance', [AdminApplicationApiController::class, 'cancelAcceptance']);
+        Route::post('/applications/{id}/verify-onboarding', [AdminApplicationApiController::class, 'verifyOnboarding']);
+        Route::post('/applications/{id}/agreements', [AdminApplicationApiController::class, 'createAgreement']);
+        Route::post('/applications/{id}/certificates', [AdminApplicationApiController::class, 'createCertificate']);
+        Route::post('/applications/{id}/transcripts', [AdminApplicationApiController::class, 'createTranscript']);
+        Route::post('/applications/{id}/terminations', [AdminApplicationApiController::class, 'createTermination']);
+        Route::post('/applications/{id}/internal-notes', [AdminApplicationApiController::class, 'storeInternalNote']);
+
+        // Company Team & Multi-Branch Offices
+        Route::get('/company-team', [AdminCompanyTeamApiController::class, 'teamIndex']);
+        Route::post('/company-team', [AdminCompanyTeamApiController::class, 'teamStore']);
+        Route::delete('/company-team/{id}', [AdminCompanyTeamApiController::class, 'teamDestroy']);
+        Route::get('/company-team/audit-logs', [\App\Http\Controllers\Admin\CompanyActivityAuditController::class, 'index']);
+        Route::get('/company/branches', [AdminCompanyTeamApiController::class, 'branchesIndex']);
+        Route::post('/company/branches', [AdminCompanyTeamApiController::class, 'branchesStore']);
+        Route::delete('/company/branches/{id}', [AdminCompanyTeamApiController::class, 'branchesDestroy']);
+
+        // Headcount Budget & Recruitment Planning
+        Route::get('/headcount-budgets', [\App\Http\Controllers\Admin\HeadcountBudgetController::class, 'index']);
+        Route::post('/headcount-budgets', [\App\Http\Controllers\Admin\HeadcountBudgetController::class, 'store']);
+        Route::get('/reports/custom', [\App\Http\Controllers\Admin\CustomReportBuilderController::class, 'export']);
+
+        // HR Email Templates & Recruitment Calendar Events
+        Route::get('/email-templates', [AdminCompanyTeamApiController::class, 'templatesIndex']);
+        Route::post('/email-templates', [AdminCompanyTeamApiController::class, 'templatesStore']);
+        Route::get('/calendar/events', [AdminSuperApiController::class, 'calendarEvents']);
     });
 
     // ==========================================
@@ -122,6 +167,15 @@ Route::prefix('v1')->middleware(['throttle:api'])->group(function () {
         Route::post('/role-requests/{id}/approve', [AdminSuperApiController::class, 'approveRoleRequest']);
 
         Route::get('/audit-logs', [AdminSuperApiController::class, 'auditLogs']);
+        Route::get('/analytics', [AdminSuperApiController::class, 'analytics']);
+        Route::get('/announcements', [AdminSuperApiController::class, 'announcements']);
+        Route::post('/announcements', [AdminSuperApiController::class, 'storeAnnouncement']);
+        Route::get('/blacklists', [AdminSuperApiController::class, 'blacklists']);
+        Route::post('/blacklists', [AdminSuperApiController::class, 'storeBlacklist']);
+
+        Route::get('/cancellation-tickets', [AdminSuperApiController::class, 'cancellationTickets']);
+        Route::post('/cancellation-tickets/{id}/approve', [AdminSuperApiController::class, 'approveCancellationTicket']);
+        Route::post('/cancellation-tickets/{id}/reject', [AdminSuperApiController::class, 'rejectCancellationTicket']);
     });
 
 });

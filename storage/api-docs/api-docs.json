@@ -437,6 +437,160 @@
                 ]
             }
         },
+        "/admin/company-team": {
+            "get": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "[HR] Daftar Tim HR Perusahaan",
+                "description": "Mengambil daftar anggota tim HR perusahaan.",
+                "operationId": "db497c4a162f6aed543c5596e9f6ebbd",
+                "responses": {
+                    "200": {
+                        "description": "Daftar anggota tim HR"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "[Company Owner] Tambah Anggota Tim HR",
+                "description": "Mendaftarkan anggota tim HR baru.",
+                "operationId": "9b3c86d08e9906e20e1e5993bf2ba0d8",
+                "responses": {
+                    "201": {
+                        "description": "Anggota tim berhasil ditambahkan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/company-team/{id}": {
+            "delete": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "[Company Owner] Hapus Anggota Tim HR",
+                "description": "Menghapus anggota tim HR perusahaan.",
+                "operationId": "e500325fe583a09015b5ea1a21782839",
+                "responses": {
+                    "200": {
+                        "description": "Anggota tim dihapus"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/company/branches": {
+            "get": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "[Company Owner] Daftar Cabang Kantor",
+                "description": "Mengambil daftar lokasi kantor cabang perusahaan.",
+                "operationId": "cfc6e057103fa01a7ec6fb1b617c3cbf",
+                "responses": {
+                    "200": {
+                        "description": "Daftar cabang"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "[Company Owner] Tambah Cabang Kantor Baru",
+                "description": "Menambahkan informasi kantor cabang perusahaan.",
+                "operationId": "8a6624a3d94db76acefd6b26aa9f1a12",
+                "responses": {
+                    "201": {
+                        "description": "Cabang berhasil ditambahkan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/company/branches/{id}": {
+            "delete": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "[Company Owner] Hapus Cabang Kantor",
+                "description": "Menghapus lokasi kantor cabang perusahaan.",
+                "operationId": "fd5ee9daf6d1c0c4c9e54492b9820749",
+                "responses": {
+                    "200": {
+                        "description": "Cabang dihapus"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/email-templates": {
+            "get": {
+                "tags": [
+                    "HR Recruitment Pipeline"
+                ],
+                "summary": "[HR] Daftar Template Email HR",
+                "description": "Mengambil daftar template email rekrutmen.",
+                "operationId": "17190a788a9133d5cf42a16395e9c148",
+                "responses": {
+                    "200": {
+                        "description": "Daftar template email"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "HR Recruitment Pipeline"
+                ],
+                "summary": "[HR] Buat Template Email HR Baru",
+                "description": "Membuat template email rekrutmen baru.",
+                "operationId": "259e77346e26b3924a4a18dfa2ebd315",
+                "responses": {
+                    "201": {
+                        "description": "Template email berhasil dibuat"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/admin/jobs": {
             "get": {
                 "tags": [
@@ -1033,6 +1187,10 @@
                                         "type": "string",
                                         "example": "Saya berminat bergabung di posisi ini..."
                                     },
+                                    "screening_video_url": {
+                                        "type": "string",
+                                        "example": "https://youtube.com/watch?v=..."
+                                    },
                                     "resume": {
                                         "type": "string",
                                         "format": "binary"
@@ -1240,6 +1398,98 @@
                                         "sender_id": 1,
                                         "message": "Halo HR, apakah ada kelanjutan wawancara?",
                                         "created_at": "2026-08-21T22:10:00.000000Z"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/applications/{id}/onboarding": {
+            "get": {
+                "tags": [
+                    "Candidate Applications"
+                ],
+                "summary": "Ambil Data Onboarding & Rekening Bank (Kandidat Lolos/Accepted)",
+                "description": "Mengambil data formulir onboarding bank, NPWP, dan BPJS untuk kandidat yang telah diterima kerja.",
+                "operationId": "86ec23c5c50c0221edb5cedfcd0f8086",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "BVrl94ufFAW1yoGqJ6ACiQ"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data onboarding kandidat",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Data onboarding kandidat berhasil diambil.",
+                                    "data": {
+                                        "bank_name": "BCA",
+                                        "bank_account_number": "1234567890",
+                                        "bank_account_holder": "Budi Pratama",
+                                        "verification_status": "pending"
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Candidate Applications"
+                ],
+                "summary": "Kirim Formulir & Berkas Onboarding (Bank, NPWP, BPJS PDF/PNG/JPG)",
+                "description": "Mengirimkan data rekening bank, NPWP, BPJS, dan lampiran berkas onboarding kandidat yang lolos seleksi.",
+                "operationId": "8610d78abc6cd7cfbf42ebd5fb1c626a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "BVrl94ufFAW1yoGqJ6ACiQ"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil menyimpan data onboarding",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Data onboarding, bank & BPJS berhasil disimpan!",
+                                    "data": {
+                                        "id": 1,
+                                        "bank_name": "BCA",
+                                        "bank_account_number": "1234567890",
+                                        "verification_status": "pending"
                                     },
                                     "errors": null
                                 }
@@ -2121,12 +2371,30 @@
                         }
                     },
                     {
-                        "name": "job_type",
+                        "name": "division",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Engineering"
+                        }
+                    },
+                    {
+                        "name": "work_type",
                         "in": "query",
                         "required": false,
                         "schema": {
                             "type": "string",
                             "example": "Full-time"
+                        }
+                    },
+                    {
+                        "name": "salary_range",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "10m_20m"
                         }
                     },
                     {
@@ -2324,6 +2592,107 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/companies": {
+            "get": {
+                "tags": [
+                    "Jobs & Search"
+                ],
+                "summary": "Direktori Perusahaan Terverifikasi",
+                "description": "Mengambil daftar perusahaan terpercaya yang bermitra dengan platform.",
+                "operationId": "10b2bdf0788256ab4920827959459b4b",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "TechNova"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar perusahaan terverifikasi",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Daftar perusahaan terverifikasi berhasil diambil.",
+                                    "data": {
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "company_name": "PT TechNova Asia Digital",
+                                                "industry": "Teknologi & Informasi",
+                                                "is_verified": true
+                                            }
+                                        ]
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/companies/{name}": {
+            "get": {
+                "tags": [
+                    "Jobs & Search"
+                ],
+                "summary": "Detail Profil Perusahaan & Lowongan Aktif",
+                "description": "Mengambil profil lengkap perusahaan beserta seluruh lowongan pekerjaan aktif milik perusahaan tersebut.",
+                "operationId": "cbc34ae816ffbb848f470682a7030d54",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "PT TechNova Asia Digital"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail profil perusahaan dan lowongan aktif",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Detail profil perusahaan berhasil diambil.",
+                                    "data": {
+                                        "company_name": "PT TechNova Asia Digital",
+                                        "active_jobs": [
+                                            {
+                                                "id": 1,
+                                                "title": "Senior Backend Developer",
+                                                "location": "Jakarta Selatan"
+                                            }
+                                        ]
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/notifications": {
@@ -2541,6 +2910,10 @@
         {
             "name": "HR Recruitment Pipeline",
             "description": "HR Recruitment Pipeline"
+        },
+        {
+            "name": "Company Management",
+            "description": "Company Management"
         },
         {
             "name": "HR Job Postings & Company",

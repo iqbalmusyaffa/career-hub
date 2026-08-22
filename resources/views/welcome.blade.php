@@ -252,7 +252,7 @@
                                 </span>
                             </div>
                             
-                            <a href="{{ route('jobs.show', $job->id) }}" class="group-hover:text-slate-700 transition">
+                            <a href="{{ route('jobs.show', $job) }}" class="group-hover:text-slate-700 transition">
                                 <h3 class="text-base font-bold text-slate-900 mb-1 leading-snug line-clamp-2">{{ $job->title }}</h3>
                             </a>
                             <p class="text-xs font-semibold text-slate-600 mb-2 flex items-center gap-1.5">
@@ -296,7 +296,7 @@
                                 <span class="text-3xs uppercase tracking-wider text-slate-400 font-bold block">Gaji Offer</span>
                                 <span class="text-xs font-bold text-slate-900 block truncate">{{ $job->salary ?? 'Negosiasi' }}</span>
                             </div>
-                            <a href="{{ route('jobs.show', $job->id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl border border-slate-900 shadow-2xs transition shrink-0 w-full sm:w-auto text-center">
+                            <a href="{{ route('jobs.show', $job) }}" class="inline-flex items-center justify-center px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl border border-slate-900 shadow-2xs transition shrink-0 w-full sm:w-auto text-center">
                                 Detail Posisi &rarr;
                             </a>
                         </div>

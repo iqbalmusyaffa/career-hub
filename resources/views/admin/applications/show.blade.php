@@ -17,31 +17,31 @@
                     $statusStr = is_object($application->status) ? $application->status->value : (string) $application->status;
                 @endphp
                 @if($statusStr == 'pending')
-                    <span class="px-4 py-2 bg-amber-50 text-amber-800 text-xs font-black rounded-2xl border border-amber-200 shadow-2xs flex items-center gap-1.5">
+                    <span class="px-4 py-2 bg-amber-50 text-amber-800 text-xs font-extrabold rounded-2xl border border-amber-200 shadow-2xs flex items-center gap-1.5">
                         <i class="fa-solid fa-clock"></i> Menunggu Review
                     </span>
-                @elseif($statusStr == 'reviewed')
-                    <span class="px-4 py-2 bg-blue-50 text-blue-800 text-xs font-black rounded-2xl border border-blue-200 shadow-2xs flex items-center gap-1.5">
+                @elseif($statusStr == 'reviewed' || $statusStr == 'reviewing')
+                    <span class="px-4 py-2 bg-blue-50 text-blue-800 text-xs font-extrabold rounded-2xl border border-blue-200 shadow-2xs flex items-center gap-1.5">
                         <i class="fa-solid fa-eye"></i> Sedang Direview
                     </span>
                 @elseif($statusStr == 'test')
-                    <span class="px-4 py-2 bg-indigo-50 text-indigo-800 text-xs font-black rounded-2xl border border-indigo-200 shadow-2xs flex items-center gap-1.5">
-                        <i class="fa-solid fa-pen-to-square"></i> Tahap Tes Online / Psikotes
+                    <span class="px-4 py-2 bg-indigo-50 text-indigo-800 text-xs font-extrabold rounded-2xl border border-indigo-200 shadow-2xs flex items-center gap-1.5">
+                        <i class="fa-solid fa-pen-to-square"></i> Tahap Tes Online
                     </span>
                 @elseif($statusStr == 'interview')
-                    <span class="px-4 py-2 bg-purple-50 text-purple-800 text-xs font-black rounded-2xl border border-purple-200 shadow-2xs flex items-center gap-1.5">
+                    <span class="px-4 py-2 bg-purple-50 text-purple-800 text-xs font-extrabold rounded-2xl border border-purple-200 shadow-2xs flex items-center gap-1.5">
                         <i class="fa-solid fa-calendar-check"></i> Tahap Wawancara
                     </span>
                 @elseif($statusStr == 'offered')
-                    <span class="px-4 py-2 bg-emerald-50 text-emerald-800 text-xs font-black rounded-2xl border border-emerald-200 shadow-2xs flex items-center gap-1.5">
+                    <span class="px-4 py-2 bg-emerald-50 text-emerald-800 text-xs font-extrabold rounded-2xl border border-emerald-200 shadow-2xs flex items-center gap-1.5">
                         <i class="fa-solid fa-file-contract"></i> Tahap Penawaran Kerja
                     </span>
-                @elseif($statusStr == 'accepted')
-                    <span class="px-4 py-2 bg-emerald-600 text-white text-xs font-black rounded-2xl border border-emerald-700 shadow-2xs flex items-center gap-1.5">
+                @elseif($statusStr == 'accepted' || $statusStr == 'hired')
+                    <span class="px-4 py-2 bg-emerald-600 text-white text-xs font-extrabold rounded-2xl border border-emerald-700 shadow-2xs flex items-center gap-1.5">
                         <i class="fa-solid fa-circle-check"></i> Diterima (Hired)
                     </span>
                 @elseif($statusStr == 'rejected')
-                    <span class="px-4 py-2 bg-rose-50 text-rose-800 text-xs font-black rounded-2xl border border-rose-200 shadow-2xs flex items-center gap-1.5">
+                    <span class="px-4 py-2 bg-rose-50 text-rose-800 text-xs font-extrabold rounded-2xl border border-rose-200 shadow-2xs flex items-center gap-1.5">
                         <i class="fa-solid fa-circle-xmark text-rose-600"></i> Ditolak
                     </span>
                 @endif
@@ -69,7 +69,7 @@
             <!-- MAIN GRID LAYOUT -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
-                <!-- LEFT COLUMN: CANDIDATE PROFILE & STATUS CONTROL (1 COL) -->
+                <!-- LEFT COLUMN: CANDIDATE PROFILE & ONBOARDING DATA (1 COL) -->
                 <div class="lg:col-span-1 space-y-6">
 
                     <!-- Candidate Card -->
@@ -108,52 +108,61 @@
                             @endif
 
                             @if(optional($application->user->candidateProfile)->last_education)
-                                <div class="flex items-center gap-3 text-slate-700">
-                                    <i class="fa-solid fa-graduation-cap text-slate-400 w-4 text-center"></i>
-                                    <span>Pendidikan: <strong>{{ $application->user->candidateProfile->last_education }}</strong></span>
+                                <div class="flex items-start gap-3 text-slate-700">
+                                    <i class="fa-solid fa-graduation-cap text-slate-400 w-4 text-center mt-1"></i>
+                                    <div>
+                                        <span class="text-3xs uppercase font-extrabold text-slate-400 block">Pendidikan & Jurusan</span>
+                                        <span class="font-black text-slate-900 text-xs">{{ $application->user->candidateProfile->last_education }}</span>
+                                        @if(optional($application->user->candidateProfile)->major)
+                                            <span class="block text-2xs font-bold text-blue-600">Jurusan: {{ $application->user->candidateProfile->major }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- Check Educations Array if available -->
+                            @if(optional($application->user->candidateProfile)->educations && is_array($application->user->candidateProfile->educations))
+                                <div class="pt-3 border-t border-slate-100 space-y-1.5">
+                                    <span class="text-3xs font-black uppercase text-slate-400 tracking-wider block">Riwayat Pendidikan & Jurusan</span>
+                                    @foreach($application->user->candidateProfile->educations as $edu)
+                                        <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                                            <div class="font-extrabold text-slate-900">{{ $edu['institution'] ?? ($edu['school'] ?? '-') }}</div>
+                                            <div class="text-2xs font-bold text-blue-600">{{ $edu['degree'] ?? '' }} {{ $edu['major'] ?? ($edu['field_of_study'] ?? '-') }}</div>
+                                            <div class="text-3xs text-slate-400 font-medium">{{ $edu['start_year'] ?? '' }} - {{ $edu['end_year'] ?? 'Sekarang' }} @if(!empty($edu['gpa'])) • IPK: {{ $edu['gpa'] }} @endif</div>
+                                        </div>
+                                    @endforeach
                                 </div>
                             @endif
                         </div>
 
-                        <!-- Skills List -->
-                        @if(optional($application->user->candidateProfile)->skills)
+                        <!-- Candidate Uploaded Vault Documents (Ijazah, Transkrip, KTP, Sertifikat) -->
+                        @php
+                            $candidateDocs = \App\Models\CandidateDocument::where('user_id', $application->user_id)->get();
+                        @endphp
+                        @if($candidateDocs->count() > 0 || optional($application->user->candidateProfile)->cv_path)
                             <div class="pt-4 border-t border-slate-100 space-y-2">
-                                <label class="block text-3xs font-black uppercase text-slate-400 tracking-wider">Keahlian Candidates</label>
-                                <div class="flex flex-wrap gap-1.5">
-                                    @php
-                                        $rawSkills = $application->user->candidateProfile->skills;
-                                        $skillsArr = [];
-                                        if (is_array($rawSkills)) {
-                                            foreach ($rawSkills as $s) {
-                                                $skillsArr[] = is_array($s) ? ($s['name'] ?? json_encode($s)) : (string)$s;
-                                            }
-                                        } else {
-                                            $skillsArr = explode(',', (string) $rawSkills);
-                                        }
-                                    @endphp
-                                    @foreach($skillsArr as $skill)
-                                        @if(!empty(trim($skill)))
-                                            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 font-bold rounded-lg text-3xs border border-slate-200">
-                                                {{ trim($skill) }}
-                                            </span>
-                                        @endif
+                                <label class="block text-3xs font-black uppercase text-slate-400 tracking-wider">📁 Dokumen & Berkas Pendukung Candidate</label>
+                                <div class="space-y-1.5 text-xs">
+                                    @if(optional($application->user->candidateProfile)->cv_path)
+                                        <a href="{{ Storage::url($application->user->candidateProfile->cv_path) }}" target="_blank" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-2 px-3 rounded-xl transition text-3xs flex items-center justify-between shadow-2xs">
+                                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-file-pdf text-amber-400"></i> Curriculum Vitae (CV Asli)</span>
+                                            <span>Unduh &rarr;</span>
+                                        </a>
+                                    @endif
+
+                                    @foreach($candidateDocs as $doc)
+                                        <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="w-full bg-slate-50 hover:bg-blue-50 text-slate-800 hover:text-blue-900 font-bold py-2 px-3 rounded-xl border border-slate-200 transition text-3xs flex items-center justify-between shadow-2xs">
+                                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-file-lines text-blue-600"></i> {{ $doc->document_type ?? 'Dokumen Pendukung' }} ({{ $doc->file_name }})</span>
+                                            <span>Lihat &rarr;</span>
+                                        </a>
                                     @endforeach
                                 </div>
-                            </div>
-                        @endif
-
-                        <!-- Uploaded CV Button -->
-                        @if(optional($application->user->candidateProfile)->cv_path)
-                            <div class="pt-4 border-t border-slate-100">
-                                <a href="{{ Storage::url($application->user->candidateProfile->cv_path) }}" target="_blank" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-2xs flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-file-arrow-down text-amber-400"></i> Unduh File CV Asli
-                                </a>
                             </div>
                         @endif
                     </div>
 
                     <!-- PDF CV System Generator Widget -->
-                    <div class="bg-slate-900 text-white rounded-2xl p-5 shadow-2xs border border-slate-800 space-y-4">
+                    <div class="bg-slate-900 text-white rounded-3xl p-5 shadow-2xs border border-slate-800 space-y-4">
                         <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
                             <div class="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-white border border-slate-700">
                                 <i class="fa-solid fa-file-pdf"></i>
@@ -175,6 +184,43 @@
                             </a>
                         </div>
                     </div>
+
+                    <!-- Video Screening Review Widget -->
+                    @if($application->screening_video_url)
+                        <div class="bg-white rounded-3xl p-5 shadow-2xs border border-slate-200/80 space-y-4">
+                            <div class="flex items-center gap-2.5 border-b border-slate-100 pb-3">
+                                <div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-sm font-black border border-rose-100">
+                                    <i class="fa-solid fa-video"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-extrabold text-xs text-slate-900">Screening Video Perkenalan</h4>
+                                    <p class="text-3xs text-slate-400 font-medium">Link rekaman yang dikirim kandidat</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                @php
+                                    $vUrl = $application->screening_video_url;
+                                    $embedUrl = null;
+                                    if (str_contains($vUrl, 'youtube.com/watch?v=')) {
+                                        $embedUrl = str_replace('watch?v=', 'embed/', $vUrl);
+                                    } elseif (str_contains($vUrl, 'youtu.be/')) {
+                                        $embedUrl = str_replace('youtu.be/', 'youtube.com/embed/', $vUrl);
+                                    }
+                                @endphp
+
+                                @if($embedUrl)
+                                    <div class="w-full h-44 rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-black">
+                                        <iframe src="{{ $embedUrl }}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                                    </div>
+                                @endif
+
+                                <a href="{{ $vUrl }}" target="_blank" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-2xs flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-play"></i> Buka Video Screening di Tab Baru &rarr;
+                                </a>
+                            </div>
+                        </div>
+                    @endif
 
                     <!-- Match Score & Test Results Widget -->
                     <div class="space-y-4">
@@ -200,68 +246,217 @@
                                 <span class="inline-block px-3 py-1 font-black text-3xs rounded-full uppercase {{ $candidateTestResult->passed ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white' }}">
                                     {{ $candidateTestResult->passed ? '✓ LOLOS KKM' : '✗ TIDAK MEMENUHI KKM' }}
                                 </span>
-
-                                @if($candidateTestResult->project_url)
-                                    <div class="pt-2 border-t border-emerald-200/80 text-left">
-                                        <a href="{{ $candidateTestResult->project_url }}" target="_blank" class="text-blue-600 font-extrabold hover:underline text-xs flex items-center gap-1.5 truncate">
-                                            <i class="fa-brands fa-github text-slate-900 text-sm"></i> Tautan Repository / Project GitHub
-                                        </a>
-                                    </div>
-                                @endif
-
-                                @if($candidateTestResult->answer_file_path)
-                                    <div class="pt-2 border-t border-emerald-200/80 text-left">
-                                        <a href="{{ Storage::url($candidateTestResult->answer_file_path) }}" target="_blank" class="text-rose-600 font-extrabold hover:underline text-xs flex items-center gap-1.5 truncate">
-                                            <i class="fa-solid fa-file-pdf text-rose-600 text-sm"></i> Unduh Berkas Jawaban PDF Candidate
-                                        </a>
-                                    </div>
-                                @endif
                             </div>
                         @endif
                     </div>
 
-                    <!-- Candidate Document Vault Widget -->
-                    @php
-                        $userDocuments = \App\Models\CandidateDocument::where('user_id', $application->user_id)->latest()->get();
-                    @endphp
-                    <div class="bg-white rounded-3xl p-6 shadow-2xs border border-slate-200/80 space-y-4">
-                        <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
-                            <h4 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-                                <i class="fa-solid fa-folder-closed text-indigo-600"></i> Vault Berkas Pendukung ({{ $userDocuments->count() }})
+                    <!-- Structured Interview Scorecard Rating Widget -->
+                    <div class="bg-white rounded-3xl p-5 shadow-2xs border border-slate-200/80 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h4 class="font-extrabold text-xs text-slate-900 uppercase flex items-center gap-2">
+                                <i class="fa-solid fa-star text-amber-500"></i> Matriks Scorecard Penilaian Wawancara
                             </h4>
+                            @if($application->scorecards->count() > 0)
+                                <span class="px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-200 text-3xs font-black rounded-lg">
+                                    Avg: ⭐ {{ number_format($application->scorecards->avg('average_score'), 1) }}/5.0
+                                </span>
+                            @endif
                         </div>
 
-                        @if($userDocuments->count() > 0)
-                            <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
-                                @foreach($userDocuments as $doc)
-                                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-3 text-xs">
-                                        <div class="min-w-0 flex-1">
-                                            <span class="px-2 py-0.5 text-3xs font-black rounded-md uppercase border {{ $doc->type_badge_color }}">
-                                                {{ $doc->type_label }}
-                                            </span>
-                                            <h5 class="font-bold text-slate-900 truncate mt-1">{{ $doc->title }}</h5>
-                                            <span class="text-3xs text-slate-400 font-medium">{{ strtoupper($doc->file_extension ?? 'PDF') }} • {{ $doc->formatted_size }}</span>
-                                        </div>
+                        <!-- Form Penilaian Scorecard -->
+                        <form action="{{ route('admin.applications.scorecards.store', $application) }}" method="POST" class="space-y-4">
+                            @csrf
+                            <div class="grid grid-cols-2 gap-3 text-xs">
+                                <div>
+                                    <label class="block font-bold text-slate-700 text-3xs uppercase mb-1">Technical Competency</label>
+                                    <select name="technical_score" class="w-full border-slate-300 rounded-xl text-xs font-bold p-2 focus:ring-amber-500 focus:border-amber-500">
+                                        <option value="5">⭐⭐⭐⭐⭐ 5 - Expert / Outstanding</option>
+                                        <option value="4">⭐⭐⭐⭐ 4 - Above Average</option>
+                                        <option value="3" selected>⭐⭐⭐ 3 - Meets Expectation</option>
+                                        <option value="2">⭐⭐ 2 - Below Expectation</option>
+                                        <option value="1">⭐ 1 - Poor / Unsatisfactory</option>
+                                    </select>
+                                </div>
 
-                                        <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="p-2 bg-white hover:bg-blue-50 text-blue-600 rounded-xl border border-slate-200 transition shrink-0" title="Buka / Unduh Dokumen">
-                                            <i class="fa-solid fa-download"></i>
-                                        </a>
+                                <div>
+                                    <label class="block font-bold text-slate-700 text-3xs uppercase mb-1">Communication Skill</label>
+                                    <select name="communication_score" class="w-full border-slate-300 rounded-xl text-xs font-bold p-2 focus:ring-amber-500 focus:border-amber-500">
+                                        <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent Speaker</option>
+                                        <option value="4">⭐⭐⭐⭐ 4 - Good & Clear</option>
+                                        <option value="3" selected>⭐⭐⭐ 3 - Average</option>
+                                        <option value="2">⭐⭐ 2 - Hesitant</option>
+                                        <option value="1">⭐ 1 - Poor Communication</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block font-bold text-slate-700 text-3xs uppercase mb-1">Problem Solving & Logic</label>
+                                    <select name="problem_solving_score" class="w-full border-slate-300 rounded-xl text-xs font-bold p-2 focus:ring-amber-500 focus:border-amber-500">
+                                        <option value="5">⭐⭐⭐⭐⭐ 5 - Strong Analytical</option>
+                                        <option value="4">⭐⭐⭐⭐ 4 - Good Logic</option>
+                                        <option value="3" selected>⭐⭐⭐ 3 - Adequate</option>
+                                        <option value="2">⭐⭐ 2 - Limited Logic</option>
+                                        <option value="1">⭐ 1 - No Analytical Skill</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block font-bold text-slate-700 text-3xs uppercase mb-1">Culture & Attitude Fit</label>
+                                    <select name="culture_score" class="w-full border-slate-300 rounded-xl text-xs font-bold p-2 focus:ring-amber-500 focus:border-amber-500">
+                                        <option value="5">⭐⭐⭐⭐⭐ 5 - Great Culture Fit</option>
+                                        <option value="4">⭐⭐⭐⭐ 4 - Positive Attitude</option>
+                                        <option value="3" selected>⭐⭐⭐ 3 - Neutral</option>
+                                        <option value="2">⭐⭐ 2 - Red Flags</option>
+                                        <option value="1">⭐ 1 - Toxic / Unfit</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block font-bold text-slate-700 text-3xs uppercase mb-1">Rekomendasi Akhir Pewawancara</label>
+                                <select name="recommendation" required class="w-full border-slate-300 rounded-xl text-xs font-black p-2 focus:ring-amber-500 focus:border-amber-500">
+                                    <option value="strong_hire">🟢 STRONG HIRE (Sangat Direkomendasikan)</option>
+                                    <option value="hire" selected>🔵 HIRE (Direkomendasikan)</option>
+                                    <option value="hold">🟡 HOLD (Cadangan / Ditangguhkan)</option>
+                                    <option value="no_hire">🔴 NO HIRE (Tidak Direkomendasikan)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block font-bold text-slate-700 text-3xs uppercase mb-1">Catatan Evaluasi Detail Pewawancara</label>
+                                <textarea name="notes" rows="2" placeholder="Tuliskan catatan hasil tanya jawab saat wawancara..." class="w-full border-slate-300 rounded-xl text-xs p-2 font-medium"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full py-2.5 bg-slate-900 hover:bg-black text-white font-extrabold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-save"></i> Simpan Penilaian Scorecard Wawancara
+                            </button>
+                        </form>
+
+                        <!-- Daftar Scorecard yang Sudah Diisi -->
+                        @if($application->scorecards->count() > 0)
+                            <div class="pt-3 border-t border-slate-100 space-y-2">
+                                <span class="text-3xs font-extrabold uppercase text-slate-400 block">Riwayat Scorecard Pewawancara:</span>
+                                @foreach($application->scorecards as $sc)
+                                    <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-xl text-xs space-y-1">
+                                        <div class="flex items-center justify-between font-bold text-slate-900">
+                                            <span>👤 {{ $sc->interviewer->name ?? 'Pewawancara' }}</span>
+                                            <span class="px-2 py-0.5 rounded text-3xs font-black uppercase
+                                                {{ $sc->recommendation === 'strong_hire' ? 'bg-emerald-100 text-emerald-800' : '' }}
+                                                {{ $sc->recommendation === 'hire' ? 'bg-blue-100 text-blue-800' : '' }}
+                                                {{ $sc->recommendation === 'hold' ? 'bg-amber-100 text-amber-800' : '' }}
+                                                {{ $sc->recommendation === 'no_hire' ? 'bg-rose-100 text-rose-800' : '' }}">
+                                                {{ str_replace('_', ' ', $sc->recommendation) }} (⭐ {{ $sc->average_score }}/5)
+                                            </span>
+                                        </div>
+                                        <div class="text-3xs text-slate-500 font-medium">
+                                            Tech: {{ $sc->technical_score }} | Comm: {{ $sc->communication_score }} | Logic: {{ $sc->problem_solving_score }} | Culture: {{ $sc->culture_score }}
+                                        </div>
+                                        @if($sc->notes)
+                                            <p class="text-3xs text-slate-700 italic bg-white p-2 rounded border border-slate-200 mt-1">"{{ $sc->notes }}"</p>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>
-                        @else
-                            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center text-xs text-slate-400 font-medium">
-                                Kandidat belum mengunggah dokumen pendukung di Vault.
-                            </div>
                         @endif
                     </div>
 
-                    <!-- Update Status Lamaran & Quota Control -->
+                    <!-- Candidate Onboarding Employee Data Widget (Bank, NPWP, BPJS) -->
+                    @if($application->onboarding)
+                        <div class="bg-white rounded-3xl p-5 shadow-2xs border border-slate-200/80 space-y-4">
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-building-columns text-slate-800 text-sm"></i>
+                                    <h4 class="font-extrabold text-xs text-slate-900 uppercase">Data Onboarding & Bank Karyawan</h4>
+                                </div>
+                                @if($application->onboarding->verification_status === 'verified')
+                                    <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-3xs font-black rounded-lg">Terverifikasi</span>
+                                @else
+                                    <span class="px-2 py-0.5 bg-amber-100 text-amber-800 text-3xs font-black rounded-lg">Pending Review</span>
+                                @endif
+                            </div>
+
+                            <div class="space-y-2 text-xs text-slate-700">
+                                <p>🏦 <strong>Bank:</strong> {{ $application->onboarding->bank_name }}</p>
+                                <p>💳 <strong>No. Rekening:</strong> <code class="bg-slate-100 px-2 py-0.5 rounded text-slate-900 font-mono font-bold">{{ $application->onboarding->bank_account_number }}</code></p>
+                                <p>👤 <strong>Atas Nama:</strong> {{ $application->onboarding->bank_account_holder }}</p>
+
+                                @if($application->onboarding->institution_name)
+                                    <p>🎓 <strong>Kampus/Sekolah:</strong> {{ $application->onboarding->institution_name }} (NIM/NIS: {{ $application->onboarding->student_id_number ?? '-' }})</p>
+                                @endif
+
+                                @if($application->onboarding->npwp_number)
+                                    <p>📄 <strong>NPWP:</strong> {{ $application->onboarding->npwp_number }}</p>
+                                @endif
+
+                                @if($application->onboarding->bpjs_kesehatan_number)
+                                    <p>🩺 <strong>BPJS Kes:</strong> {{ $application->onboarding->bpjs_kesehatan_number }}</p>
+                                @endif
+
+                                @if($application->onboarding->bpjs_ketenagakerjaan_number)
+                                    <p>👷 <strong>BPJSTK:</strong> {{ $application->onboarding->bpjs_ketenagakerjaan_number }}</p>
+                                @endif
+                            </div>
+
+                            @if($application->onboarding->verification_status !== 'verified')
+                                <div class="pt-2 flex items-center gap-2">
+                                    <form action="{{ route('admin.applications.verify-onboarding', $application) }}" method="POST" class="flex-1">
+                                        @csrf
+                                        <input type="hidden" name="action" value="verify">
+                                        <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 border border-emerald-600">
+                                            <i class="fa-solid fa-circle-check text-xs"></i> Verifikasi Berkas
+                                        </button>
+                                    </form>
+
+                                    <button type="button" onclick="document.getElementById('rejectOnboardingModal').classList.remove('hidden')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition">
+                                        ⚠️ Minta Perbaikan
+                                    </button>
+                                </div>
+                            @else
+                                <div class="pt-2">
+                                    <button type="button" onclick="document.getElementById('rejectOnboardingModal').classList.remove('hidden')" class="w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs rounded-xl border border-amber-200 transition flex items-center justify-center gap-1.5">
+                                        <i class="fa-solid fa-rotate-left text-xs"></i> Batalkan Verifikasi & Minta Perbaikan Data
+                                    </button>
+                                </div>
+                            @endif
+
+                            <!-- REJECT ONBOARDING MODAL -->
+                            <div id="rejectOnboardingModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+                                <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200 space-y-4">
+                                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                        <h4 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                                            ⚠️ Minta Perbaikan Berkas / Data Onboarding
+                                        </h4>
+                                        <button type="button" onclick="document.getElementById('rejectOnboardingModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 font-bold text-sm">✕</button>
+                                    </div>
+                                    <form action="{{ route('admin.applications.verify-onboarding', $application) }}" method="POST" class="space-y-4">
+                                        @csrf
+                                        <input type="hidden" name="action" value="reject">
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Alasan Catatan Perbaikan untuk Pelamar <span class="text-rose-500">*</span></label>
+                                            <textarea name="rejection_note" rows="3" required placeholder="Contoh: Nomor rekening kurang 1 digit / Berkas NPWP buram." class="w-full border-slate-300 rounded-xl text-xs focus:ring-rose-500 focus:border-rose-500 font-medium p-3"></textarea>
+                                        </div>
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button type="button" onclick="document.getElementById('rejectOnboardingModal').classList.add('hidden')" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold text-xs rounded-xl">Batal</button>
+                                            <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-2xs">Kirim Catatan Perbaikan</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                </div>
+
+                <!-- RIGHT COLUMN: OPERATIONAL TOOLS, STATUS CONTROL & DOCUMENTS (2 COLS) -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <!-- Update Status Lamaran & Quota Control Card -->
                     <div class="bg-white rounded-3xl p-6 shadow-2xs border border-slate-200/80 space-y-4">
-                        <div class="border-b border-slate-100 pb-3">
+                        <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
                             <h4 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-                                <i class="fa-solid fa-sliders text-blue-600"></i> Update Status & Aturan Kuota
+                                <i class="fa-solid fa-sliders text-blue-600"></i> Update Status Lamaran Pelamar
                             </h4>
+                            <span class="text-xs font-bold text-slate-500">Target: <strong>{{ $application->job->title }}</strong></span>
                         </div>
 
                         @php
@@ -273,26 +468,14 @@
                         @endphp
 
                         @if($statusStr === 'accepted')
-                            <!-- Acceptance Lock & Super Admin Appeal Form -->
                             <div class="bg-rose-50 p-4 rounded-2xl border border-rose-200 space-y-3">
                                 <div class="flex items-center gap-2 text-rose-900 font-bold text-xs">
                                     <i class="fa-solid fa-lock text-rose-600"></i>
-                                    <span>STATUS DITERIMA TERKUNCI</span>
+                                    <span>STATUS DITERIMA TERKUNCI (HIRED LOCK)</span>
                                 </div>
                                 <p class="text-3xs text-rose-700 leading-relaxed">
-                                    Status <strong>Diterima</strong> tidak dapat dibatalkan langsung oleh HR untuk melindungi kuota. Pembatalan memerlukan verifikasi <strong>Super Admin</strong>.
+                                    Status <strong>Diterima</strong> tidak dapat dibatalkan langsung oleh HR untuk melindungi kuota lowongan. Pembatalan memerlukan otorisasi <strong>Super Admin</strong>.
                                 </p>
-
-                                <form action="{{ route('admin.cancellation-tickets.store', $application->id) }}" method="POST" class="pt-2 space-y-3 border-t border-rose-200">
-                                    @csrf
-                                    <div>
-                                        <label class="block text-3xs font-bold text-rose-900 uppercase mb-1">Alasan Pembatalan ke Super Admin</label>
-                                        <textarea name="reason" rows="2" required placeholder="Jelaskan alasan resmi pengajuan pembatalan..." class="w-full border-rose-300 rounded-xl text-xs focus:ring-rose-500 focus:border-rose-500"></textarea>
-                                    </div>
-                                    <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 px-3 rounded-xl text-xs transition shadow-2xs flex items-center justify-center gap-1.5">
-                                        <i class="fa-solid fa-paper-plane"></i> Kirim Aduan Ke Super Admin
-                                    </button>
-                                </form>
                             </div>
                         @else
                             @if($isQuotaFull)
@@ -306,41 +489,205 @@
                                 @csrf
                                 @method('PATCH')
                                 
-                                <div>
-                                    <label class="block font-bold text-slate-700 mb-1">Pilih Status Baru</label>
-                                    <select name="status" class="w-full border-slate-300 rounded-xl text-xs font-bold focus:ring-blue-500 focus:border-blue-500">
-                                        @foreach(\App\Enums\ApplicationStatus::cases() as $st)
-                                            @if($st->value !== 'processing')
-                                                <option value="{{ $st->value }}" {{ $statusStr == $st->value ? 'selected' : '' }} {{ ($st->value === 'accepted' && $isQuotaFull) ? 'disabled' : '' }}>
-                                                    {{ ($st->value === 'accepted' && $isQuotaFull) ? 'Diterima (DITUTUP - KUOTA PENUH)' : $st->label() }}
-                                                </option>
-                                            @endif
-                                        @endforeach
-                                    </select>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+                                    <div class="sm:col-span-2">
+                                        <label class="block font-bold text-slate-700 mb-1">Pilih Status Baru Pelamar</label>
+                                        <select name="status" class="w-full border-slate-300 rounded-xl text-xs font-bold focus:ring-blue-500 focus:border-blue-500">
+                                            @foreach(\App\Enums\ApplicationStatus::cases() as $st)
+                                                @if($st->value !== 'processing')
+                                                    <option value="{{ $st->value }}" {{ $statusStr == $st->value ? 'selected' : '' }} {{ ($st->value === 'accepted' && $isQuotaFull) ? 'disabled' : '' }}>
+                                                        {{ ($st->value === 'accepted' && $isQuotaFull) ? 'Diterima (DITUTUP - KUOTA PENUH)' : $st->label() }}
+                                                    </option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="pt-5 sm:pt-0">
+                                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-2.5 px-4 rounded-xl text-xs transition shadow-2xs border border-blue-600">
+                                            Simpan Perubahan
+                                        </button>
+                                    </div>
                                 </div>
-
-                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-2.5 px-4 rounded-xl text-xs transition shadow-2xs">
-                                    Simpan Perubahan Status
-                                </button>
                             </form>
                         @endif
                     </div>
 
-                </div>
+                    <!-- DOCUMENT BUILDER CARDS GRID (2 Cols) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Internship Certificate Card -->
+                        <div class="bg-white rounded-3xl p-5 shadow-2xs border border-slate-200/80 space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                <h4 class="font-extrabold text-xs text-slate-900 uppercase flex items-center gap-2">
+                                    <i class="fa-solid fa-graduation-cap text-amber-600"></i> Sertifikat Kelulusan Magang
+                                </h4>
+                                <a href="{{ route('admin.applications.certificates.create', $application) }}" class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold text-3xs rounded-lg transition border border-amber-600">
+                                    + Terbitkan
+                                </a>
+                            </div>
 
-                <!-- RIGHT COLUMN: OPERATIONAL TOOLS & WORKFLOW (2 COLS) -->
-                <div class="lg:col-span-2 space-y-8">
-
-                    <!-- Job Position Header Card -->
-                    <div class="bg-white rounded-3xl p-6 shadow-2xs border border-slate-200/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div>
-                            <span class="text-3xs font-black uppercase tracking-wider text-slate-400 block mb-1">Lowongan Pekerjaan Target</span>
-                            <h3 class="font-black text-xl text-slate-900">{{ $application->job->title }}</h3>
-                            <p class="text-xs text-slate-500 font-medium mt-0.5">Divisi: {{ $application->job->division }} • Tipe: {{ $application->job->work_type }} • Lokasi: {{ $application->job->location }}</p>
+                            @if($application->certificates && $application->certificates->count() > 0)
+                                <div class="space-y-2 text-xs">
+                                    @foreach($application->certificates as $cert)
+                                        <div class="p-3 bg-amber-50/60 rounded-2xl border border-amber-200/80 flex items-center justify-between gap-2">
+                                            <div class="truncate">
+                                                <span class="font-bold text-amber-950 block truncate">Sertifikat Kelulusan</span>
+                                                <span class="text-3xs text-amber-800 font-semibold">Predikat: {{ $cert->performance_grade }}</span>
+                                            </div>
+                                            <a href="{{ route('candidate.certificates.show', $cert) }}" target="_blank" class="shrink-0 p-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-3xs font-bold transition">
+                                                <i class="fa-solid fa-file-pdf"></i> PDF
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <p class="text-3xs text-slate-400">Belum ada sertifikat magang resmi yang diterbitkan.</p>
+                            @endif
                         </div>
-                        <a href="{{ route('jobs.show', $application->job->id) }}" target="_blank" class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-xl border border-blue-200 transition shrink-0 inline-flex items-center gap-1.5">
-                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat Detail Lowongan
-                        </a>
+
+                        <!-- Internship Transcript Card -->
+                        <div class="bg-white rounded-3xl p-5 shadow-2xs border border-slate-200/80 space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                <h4 class="font-extrabold text-xs text-slate-900 uppercase flex items-center gap-2">
+                                    <i class="fa-solid fa-square-poll-vertical text-indigo-600"></i> Transkrip Evaluasi Nilai
+                                </h4>
+                                <a href="{{ route('admin.applications.transcripts.create', $application) }}" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-3xs rounded-lg transition border border-indigo-600">
+                                    + Terbitkan
+                                </a>
+                            </div>
+
+                            @if($application->transcripts && $application->transcripts->count() > 0)
+                                <div class="space-y-2 text-xs">
+                                    @foreach($application->transcripts as $trans)
+                                        <div class="p-3 bg-indigo-50/60 rounded-2xl border border-indigo-200/80 flex items-center justify-between gap-2">
+                                            <div class="truncate">
+                                                <span class="font-bold text-indigo-950 block truncate">Transkrip Evaluasi Nilai</span>
+                                                <span class="text-3xs text-indigo-800 font-semibold">Skor: {{ number_format($trans->final_score, 1) }}/100</span>
+                                            </div>
+                                            <a href="{{ route('candidate.transcripts.show', $trans) }}" target="_blank" class="shrink-0 p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-3xs font-bold transition">
+                                                <i class="fa-solid fa-file-pdf"></i> PDF
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <p class="text-3xs text-slate-400">Belum ada transkrip nilai evaluasi magang yang diterbitkan.</p>
+                            @endif
+                        </div>
+
+                        <!-- Digital Agreement / Contract Card -->
+                        <div class="bg-white rounded-3xl p-5 shadow-2xs border border-slate-200/80 space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                <h4 class="font-extrabold text-xs text-slate-900 uppercase flex items-center gap-2">
+                                    <i class="fa-solid fa-file-contract text-slate-800"></i> Perjanjian Kerja Digital
+                                </h4>
+                                <a href="{{ route('admin.applications.agreements.create', $application) }}" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white font-bold text-3xs rounded-lg transition border border-slate-900">
+                                    + Buat Dokumen
+                                </a>
+                            </div>
+
+                            @if($application->agreements && $application->agreements->count() > 0)
+                                <div class="space-y-2 text-xs">
+                                    @foreach($application->agreements as $ag)
+                                        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between gap-2">
+                                            <div class="truncate">
+                                                <span class="font-bold text-slate-900 block truncate">{{ $ag->title }}</span>
+                                                <span class="text-3xs text-slate-500 font-semibold">No: {{ $ag->contract_number }}</span>
+                                            </div>
+                                            <div class="shrink-0 flex items-center gap-1">
+                                                @if($ag->status === 'signed')
+                                                    <a href="{{ route('agreements.download', $ag) }}" target="_blank" class="p-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-3xs font-bold transition">
+                                                        <i class="fa-solid fa-file-pdf"></i> PDF
+                                                    </a>
+                                                @else
+                                                    <a href="{{ route('candidate.agreements.show', $ag) }}" class="p-1.5 bg-slate-800 text-white rounded-lg text-3xs font-bold">Buka</a>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <p class="text-3xs text-slate-400">Belum ada dokumen perjanjian kerja digital yang dibuat.</p>
+                            @endif
+                        </div>
+
+                        <!-- Employee Termination & Recommendation Document Card -->
+                        <div class="bg-white rounded-3xl p-5 shadow-2xs border border-slate-200/80 space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                <h4 class="font-extrabold text-xs text-slate-900 uppercase flex items-center gap-2">
+                                    <i class="fa-solid fa-file-signature text-slate-800"></i> Rekomendasi / Paklaring / PHK
+                                </h4>
+                                <a href="{{ route('admin.applications.terminations.create', $application) }}" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white font-bold text-3xs rounded-lg transition border border-slate-900">
+                                    + Terbitkan
+                                </a>
+                            </div>
+
+                            @if($application->terminations && $application->terminations->count() > 0)
+                                <div class="space-y-2 text-xs">
+                                    @foreach($application->terminations as $term)
+                                        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between gap-2">
+                                            <div class="truncate">
+                                                <span class="font-bold text-slate-900 block truncate">
+                                                    @if($term->document_type === 'recommendation_letter')
+                                                        Surat Rekomendasi Kerja
+                                                    @elseif($term->document_type === 'paklaring_letter')
+                                                        Surat Paklaring
+                                                    @elseif($term->document_type === 'phk_letter')
+                                                        Surat PHK
+                                                    @else
+                                                        Surat Selesai Kontrak
+                                                    @endif
+                                                </span>
+                                                <span class="text-3xs text-slate-500 font-semibold">No: {{ $term->document_number }}</span>
+                                            </div>
+                                            <a href="{{ route('candidate.terminations.show', $term) }}" target="_blank" class="shrink-0 p-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-3xs font-bold transition">
+                                                <i class="fa-solid fa-file-pdf"></i> PDF
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <p class="text-3xs text-slate-400">Belum ada surat rekomendasi kerja atau paklaring yang diterbitkan.</p>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- CANDIDATE DOCUMENT VAULT WIDGET -->
+                    @php
+                        $userDocuments = \App\Models\CandidateDocument::where('user_id', $application->user_id)->latest()->get();
+                    @endphp
+                    <div class="bg-white rounded-3xl p-6 shadow-2xs border border-slate-200/80 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h4 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                                <i class="fa-solid fa-folder-open text-amber-500"></i> Vault Berkas & Dokumen Kandidat
+                            </h4>
+                            <span class="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-3xs font-black rounded-lg uppercase">
+                                {{ $userDocuments->count() }} Berkas Ter-upload
+                            </span>
+                        </div>
+
+                        @if($userDocuments->count() > 0)
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                @foreach($userDocuments as $doc)
+                                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between gap-3 text-xs">
+                                        <div class="min-w-0 flex-1">
+                                            <span class="px-2 py-0.5 text-3xs font-black rounded-md uppercase border {{ $doc->type_badge_color }}">
+                                                {{ $doc->type_label }}
+                                            </span>
+                                            <h5 class="font-bold text-slate-900 truncate mt-1">{{ $doc->title }}</h5>
+                                            <span class="text-3xs text-slate-400 font-medium">{{ strtoupper($doc->file_extension ?? 'PDF') }} • {{ $doc->formatted_size }}</span>
+                                        </div>
+
+                                        <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="p-2 bg-white hover:bg-blue-50 text-blue-600 rounded-xl border border-slate-200 transition shrink-0" title="Buka Dokumen">
+                                            <i class="fa-solid fa-download"></i>
+                                        </a>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center text-xs text-slate-400 font-medium">
+                                Kandidat belum mengunggah dokumen pendukung di Vault.
+                            </div>
+                        @endif
                     </div>
 
                     <!-- CARD 1: PENJADWALAN WAWANCARA (INTERVIEW SCHEDULER) -->
@@ -366,9 +713,6 @@
                                         <div>🔗 <strong>Lokasi/Link:</strong> <a href="{{ $application->interview->location_or_link }}" target="_blank" class="text-blue-600 font-bold hover:underline truncate inline-block max-w-xs">{{ $application->interview->location_or_link }}</a></div>
                                     @endif
                                 </div>
-                                @if($application->interview->notes)
-                                    <p class="text-3xs text-purple-800 italic pt-1 border-t border-purple-200/60">"{{ $application->interview->notes }}"</p>
-                                @endif
                             </div>
                         @endif
 
@@ -386,254 +730,43 @@
                                         <option value="offline" {{ optional($application->interview)->type == 'offline' ? 'selected' : '' }}>Offline (Tatap Muka di Kantor)</option>
                                     </select>
                                 </div>
-                            </div>
-
-                            <div>
-                                <label class="block font-bold text-slate-700 mb-1">Link Wawancara / Alamat Lokasi Kantor</label>
-                                <input type="text" name="location_or_link" placeholder="https://meet.google.com/abc-defg-hij atau Ruang Rapat Lt. 2" value="{{ optional($application->interview)->location_or_link }}" class="w-full border-slate-300 rounded-xl text-xs focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-
-                            <div>
-                                <label class="block font-bold text-slate-700 mb-1">Catatan Tambahan untuk Kandidat</label>
-                                <textarea name="notes" rows="2" placeholder="Harap hadir 10 menit sebelum waktu dan menyiapkan portofolio..." class="w-full border-slate-300 rounded-xl text-xs focus:ring-blue-500 focus:border-blue-500">{{ optional($application->interview)->notes }}</textarea>
+                                <div class="sm:col-span-2">
+                                    <label class="block font-bold text-slate-700 mb-1">Lokasi Kantor / Tautan Link Google Meet</label>
+                                    <input type="text" name="location_or_link" placeholder="Contoh: https://meet.google.com/abc-defg-hij atau Ruang Rapat 2 Lantai 3" value="{{ optional($application->interview)->location_or_link }}" class="w-full border-slate-300 rounded-xl text-xs font-medium">
+                                </div>
                             </div>
 
                             <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs shadow-2xs transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-calendar-plus"></i> {{ $application->interview ? 'Perbarui Jadwal Wawancara' : 'Simpan & Kirim Jadwal Wawancara' }}
+                                <i class="fa-solid fa-paper-plane"></i> Simpan & Kirim Undangan Interview
                             </button>
                         </form>
                     </div>
 
-                    <!-- CARD 2: EVALUASI RATING & SCORING SHEET HR -->
-                    @php
-                        $evaluations = $application->evaluations()->with('evaluator')->latest()->get();
-                        $avgRating = $evaluations->count() > 0 ? round($evaluations->avg('rating'), 1) : 0;
-                        $avgTech = $evaluations->count() > 0 ? round($evaluations->avg('technical_score'), 1) : 0;
-                        $avgAtt = $evaluations->count() > 0 ? round($evaluations->avg('attitude_score'), 1) : 0;
-                        $avgComm = $evaluations->count() > 0 ? round($evaluations->avg('communication_score'), 1) : 0;
-                    @endphp
-                    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-200/80 space-y-6">
-                        <div class="flex justify-between items-start border-b border-slate-100 pb-4">
+                    <!-- CARD 2: OFFER LETTER BUILDER -->
+                    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-200/80 space-y-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-3">
                             <div>
                                 <h4 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
-                                    <i class="fa-solid fa-star text-amber-500"></i> Evaluasi Rating & Scoring Sheet HR
+                                    <i class="fa-solid fa-file-contract text-emerald-600"></i> Surat Penawaran Kerja (Offer Letter)
                                 </h4>
-                                <p class="text-xs text-slate-500 mt-0.5">Penilaian kolaboratif antar tim HR untuk menguji kompetensi kandidat.</p>
-                            </div>
-                            @if($evaluations->count() > 0)
-                                <div class="text-right">
-                                    <div class="text-xl font-black text-amber-600 flex items-center gap-1 justify-end">
-                                        <span>{{ $avgRating }}</span>
-                                        <span class="text-sm text-amber-500">★</span>
-                                    </div>
-                                    <div class="text-3xs text-slate-400 font-bold uppercase">{{ $evaluations->count() }} Review HR</div>
-                                </div>
-                            @endif
-                        </div>
-
-                        @if($evaluations->count() > 0)
-                            <div class="grid grid-cols-3 gap-3 text-xs">
-                                <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 text-center">
-                                    <div class="text-3xs text-slate-400 font-bold uppercase">Skor Teknis</div>
-                                    <div class="text-lg font-black text-blue-600 mt-0.5">{{ $avgTech }} / 100</div>
-                                </div>
-                                <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 text-center">
-                                    <div class="text-3xs text-slate-400 font-bold uppercase">Attitude / Sikap</div>
-                                    <div class="text-lg font-black text-emerald-600 mt-0.5">{{ $avgAtt }} / 100</div>
-                                </div>
-                                <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 text-center">
-                                    <div class="text-3xs text-slate-400 font-bold uppercase">Komunikasi</div>
-                                    <div class="text-lg font-black text-purple-600 mt-0.5">{{ $avgComm }} / 100</div>
-                                </div>
+                                <p class="text-xs text-slate-500 mt-0.5">Terbitkan penawaran kerja resmi dengan rincian gaji & tanggal mulai kerja.</p>
                             </div>
 
-                            <div class="space-y-3 pt-2">
-                                @foreach($evaluations as $eval)
-                                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2 text-xs">
-                                        <div class="flex justify-between items-center">
-                                            <div class="flex items-center gap-2">
-                                                <span class="font-extrabold text-slate-900">{{ $eval->evaluator->name ?? 'Evaluator HR' }}</span>
-                                                <span class="text-amber-500 font-black">
-                                                    @for($i=1; $i<=$eval->rating; $i++) ★ @endfor
-                                                </span>
-                                            </div>
-                                            <div>
-                                                @if($eval->recommendation === 'hire')
-                                                    <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-3xs font-black rounded-lg uppercase">✓ Rekomendasi Terima</span>
-                                                @elseif($eval->recommendation === 'consider')
-                                                    <span class="px-2.5 py-1 bg-amber-100 text-amber-800 text-3xs font-black rounded-lg uppercase">⏳ Pertimbangkan</span>
-                                                @else
-                                                    <span class="px-2.5 py-1 bg-rose-100 text-rose-800 text-3xs font-black rounded-lg uppercase">✗ Tolak</span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <p class="text-slate-600 italic">"{{ $eval->comments }}"</p>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endif
-
-                        <!-- Form Input Penilaian HR -->
-                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200/80 space-y-4">
-                            <h5 class="font-bold text-xs text-slate-900 flex items-center gap-1.5">
-                                <i class="fa-solid fa-pen-to-square text-blue-600"></i> Tambah Penilaian & Rating HR Saya
-                            </h5>
-
-                            <form action="{{ route('admin.applications.evaluations.store', $application->id) }}" method="POST" class="space-y-4 text-xs">
-                                @csrf
-                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                                    <div>
-                                        <label class="block font-bold text-slate-700 mb-1">Rating Bintang (1-5)</label>
-                                        <select name="rating" required class="w-full border-slate-300 rounded-xl text-xs font-bold focus:ring-blue-500 focus:border-blue-500">
-                                            <option value="5">★★★★★ (5 - Sangat Baik)</option>
-                                            <option value="4" selected>★★★★☆ (4 - Baik)</option>
-                                            <option value="3">★★★☆☆ (3 - Cukup)</option>
-                                            <option value="2">★★☆☆☆ (2 - Kurang)</option>
-                                            <option value="1">★☆☆☆☆ (1 - Buruk)</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block font-bold text-slate-700 mb-1">Skor Teknis (0-100)</label>
-                                        <input type="number" name="technical_score" min="0" max="100" value="85" required class="w-full border-slate-300 rounded-xl text-xs focus:ring-blue-500 focus:border-blue-500 font-bold">
-                                    </div>
-                                    <div>
-                                        <label class="block font-bold text-slate-700 mb-1">Attitude (0-100)</label>
-                                        <input type="number" name="attitude_score" min="0" max="100" value="90" required class="w-full border-slate-300 rounded-xl text-xs focus:ring-blue-500 focus:border-blue-500 font-bold">
-                                    </div>
-                                    <div>
-                                        <label class="block font-bold text-slate-700 mb-1">Komunikasi (0-100)</label>
-                                        <input type="number" name="communication_score" min="0" max="100" value="80" required class="w-full border-slate-300 rounded-xl text-xs focus:ring-blue-500 focus:border-blue-500 font-bold">
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div class="sm:col-span-2">
-                                        <label class="block font-bold text-slate-700 mb-1">Catatan Evaluasi HR</label>
-                                        <input type="text" name="comments" placeholder="Catatan kelebihan, kekurangan, atau hasil wawancara..." class="w-full border-slate-300 rounded-xl text-xs focus:ring-blue-500 focus:border-blue-500">
-                                    </div>
-                                    <div>
-                                        <label class="block font-bold text-slate-700 mb-1">Rekomendasi Akhir</label>
-                                        <select name="recommendation" required class="w-full border-slate-300 rounded-xl text-xs font-bold focus:ring-blue-500 focus:border-blue-500">
-                                            <option value="hire">✓ Rekomendasi Terima (Hire)</option>
-                                            <option value="consider">⏳ Pertimbangkan (Consider)</option>
-                                            <option value="reject">✗ Tolak (Reject)</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs shadow-2xs transition flex items-center gap-1.5">
-                                    <i class="fa-solid fa-floppy-disk"></i> Simpan Penilaian HR
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- CARD 3: SURAT PENAWARAN KERJA (OFFER LETTER PDF) -->
-                    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-200/80 space-y-6">
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 pb-4">
-                            <div>
-                                <h4 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
-                                    <i class="fa-solid fa-file-contract text-emerald-600"></i> Surat Penawaran Kerja (Offer Letter PDF)
-                                </h4>
-                                <p class="text-xs text-slate-500 mt-0.5">Terbitkan surat penawaran kerja resmi berformat PDF untuk dikonfirmasi kandidat.</p>
-                            </div>
-                            <a href="{{ route('admin.applications.offer-letter.create', $application->id) }}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-2xs transition shrink-0 inline-flex items-center gap-1.5">
-                                <i class="fa-solid fa-plus"></i> Buat Offer Letter Baru
+                            <a href="{{ route('admin.applications.offer-letter.create', $application->id) }}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-2xs transition border border-emerald-600 shrink-0">
+                                + Buat Offer Letter
                             </a>
                         </div>
-
-                        @if($application->offerLetter)
-                            <div class="p-5 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-3 text-xs">
-                                <div class="flex justify-between items-center border-b border-emerald-200 pb-2">
-                                    <span class="font-bold text-slate-900">Status Konfirmasi Kandidat:</span>
-                                    @if($application->offerLetter->status === 'accepted')
-                                        <span class="px-3 py-1 bg-emerald-600 text-white font-black rounded-lg text-3xs uppercase">✓ DITERIMA KANDIDAT</span>
-                                    @elseif($application->offerLetter->status === 'declined')
-                                        <span class="px-3 py-1 bg-rose-600 text-white font-black rounded-lg text-3xs uppercase">✗ DITOLAK KANDIDAT</span>
-                                    @else
-                                        <span class="px-3 py-1 bg-amber-500 text-white font-black rounded-lg text-3xs uppercase">⏳ MENUNGGU RESPONS</span>
-                                    @endif
-                                </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <p>💵 <strong>Gaji Ditawarkan:</strong> Rp {{ number_format((float) preg_replace('/[^0-9]/', '', $application->offerLetter->offered_salary), 0, ',', '.') }}</p>
-                                    <p>📅 <strong>Mulai Bekerja:</strong> {{ $application->offerLetter->start_date ? $application->offerLetter->start_date->format('d M Y') : '-' }}</p>
-                                </div>
-                                <div class="pt-2 border-t border-emerald-200/60">
-                                    <a href="{{ route('offer-letters.download', $application->offerLetter->id) }}" class="text-blue-600 font-extrabold hover:underline inline-flex items-center gap-1.5">
-                                        <i class="fa-solid fa-download"></i> Unduh File Offer Letter PDF Official
-                                    </a>
-                                </div>
-                            </div>
-                        @else
-                            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-500">
-                                Belum ada Offer Letter diterbitkan. Klik <strong>+ Buat Offer Letter Baru</strong> untuk menerbitkan surat penawaran kerja berformat PDF.
-                            </div>
-                        @endif
                     </div>
 
-                    <!-- CARD 5: CATATAN RAHASIA INTERNAL TIM HR (HR INTERNAL CONFIDENTIAL NOTES) -->
-                    @php
-                        $internalNotes = $application->internalNotes()->with('hrUser')->latest()->get();
-                    @endphp
-                    <div class="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-md space-y-6">
-                        <div class="border-b border-slate-800 pb-4">
-                            <h4 class="font-extrabold text-base text-white flex items-center gap-2">
-                                <i class="fa-solid fa-lock text-amber-400"></i> Catatan Rahasia Internal Tim HR (Confidential)
-                            </h4>
-                            <p class="text-xs text-slate-400 mt-0.5">Diskusi internal rahasia antar rekruter/HR. Catatan ini <strong>TIDAK DAPAT DILIHAT</strong> oleh kandidat pelamar.</p>
-                        </div>
-
-                        @if($internalNotes->count() > 0)
-                            <div class="space-y-3">
-                                @foreach($internalNotes as $note)
-                                    <div class="p-4 bg-slate-800/90 rounded-2xl border border-slate-700/80 space-y-2 text-xs">
-                                        <div class="flex justify-between items-center">
-                                            <span class="font-bold text-amber-300 flex items-center gap-1.5">
-                                                <i class="fa-solid fa-user-shield text-3xs"></i> {{ $note->hrUser->name ?? 'Tim HR' }}
-                                            </span>
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-3xs text-slate-400 font-medium">{{ $note->created_at->diffForHumans() }}</span>
-                                                @if($note->hr_user_id === auth()->id() || auth()->user()->hasRole('Super Admin'))
-                                                    <form action="{{ route('admin.applications.internal-notes.destroy', [$application->id, $note->id]) }}" method="POST" class="inline" onsubmit="return confirm('Hapus catatan rahasia ini?');">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="text-rose-400 hover:text-rose-300 text-3xs font-bold">
-                                                            <i class="fa-solid fa-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <p class="text-slate-200 leading-relaxed font-mono text-3xs">{{ $note->note_text }}</p>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <p class="text-xs text-slate-400 italic">Belum ada catatan internal rahasia untuk kandidat ini.</p>
-                        @endif
-
-                        <form action="{{ route('admin.applications.internal-notes.store', $application->id) }}" method="POST" class="space-y-3 pt-2 border-t border-slate-800">
-                            @csrf
-                            <div>
-                                <label class="block text-3xs font-bold text-slate-300 uppercase mb-1">Tambah Catatan Internal Rahasia</label>
-                                <textarea name="note_text" rows="2" required placeholder="Tulis catatan internal (misal: negosiasi gaji, kelebihan utama, atau pertimbangan tim HR)..." class="w-full border-slate-700 bg-slate-800/90 text-white rounded-xl text-xs focus:ring-amber-400 focus:border-amber-400"></textarea>
-                            </div>
-                            <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold px-5 py-2.5 rounded-xl text-xs transition shadow-2xs flex items-center gap-1.5">
-                                <i class="fa-solid fa-lock"></i> Simpan Catatan Rahasia HR
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- CARD 6: EMAIL TEMPLATE AUTO-SENDER ENGINE -->
+                    <!-- CARD 3: EMAIL TEMPLATE ENGINE -->
                     <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-200/80 space-y-6" x-data="emailTemplateEngine()">
                         <div class="border-b border-slate-100 pb-4">
                             <h4 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
-                                <i class="fa-solid fa-paper-plane text-indigo-600"></i> Auto-Sender Email Template HR
+                                <i class="fa-solid fa-envelope-open-text text-indigo-600"></i> Generator Email Template Otomatis
                             </h4>
-                            <p class="text-xs text-slate-500 mt-0.5">Kirim email resmi terformat otomatis (*Undangan Interview & Penolakan Halus*) langsung ke alamat email kandidat.</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Kirim email pemberitahuan ke pelamar dalam satu kali klik.</p>
                         </div>
 
-                        <!-- Template Quick Buttons -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                             <button type="button" @click="loadTemplate('interview')" class="p-3.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold rounded-2xl border border-indigo-200 transition text-left space-y-1">
                                 <div class="flex items-center gap-2">
@@ -708,7 +841,6 @@
 
         </div>
     </div>
-</x-app-layout>
 
 <script>
     function liveChat(fetchUrl, sendUrl) {
@@ -769,3 +901,6 @@
         }
     }
 </script>
+
+<x-live-chat-drawer />
+</x-app-layout>

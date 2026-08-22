@@ -7,7 +7,7 @@
                 </h2>
                 <p class="text-xs text-slate-500 mt-0.5">Lowongan: <strong>{{ $job->title }}</strong> ({{ $job->company_name }})</p>
             </div>
-            <a href="{{ route('jobs.show', $job->id) }}" class="bg-white hover:bg-slate-100 text-slate-700 font-bold py-2 px-4 rounded-xl border border-slate-200 text-xs transition">
+            <a href="{{ route('jobs.show', $job) }}" class="bg-white hover:bg-slate-100 text-slate-700 font-bold py-2 px-4 rounded-xl border border-slate-200 text-xs transition">
                 &larr; Kembali ke Lowongan
             </a>
         </div>
@@ -74,7 +74,7 @@
                         Unggah berkas hasil pengerjaan PDF atau sertakan tautan Repository GitHub / Google Drive project Anda:
                     </p>
 
-                    <form action="{{ route('candidate.tests.submit-external', $job->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4 text-xs text-left max-w-lg mx-auto bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                    <form action="{{ route('candidate.tests.submit-external', $job) }}" method="POST" enctype="multipart/form-data" class="space-y-4 text-xs text-left max-w-lg mx-auto bg-slate-50 p-5 rounded-2xl border border-slate-200">
                         @csrf
                         
                         <div>

@@ -102,4 +102,14 @@ class UmkController extends Controller
 
         return response()->json($results);
     }
+
+    public function majors()
+    {
+        $jsonPath = resource_path('json/indonesia_majors.json');
+        if (file_exists($jsonPath)) {
+            $data = json_decode(file_get_contents($jsonPath), true);
+            return response()->json($data);
+        }
+        return response()->json(['data' => []]);
+    }
 }

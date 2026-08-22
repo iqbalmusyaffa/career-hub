@@ -35,7 +35,7 @@
                                         <div class="w-10 h-10 rounded-xl bg-slate-900 text-white font-bold text-base flex items-center justify-center border border-slate-900">
                                             {{ strtoupper(substr($job->title, 0, 1)) }}
                                         </div>
-                                        <form action="{{ route('jobs.bookmark', $job->id) }}" method="POST">
+                                        <form action="{{ route('jobs.bookmark', $job) }}" method="POST">
                                             @csrf
                                             <button type="submit" title="Hapus dari simpanan" class="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition border border-slate-200">
                                                 <i class="fa-solid fa-bookmark text-sm"></i>
@@ -43,7 +43,7 @@
                                         </form>
                                     </div>
                                     
-                                    <a href="{{ route('jobs.show', $job->id) }}" class="group-hover:text-slate-700 transition">
+                                    <a href="{{ route('jobs.show', $job) }}" class="group-hover:text-slate-700 transition">
                                         <h4 class="text-base font-bold text-slate-900 mb-2 leading-snug line-clamp-2">{{ $job->title }}</h4>
                                     </a>
                                     
@@ -74,7 +74,7 @@
                                         <span class="text-3xs uppercase tracking-wider text-slate-400 font-bold block">Gaji Offer</span>
                                         <span class="text-xs font-bold text-slate-900 block truncate">{{ $job->salary ?? 'Negosiasi' }}</span>
                                     </div>
-                                    <a href="{{ route('jobs.show', $job->id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition shrink-0 w-full sm:w-auto text-center border border-slate-900 shadow-2xs">
+                                    <a href="{{ route('jobs.show', $job) }}" class="inline-flex items-center justify-center px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition shrink-0 w-full sm:w-auto text-center border border-slate-900 shadow-2xs">
                                         Lamar / Detail &rarr;
                                     </a>
                                 </div>

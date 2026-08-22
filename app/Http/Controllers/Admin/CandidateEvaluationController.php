@@ -25,7 +25,8 @@ class CandidateEvaluationController extends Controller
             'comments' => 'nullable|string',
         ]);
 
-        $application = Application::with('user')->findOrFail($applicationId);
+        $realAppId = \App\Helpers\IdHasher::decode($applicationId) ?? $applicationId;
+        $application = Application::with('user')->findOrFail($realAppId);
         $user = Auth::user();
 
         CandidateEvaluation::create([
@@ -49,7 +50,8 @@ class CandidateEvaluationController extends Controller
      */
     public function destroy($applicationId, $evaluationId)
     {
-        $evaluation = CandidateEvaluation::where('application_id', $applicationId)->findOrFail($evaluationId);
+        $realAppId = \App\Helpers\IdHasher::decode($applicationId) ?? $applicationId;
+        $evaluation = CandidateEvaluation::where('application_id', $realAppId)->findOrFail($evaluationId);
         $evaluation->delete();
 
         return back()->with('success', 'Catatan evaluasi berhasil dihapus.');

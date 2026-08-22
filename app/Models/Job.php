@@ -41,6 +41,22 @@ class Job extends Model
         'status' => JobStatus::class,
     ];
 
+    public function getRouteKey()
+    {
+        return \App\Helpers\IdHasher::encode($this->getKey());
+    }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $realId = \App\Helpers\IdHasher::decode($value) ?? $value;
+        return $this->where($field ?? $this->getKeyName(), $realId)->first();
+    }
+
+    public function getHashIdAttribute()
+    {
+        return \App\Helpers\IdHasher::encode($this->id);
+    }
+
     public function branch()
     {
         return $this->belongsTo(CompanyBranch::class, 'company_branch_id');
@@ -130,5 +146,42 @@ class Job extends Model
         $finalScore = min(100, max(25, $percentage + 15));
 
         return (int) $finalScore;
+    }
+
+    public function getUmkCheckAttribute(): array
+    {
+        $umk = \App\Models\UmkReference::findByLocation($this->location);
+        if (!$umk) {
+            return [
+                'has_umk' => false,
+                'is_below' => false,
+                'message' => 'Data UMK belum tersedia untuk lokasi ini.'
+            ];
+        }
+
+        preg_match_all('/\d[\d\.\,]*/', $this->salary, $matches);
+        $numSalary = 0;
+        if (!empty($matches[0])) {
+            $rawNum = str_replace(['.', ','], '', $matches[0][0]);
+            $numSalary = (float)$rawNum;
+            if ($numSalary > 0 && $numSalary < 100) {
+                $numSalary = $numSalary * 1000000;
+            }
+        }
+
+        $umkAmount = (float)$umk->umk_amount;
+        $isBelow = ($numSalary > 0) && ($numSalary < $umkAmount);
+        $diff = $numSalary - $umkAmount;
+
+        return [
+            'has_umk' => true,
+            'city_district' => $umk->city_district,
+            'umk_amount' => $umkAmount,
+            'formatted_umk' => $umk->formatted_umk,
+            'offered_salary' => $numSalary,
+            'is_below' => $isBelow,
+            'difference' => $diff,
+            'formatted_difference' => 'Rp ' . number_format(abs($diff), 0, ',', '.'),
+        ];
     }
 }

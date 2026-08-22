@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\Crypt;
+use App\Helpers\IdHasher;
 
 trait HasEncryptedId
 {
@@ -11,7 +11,12 @@ trait HasEncryptedId
      */
     public function getEncryptedIdAttribute(): string
     {
-        return Crypt::encryptString((string) $this->getKey());
+        return IdHasher::encode($this->getKey());
+    }
+
+    public function getHashedId(): string
+    {
+        return IdHasher::encode($this->getKey());
     }
 
     /**
@@ -19,15 +24,7 @@ trait HasEncryptedId
      */
     public static function decryptId($encryptedId)
     {
-        if (empty($encryptedId)) {
-            return null;
-        }
-
-        try {
-            return Crypt::decryptString($encryptedId);
-        } catch (\Exception $e) {
-            return $encryptedId;
-        }
+        return IdHasher::decode($encryptedId) ?? $encryptedId;
     }
 
     /**
