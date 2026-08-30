@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="overflow-x-hidden">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -68,10 +68,19 @@
             }
         </style>
 
+        <!-- Dark Mode Initialization Script -->
+        <script>
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        </script>
+
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased bg-gray-50 text-gray-900">
+    <body class="font-sans antialiased bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
         
         <!-- PURE CSS & JS FULLSCREEN SPLASH LOADING SCREEN -->
         <div id="talentflow-splash-screen" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease, visibility 0.5s ease; visibility: visible; opacity: 1;">
@@ -100,20 +109,23 @@
                 @include('layouts.sidebar')
             @else
                 <!-- Top Navigation Layout for Candidates -->
-                <div class="min-h-screen flex flex-col justify-between">
+                <div class="min-h-screen flex flex-col justify-between pt-16">
                     <div>
                         @include('layouts.navigation')
 
                         @if (isset($header))
-                            <header class="bg-white border-b border-gray-100 shadow-sm">
-                                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                            <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-xs transition-colors">
+                                <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
                                     {{ $header }}
                                 </div>
                             </header>
                         @endif
 
                         <main>
-                            {{ $slot }}
+                            @if (isset($slot))
+                                {{ $slot }}
+                            @endif
+                            @yield('content')
                         </main>
                     </div>
 
@@ -126,7 +138,10 @@
                 <div>
                     @include('layouts.navigation')
                     <main>
-                        {{ $slot }}
+                        @if (isset($slot))
+                            {{ $slot }}
+                        @endif
+                        @yield('content')
                     </main>
                 </div>
                 @include('layouts.footer')

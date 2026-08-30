@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Http\Controllers\Mentor;
+
+use App\Http\Controllers\Controller;
+use App\Models\InternshipUnlockRequest;
+use App\Models\User;
+use App\Models\AuditLog;
+use Illuminate\Http\Request;
+use Carbon\Carbon;
+
+class MentorUnlockRequestController extends Controller
+{
+    public function index()
+    {
+        $mentorId = auth()->id();
+        $requests = InternshipUnlockRequest::with(['intern', 'resolver'])
+            ->where('mentor_id', $mentorId)
+            ->latest()
+            ->paginate(15);
+
+        return view('mentor.unlock_requests.index', compact('requests'));
+    }
+
+    public function create()
+    {
+        // Get all active interns under mentor / candidates
+        $interns = User::role('Candidate')->get();
+
+        return view('mentor.unlock_requests.create', compact('interns'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'intern_id' => 'required|exists:users,id',
+            'target_date' => 'required|date|before_or_equal:today',
+            'category' => 'required|in:platform_outage,partner_issue,force_majeure',
+            'description' => 'required|string|min:20',
+            'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'integrity_declaration' => 'accepted',
+        ], [
+            'description.min' => 'Uraian kronologi kejadian harus minimal 20 karakter.',
+            'category.in' => 'Kategori kendala tidak valid.',
+            'integrity_declaration.accepted' => 'Anda wajib menyetujui pernyataan integritas bahwa permohonan ini bukan karena kelalaian/lupa absen.',
+        ]);
+
+        $mentor = auth()->user();
+        $attachmentPath = null;
+
+        if ($request->hasFile('attachment')) {
+            $attachmentPath = $request->file('attachment')->store('unlock_attachments', 'public');
+        }
+
+        $unlockRequest = InternshipUnlockRequest::create([
+            'mentor_id' => $mentor->id,
+            'intern_id' => $request->intern_id,
+            'company_id' => $mentor->companyProfile->id ?? null,
+            'target_date' => $request->target_date,
+            'category' => $request->category,
+            'description' => $request->description,
+            'attachment_path' => $attachmentPath,
+            'status' => 'pending',
+        ]);
+
+        $internUser = User::find($request->intern_id);
+
+        AuditLog::record(
+            'MENTOR_SUBMIT_UNLOCK_REQUEST',
+            "Mentor {$mentor->name} mengajukan tiket dispensasi buka kunci tanggal {$request->target_date} untuk anak magang {$internUser->name}. Kategori: {$request->category}",
+            $mentor
+        );
+
+        return redirect()->route('mentor.unlock-requests.index')
+            ->with('success', 'Permohonan buka kunci tanggal presensi berhasil dikirim ke Super Admin untuk ditinjau.');
+    }
+}

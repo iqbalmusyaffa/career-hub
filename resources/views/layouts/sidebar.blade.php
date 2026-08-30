@@ -95,6 +95,11 @@
                         <span>Custom Report Builder</span>
                     </a>
 
+                    <a href="{{ route('admin.system-flow.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.system-flow.*') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="fa-solid fa-diagram-project text-sm w-5 text-center text-rose-400"></i>
+                        <span>Diagram Flow & ERD</span>
+                    </a>
+
                     @if(!$user->hasRole('Super Admin'))
                     <a href="{{ route('admin.company-team.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.company-team.index') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                         <i class="fa-solid fa-users-gear text-sm w-5 text-center text-blue-400"></i>
@@ -156,6 +161,26 @@
                     <a href="{{ route('admin.blacklists.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.blacklists.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                         <i class="fa-solid fa-user-shield text-sm w-5 text-center text-rose-400"></i>
                         <span>Anti-Fraud Blacklist</span>
+                    </a>
+
+                    <a href="{{ route('admin.internship-unlocks.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.internship-unlocks.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="fa-solid fa-key text-sm w-5 text-center text-amber-400"></i>
+                        <span>Pusat Tiket Buka Kunci</span>
+                    </a>
+
+                    <a href="{{ route('admin.attendance-settings.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.attendance-settings.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="fa-solid fa-satellite text-sm w-5 text-center text-cyan-400"></i>
+                        <span>Pengaturan Presensi & GPS</span>
+                    </a>
+
+                    <a href="{{ route('admin.internship-monitor.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.internship-monitor.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="fa-solid fa-chart-line text-sm w-5 text-center text-teal-400"></i>
+                        <span>Monitoring Lintas Mitra</span>
+                    </a>
+
+                    <a href="{{ route('admin.certificates.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.certificates.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <i class="fa-solid fa-award text-sm w-5 text-center text-amber-400"></i>
+                        <span>Master Sertifikat Magang</span>
                     </a>
 
                     <a href="{{ route('admin.cancellation-tickets.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ request()->routeIs('admin.cancellation-tickets.*') ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
@@ -390,7 +415,10 @@
                 @endif
 
                 <main>
-                    {{ $slot }}
+                    @if (isset($slot))
+                        {{ $slot }}
+                    @endif
+                    @yield('content')
                 </main>
             </div>
         </div>

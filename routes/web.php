@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/saved-jobs', [\App\Http\Controllers\BookmarkController::class, 'index'])->name('saved-jobs.index');
     Route::get('/profile/cv/download', [\App\Http\Controllers\CvController::class, 'download'])->name('profile.cv.download');
     Route::get('/candidates/{userId}/cv/download', [\App\Http\Controllers\CvController::class, 'download'])->name('candidates.cv.download');
+    Route::get('/candidate/cv-builder', [\App\Http\Controllers\CvController::class, 'builder'])->name('candidate.cv-builder');
 
     // Candidate Online Test routes
     Route::get('/candidate/tests/{job}', [\App\Http\Controllers\CandidateTestController::class, 'show'])->name('candidate.tests.show');
@@ -107,6 +108,33 @@ Route::middleware('auth')->group(function () {
     // Internship Certificate, Transcript, and Termination/Paklaring routes for candidate
     Route::get('/candidate/certificates/{certificate}', [\App\Http\Controllers\InternshipCertificateController::class, 'show'])->name('candidate.certificates.show');
     Route::get('/candidate/transcripts/{transcript}', [\App\Http\Controllers\InternshipTranscriptController::class, 'show'])->name('candidate.transcripts.show');
+
+    // Candidate Internship Presensi & Daily Logbook Routes (Gambar 1 & 2)
+    Route::get('/candidate/internship/logbook', [\App\Http\Controllers\CandidateLogbookController::class, 'index'])->name('candidate.logbook.index');
+    Route::get('/candidate/internship/logbook/{date}', [\App\Http\Controllers\CandidateLogbookController::class, 'show'])->name('candidate.logbook.show');
+    Route::post('/candidate/internship/logbook', [\App\Http\Controllers\CandidateLogbookController::class, 'store'])->name('candidate.logbook.store');
+    Route::get('/candidate/internship/evaluation', [\App\Http\Controllers\CandidateLogbookController::class, 'evaluation'])->name('candidate.logbook.evaluation');
+
+    // Dedicated Mentor Role Workspace, ACC Absensi, & Final Performance Rating Routes
+    Route::get('/mentor/dashboard', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'dashboard'])->name('mentor.dashboard');
+    Route::get('/mentor/logbooks', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'index'])->name('mentor.logbooks.index');
+    Route::get('/mentor/logbooks/{id}', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'show'])->name('mentor.logbooks.show');
+    Route::post('/mentor/logbooks/{id}/approve', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'approve'])->name('mentor.logbooks.approve');
+    Route::post('/mentor/logbooks/{id}/reject', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'reject'])->name('mentor.logbooks.reject');
+    Route::get('/mentor/evaluations/create/{internId}', [\App\Http\Controllers\Mentor\MentorEvaluationController::class, 'create'])->name('mentor.evaluations.create');
+    Route::post('/mentor/evaluations', [\App\Http\Controllers\Mentor\MentorEvaluationController::class, 'store'])->name('mentor.evaluations.store');
+
+    // Mentor Unlock Requests for Locked Dates
+    Route::get('/mentor/unlock-requests', [\App\Http\Controllers\Mentor\MentorUnlockRequestController::class, 'index'])->name('mentor.unlock-requests.index');
+    Route::get('/mentor/unlock-requests/create', [\App\Http\Controllers\Mentor\MentorUnlockRequestController::class, 'create'])->name('mentor.unlock-requests.create');
+    Route::post('/mentor/unlock-requests', [\App\Http\Controllers\Mentor\MentorUnlockRequestController::class, 'store'])->name('mentor.unlock-requests.store');
+
+    // HR & Mentor Settings for Internship Periods, Government Holidays, & Custom Company Holidays
+    Route::get('/mentor/settings', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'index'])->name('mentor.settings.index');
+    Route::post('/mentor/settings/holidays/{id}/override', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'toggleOverride'])->name('mentor.settings.holidays.override');
+    Route::post('/mentor/settings/holidays/company', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'storeCompanyHoliday'])->name('mentor.settings.holidays.company.store');
+    Route::delete('/mentor/settings/holidays/company/{id}', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'deleteCompanyHoliday'])->name('mentor.settings.holidays.company.delete');
+    Route::post('/mentor/settings/periods', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'storePeriod'])->name('mentor.settings.periods.store');
     Route::get('/candidate/terminations/{termination}', [\App\Http\Controllers\EmployeeTerminationController::class, 'show'])->name('candidate.terminations.show');
     Route::post('/candidate/terminations/{termination}/send-otp', [\App\Http\Controllers\EmployeeTerminationController::class, 'sendOtp'])->name('candidate.terminations.send-otp');
     Route::post('/candidate/terminations/{termination}/sign', [\App\Http\Controllers\EmployeeTerminationController::class, 'sign'])->name('candidate.terminations.sign');
@@ -256,6 +284,9 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
     Route::get('/reports/builder', [\App\Http\Controllers\Admin\CustomReportBuilderController::class, 'index'])->name('reports.builder.index');
     Route::get('/reports/export', [\App\Http\Controllers\Admin\CustomReportBuilderController::class, 'export'])->name('reports.builder.export');
 
+    // Dynamic System Flow & Auto-Generated ERD Visualizer
+    Route::get('/system-flow', [\App\Http\Controllers\Admin\SystemFlowController::class, 'index'])->name('system-flow.index');
+
     // Super Admin Exclusive Control & Moderation
     Route::middleware('role:Super Admin')->group(function () {
         Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
@@ -300,7 +331,28 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
         Route::get('/blacklists', [\App\Http\Controllers\Admin\BlacklistController::class, 'index'])->name('blacklists.index');
         Route::post('/blacklists', [\App\Http\Controllers\Admin\BlacklistController::class, 'store'])->name('blacklists.store');
         Route::delete('/blacklists/{blacklist}', [\App\Http\Controllers\Admin\BlacklistController::class, 'destroy'])->name('blacklists.destroy');
+
+        // FITUR A: Super Admin Pusat Tiket Buka Kunci Presensi
+        Route::get('/internship-unlocks', [\App\Http\Controllers\Admin\InternshipUnlockRequestController::class, 'index'])->name('internship-unlocks.index');
+        Route::get('/internship-unlocks/{id}', [\App\Http\Controllers\Admin\InternshipUnlockRequestController::class, 'show'])->name('internship-unlocks.show');
+        Route::post('/internship-unlocks/{id}/approve', [\App\Http\Controllers\Admin\InternshipUnlockRequestController::class, 'approve'])->name('internship-unlocks.approve');
+        Route::post('/internship-unlocks/{id}/reject', [\App\Http\Controllers\Admin\InternshipUnlockRequestController::class, 'reject'])->name('internship-unlocks.reject');
+
+        // FITUR B: Master Pengaturan Kebijakan Presensi & GPS Global
+        Route::get('/attendance-settings', [\App\Http\Controllers\Admin\GlobalAttendanceSettingsController::class, 'index'])->name('attendance-settings.index');
+        Route::post('/attendance-settings', [\App\Http\Controllers\Admin\GlobalAttendanceSettingsController::class, 'update'])->name('attendance-settings.update');
+
+        // FITUR C: Dashboard Monitoring Magang Lintas Mitra
+        Route::get('/internship-monitor', [\App\Http\Controllers\Admin\CrossCompanyInternshipMonitorController::class, 'index'])->name('internship-monitor.index');
+
+        // FITUR D: Master Manajemen & Revokasi Sertifikat Magang
+        Route::get('/certificates', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'index'])->name('certificates.index');
+        Route::post('/certificates/{id}/revoke', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'revoke'])->name('certificates.revoke');
+        Route::post('/certificates/{id}/restore', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'restore'])->name('certificates.restore');
     });
+
+    // Public & Authenticated Certificate Verification Portal (FITUR D)
+    Route::get('/verify-certificate/{code?}', [\App\Http\Controllers\PublicCertificateVerificationController::class, 'verify'])->name('certificates.verify.public');
 
     // Alias routes for PDF CV Download (both with and without admin. prefix)
     Route::get('/applications/{application}/cv/ats', function(\App\Models\Application $application) {
@@ -317,6 +369,9 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
         return $pdf->download('CV_Creative_' . \Illuminate\Support\Str::slug($user->name) . '.pdf');
     })->name('applications.cv.creative');
 });
+
+// Standalone Public Certificate Verification Route (for guests / universal scan)
+Route::get('/verify-certificate/{code?}', [\App\Http\Controllers\PublicCertificateVerificationController::class, 'verify'])->name('certificates.verify.public');
 
 Route::middleware('guest')->group(function () {
     Route::get('/auth/google', [\App\Http\Controllers\Auth\SocialiteController::class, 'redirect'])->name('google.login');

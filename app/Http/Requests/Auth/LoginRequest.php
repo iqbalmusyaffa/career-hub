@@ -28,7 +28,8 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['nullable', 'string'],
+            'login' => ['nullable', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -42,7 +43,25 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $loginInput = trim($this->input('login') ?? $this->input('email') ?? '');
+
+        if (empty($loginInput)) {
+            throw ValidationException::withMessages([
+                'email' => 'Email atau Username wajib diisi.',
+            ]);
+        }
+
+        // Search user by email or name/username
+        $user = \App\Models\User::where('email', $loginInput)
+            ->orWhere('name', $loginInput)
+            ->first();
+
+        $credentials = [
+            'email' => $user ? $user->email : $loginInput,
+            'password' => $this->input('password'),
+        ];
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -50,12 +69,12 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        $user = Auth::user();
-        if ($user->is_suspended) {
+        $authenticatedUser = Auth::user();
+        if ($authenticatedUser->is_suspended) {
             Auth::logout();
             RateLimiter::hit($this->throttleKey());
 
-            $reason = $user->status_reason ? " Alasan: {$user->status_reason}" : "";
+            $reason = $authenticatedUser->status_reason ? " Alasan: {$authenticatedUser->status_reason}" : "";
             throw ValidationException::withMessages([
                 'email' => "Akun Anda telah DIBLOKIR / SUSPEND oleh Administrator platform.{$reason}",
             ]);
@@ -92,6 +111,7 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        $loginInput = trim($this->input('login') ?? $this->input('email') ?? '');
+        return Str::transliterate(Str::lower($loginInput).'|'.$this->ip());
     }
 }

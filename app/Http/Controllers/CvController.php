@@ -8,6 +8,24 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class CvController extends Controller
 {
+    public function builder()
+    {
+        $user = auth()->user()->load('candidateProfile');
+        $profile = $user->candidateProfile;
+
+        if (!$profile) {
+            $profile = $user->candidateProfile()->create([
+                'phone' => '',
+                'summary' => '',
+                'skills' => [],
+                'experiences' => [],
+                'educations' => [],
+            ]);
+        }
+
+        return view('candidate.cv_builder', compact('user', 'profile'));
+    }
+
     public function download(Request $request, $userId = null)
     {
         $targetUserId = $userId ?? auth()->id();
@@ -26,10 +44,16 @@ class CvController extends Controller
             return back()->with('error', 'Profil kandidat belum diisi.');
         }
 
-        $format = $request->query('format', 'creative');
-        $viewName = ($format === 'ats') ? 'pdf.cv_ats' : 'pdf.cv_creative';
+        $format = strtolower($request->query('format', 'creative'));
+        $accentColor = $request->query('color', '#0f172a');
+        
+        $viewName = match($format) {
+            'ats' => 'pdf.cv_ats',
+            'minimalist' => 'pdf.cv_minimalist',
+            default => 'pdf.cv_creative',
+        };
 
-        $pdf = Pdf::loadView($viewName, compact('user', 'profile'))
+        $pdf = Pdf::loadView($viewName, compact('user', 'profile', 'accentColor'))
             ->setPaper('a4', 'portrait');
 
         $fileName = 'CV_' . strtoupper($format) . '_' . str_replace(' ', '_', $user->name) . '.pdf';

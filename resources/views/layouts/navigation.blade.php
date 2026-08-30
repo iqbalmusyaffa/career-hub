@@ -1,12 +1,12 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-slate-200 shadow-2xs sticky top-0 z-50">
+<nav x-data="{ open: false }" class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm fixed top-0 left-0 right-0 z-50 transition-colors">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="/" class="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                        <svg class="w-7 h-7 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <a href="/" class="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                        <svg class="w-7 h-7 text-slate-900 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                         TalentFlow
                     </a>
                 </div>
@@ -94,8 +94,23 @@
                             <x-nav-link :href="route('saved-jobs.index')" :active="request()->routeIs('saved-jobs.*')">
                                 Lowongan Tersimpan
                             </x-nav-link>
+                            <x-nav-link :href="route('candidate.logbook.index')" :active="request()->routeIs('candidate.logbook.*')">
+                                📋 Presensi Magang
+                            </x-nav-link>
+                            <x-nav-link :href="route('candidate.cv-builder')" :active="request()->routeIs('candidate.cv-builder')">
+                                ✨ Live CV Builder
+                            </x-nav-link>
                             <x-nav-link :href="route('salary-benchmark.index')" :active="request()->routeIs('salary-benchmark.*')">
                                 Estimasi Gaji
+                            </x-nav-link>
+                        @endif
+
+                        @if(auth()->user()->hasRole('Mentor'))
+                            <x-nav-link :href="route('mentor.dashboard')" :active="request()->routeIs('mentor.dashboard') || request()->routeIs('mentor.logbooks.*')">
+                                👑 ACC Presensi Magang
+                            </x-nav-link>
+                            <x-nav-link :href="route('mentor.unlock-requests.index')" :active="request()->routeIs('mentor.unlock-requests.*')">
+                                📬 Pengajuan Buka Kunci
                             </x-nav-link>
                         @endif
                     @else
@@ -204,45 +219,84 @@
                         </div>
                     </div>
 
-                    <x-dropdown align="right" width="48">
-                        <x-slot name="trigger">
-                            <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-slate-700 bg-white hover:text-slate-900 focus:outline-none transition ease-in-out duration-150">
-                                <div class="flex items-center gap-2">
-                                    @php
-                                        $userPhoto = (Auth::user()->candidateProfile && (Auth::user()->candidateProfile->photo || Auth::user()->candidateProfile->photo_path)) 
-                                            ? Storage::url(Auth::user()->candidateProfile->photo ?? Auth::user()->candidateProfile->photo_path) 
-                                            : null;
-                                    @endphp
-                                    <div class="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-200 shadow-2xs">
-                                        @if($userPhoto)
-                                            <img src="{{ $userPhoto }}" class="w-full h-full object-cover">
-                                        @else
-                                            <div class="w-full h-full bg-slate-900 flex items-center justify-center text-white font-bold text-xs">
-                                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <span class="font-semibold text-xs text-slate-800">{{ Auth::user()->name }}</span>
-                                </div>
+                    <!-- Dark Mode Toggle Button -->
+                    <div x-data="{
+                        darkMode: localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
+                        toggleTheme() {
+                            this.darkMode = !this.darkMode;
+                            if (this.darkMode) {
+                                document.documentElement.classList.add('dark');
+                                localStorage.setItem('theme', 'dark');
+                            } else {
+                                document.documentElement.classList.remove('dark');
+                                localStorage.setItem('theme', 'light');
+                            }
+                        }
+                    }">
+                        <button @click="toggleTheme()" type="button" class="p-2 rounded-xl text-slate-500 hover:text-amber-500 dark:text-slate-400 dark:hover:text-amber-400 focus:outline-none transition-colors bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center w-9 h-9" title="Mode Gelap / Terang">
+                            <template x-if="darkMode">
+                                <i class="fa-solid fa-sun text-amber-400 text-sm"></i>
+                            </template>
+                            <template x-if="!darkMode">
+                                <i class="fa-solid fa-moon text-slate-600 text-sm"></i>
+                            </template>
+                        </button>
+                    </div>
 
-                                <div class="ml-1">
-                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                    </svg>
+                    <x-dropdown align="right" width="56">
+                        <x-slot name="trigger">
+                            <button class="inline-flex items-center gap-1.5 p-1 text-sm font-medium rounded-full text-slate-700 dark:text-slate-200 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none transition-all duration-150" title="{{ Auth::user()->name }}">
+                                @php
+                                    $userPhoto = (Auth::user()->candidateProfile && (Auth::user()->candidateProfile->photo || Auth::user()->candidateProfile->photo_path)) 
+                                        ? Storage::url(Auth::user()->candidateProfile->photo ?? Auth::user()->candidateProfile->photo_path) 
+                                        : null;
+                                @endphp
+                                <div class="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 shadow-2xs">
+                                    @if($userPhoto)
+                                        <img src="{{ $userPhoto }}" class="w-full h-full object-cover">
+                                    @else
+                                        <div class="w-full h-full bg-slate-900 dark:bg-slate-700 flex items-center justify-center text-white font-black text-xs">
+                                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                        </div>
+                                    @endif
                                 </div>
+                                <svg class="fill-current h-4 w-4 text-slate-400 dark:text-slate-500 pr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
                             </button>
                         </x-slot>
 
                         <x-slot name="content">
+                            <!-- User Info Header inside Dropdown -->
+                            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+                                <p class="text-xs font-black text-slate-900 dark:text-white truncate">{{ Auth::user()->name }}</p>
+                                <p class="text-3xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{{ Auth::user()->email }}</p>
+                            </div>
+
                             <x-dropdown-link :href="route('profile.edit')" class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                 {{ __('Pengaturan Akun') }}
                             </x-dropdown-link>
 
+                            @if(auth()->user()->hasRole('Mentor'))
+                            <x-dropdown-link :href="route('mentor.dashboard')" class="flex items-center gap-2 text-indigo-600 font-bold bg-indigo-50/60">
+                                <i class="fa-solid fa-user-check text-indigo-600"></i>
+                                {{ __('👑 Dasbor ACC Presensi Mentor') }}
+                            </x-dropdown-link>
+                            @endif
+
                             @if(auth()->user()->hasRole('Candidate'))
+                            <x-dropdown-link :href="route('candidate.logbook.index')" class="flex items-center gap-2 text-blue-600 font-bold bg-blue-50/50">
+                                <i class="fa-solid fa-calendar-check text-blue-600"></i>
+                                {{ __('📋 Catatan & Presensi Magang') }}
+                            </x-dropdown-link>
                             <x-dropdown-link :href="route('profile.candidate.details.edit')" class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                 {{ __('Profil & Upload CV') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('candidate.cv-builder')" class="flex items-center gap-2 text-indigo-600 font-bold bg-indigo-50/50">
+                                <i class="fa-solid fa-wand-magic-sparkles text-indigo-600"></i>
+                                {{ __('✨ Interactive Live CV Builder') }}
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('profile.candidate.documents.index')" class="flex items-center gap-2 text-slate-800 font-semibold">
                                 <i class="fa-solid fa-folder-closed text-slate-600"></i>

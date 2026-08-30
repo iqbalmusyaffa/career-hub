@@ -16,6 +16,8 @@ class InternshipCertificate extends Model
         'start_date' => 'date',
         'end_date' => 'date',
         'issued_at' => 'date',
+        'revoked_at' => 'datetime',
+        'is_revoked' => 'boolean',
     ];
 
     public function application()
@@ -26,5 +28,10 @@ class InternshipCertificate extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function revoker()
+    {
+        return $this->belongsTo(User::class, 'revoked_by');
     }
 }
