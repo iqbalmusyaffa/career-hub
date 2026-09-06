@@ -21,6 +21,9 @@ class Job extends Model
         'work_type',
         'salary',
         'quota',
+        'batch',
+        'duration',
+        'start_date',
         'description',
         'requirements',
         'benefits',
@@ -37,6 +40,7 @@ class Job extends Model
 
     protected $casts = [
         'deadline' => 'date',
+        'start_date' => 'date',
         'quota' => 'integer',
         'status' => JobStatus::class,
     ];
@@ -159,7 +163,27 @@ class Job extends Model
             ];
         }
 
-        preg_match_all('/\d[\d\.\,]*/', $this->salary, $matches);
+        $salaryLower = strtolower($this->salary ?? '');
+        $umkAmount = (float)$umk->umk_amount;
+
+        // Jika gaji eksplisit tertulis "sesuai umk" atau "standar umk"
+        if (str_contains($salaryLower, 'sesuai umk') || str_contains($salaryLower, 'standar umk') || str_contains($salaryLower, 'mengikuti umk')) {
+            return [
+                'has_umk' => true,
+                'city_district' => $umk->city_district,
+                'umk_amount' => $umkAmount,
+                'formatted_umk' => $umk->formatted_umk,
+                'offered_salary' => $umkAmount,
+                'is_below' => false,
+                'difference' => 0,
+                'formatted_difference' => 'Rp 0',
+            ];
+        }
+
+        // Hapus angka tahun seperti "2026", "2025" agar tidak salah terbaca sebagai nominal gaji
+        $cleanSalary = preg_replace('/202[0-9]/', '', $salaryLower);
+
+        preg_match_all('/\d[\d\.\,]*/', $cleanSalary, $matches);
         $numSalary = 0;
         if (!empty($matches[0])) {
             $rawNum = str_replace(['.', ','], '', $matches[0][0]);
@@ -169,7 +193,20 @@ class Job extends Model
             }
         }
 
-        $umkAmount = (float)$umk->umk_amount;
+        // Jika hanya teks negosiasi / kompetitif tanpa angka nominal
+        if ($numSalary <= 0) {
+            return [
+                'has_umk' => true,
+                'city_district' => $umk->city_district,
+                'umk_amount' => $umkAmount,
+                'formatted_umk' => $umk->formatted_umk,
+                'offered_salary' => 0,
+                'is_below' => false,
+                'difference' => 0,
+                'formatted_difference' => 'Rp 0',
+            ];
+        }
+
         $isBelow = ($numSalary > 0) && ($numSalary < $umkAmount);
         $diff = $numSalary - $umkAmount;
 
@@ -183,5 +220,31 @@ class Job extends Model
             'difference' => $diff,
             'formatted_difference' => 'Rp ' . number_format(abs($diff), 0, ',', '.'),
         ];
+    }
+
+    public function getFormattedAgeAttribute(): string
+    {
+        if (empty($this->age_range)) {
+            return 'Bebas / Semua Usia';
+        }
+
+        $val = trim($this->age_range);
+
+        // Jika sudah ada kata 'tahun' atau 'thn'
+        if (preg_match('/tahun|thn/i', $val)) {
+            return $val;
+        }
+
+        // Jika berupa rentang angka murni seperti "21 - 35" atau "21-35"
+        if (preg_match('/^(\d+)\s*[-–—]\s*(\d+)$/', $val, $matches)) {
+            return "{$matches[1]} - {$matches[2]} Tahun";
+        }
+
+        // Jika berupa angka tunggal seperti "30"
+        if (is_numeric($val)) {
+            return "Maksimal {$val} Tahun";
+        }
+
+        return "{$val} Tahun";
     }
 }

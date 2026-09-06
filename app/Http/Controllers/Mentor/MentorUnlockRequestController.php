@@ -35,7 +35,7 @@ class MentorUnlockRequestController extends Controller
         $request->validate([
             'intern_id' => 'required|exists:users,id',
             'target_date' => 'required|date|before_or_equal:today',
-            'category' => 'required|in:platform_outage,partner_issue,force_majeure',
+            'category' => 'required|in:medical_emergency,academic_urgent,personal_urgent,cuti_bersama,dinas_luar,libur_nasional_agenda,platform_outage,partner_issue,force_majeure',
             'description' => 'required|string|min:20',
             'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'integrity_declaration' => 'accepted',
@@ -73,5 +73,24 @@ class MentorUnlockRequestController extends Controller
 
         return redirect()->route('mentor.unlock-requests.index')
             ->with('success', 'Permohonan buka kunci tanggal presensi berhasil dikirim ke Super Admin untuk ditinjau.');
+    }
+
+    public function downloadPdf($id)
+    {
+        $mentor = auth()->user();
+        $unlockRequest = InternshipUnlockRequest::with(['mentor', 'intern.candidateProfile', 'intern.applications.job', 'company', 'resolver'])
+            ->where('mentor_id', $mentor->id)
+            ->findOrFail($id);
+
+        if ($unlockRequest->status !== 'approved') {
+            return redirect()->back()->with('error', 'Dokumen Surat Resmi Dispensasi hanya dapat diunduh untuk permohonan yang telah disetujui (Approved).');
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.internship_unlock_dispensation', compact('unlockRequest'))
+            ->setPaper('a4', 'portrait');
+
+        $filename = 'Surat_Dispensasi_Presensi_' . \Illuminate\Support\Str::slug($unlockRequest->intern->name) . '_' . $unlockRequest->target_date->format('Ymd') . '.pdf';
+
+        return $pdf->download($filename);
     }
 }

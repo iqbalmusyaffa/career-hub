@@ -16,13 +16,7 @@ class CompanyBranchController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $ownerId = $user->id;
-        $teamMember = \App\Models\CompanyTeamMember::where('user_id', $user->id)->first();
-        if ($teamMember) {
-            $ownerId = $teamMember->owner_id;
-        }
-
-        $companyProfile = CompanyProfile::firstOrCreate(['user_id' => $ownerId]);
+        $companyProfile = $user->currentCompanyProfile() ?? CompanyProfile::firstOrCreate(['user_id' => $user->id]);
         $branches = CompanyBranch::where('company_profile_id', $companyProfile->id)
             ->withCount('jobs')
             ->latest()
@@ -45,13 +39,7 @@ class CompanyBranchController extends Controller
         ]);
 
         $user = Auth::user();
-        $ownerId = $user->id;
-        $teamMember = \App\Models\CompanyTeamMember::where('user_id', $user->id)->first();
-        if ($teamMember) {
-            $ownerId = $teamMember->owner_id;
-        }
-
-        $companyProfile = CompanyProfile::firstOrCreate(['user_id' => $ownerId]);
+        $companyProfile = $user->currentCompanyProfile() ?? CompanyProfile::firstOrCreate(['user_id' => $user->id]);
 
         if ($request->has('is_headquarter')) {
             CompanyBranch::where('company_profile_id', $companyProfile->id)->update(['is_headquarter' => false]);

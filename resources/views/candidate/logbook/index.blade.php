@@ -106,20 +106,23 @@
                 
                 <!-- Period Header Bar -->
                 <div class="p-4 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                    <button type="button" class="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 transition shadow-2xs">
+                    <a href="{{ route('candidate.logbook.index', ['month' => $prevMonth]) }}" class="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 transition shadow-2xs" title="Bulan Sebelumnya">
                         <i class="fa-solid fa-chevron-left text-xs"></i>
-                    </button>
+                    </a>
 
                     <div class="text-center">
-                        <h3 class="font-extrabold text-sm text-slate-900 dark:text-white">Periode 1</h3>
-                        <p class="text-3xs font-extrabold text-slate-500 dark:text-slate-400 tracking-wider uppercase mt-0.5">
-                            10 AGU 2026 - 9 SEP 2026
+                        <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-900 mb-1">
+                            <i class="fa-solid fa-layer-group text-[10px]"></i>
+                            <span>{{ $periodName }}</span>
+                        </div>
+                        <p class="text-3xs font-extrabold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
+                            {{ $startDate->isoFormat('D MMM Y') }} - {{ $endDate->isoFormat('D MMM Y') }}
                         </p>
                     </div>
 
-                    <button type="button" class="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 transition shadow-2xs">
+                    <a href="{{ route('candidate.logbook.index', ['month' => $nextMonth]) }}" class="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 transition shadow-2xs" title="Bulan Berikutnya">
                         <i class="fa-solid fa-chevron-right text-xs"></i>
-                    </button>
+                    </a>
                 </div>
 
                 <!-- Calendar Grid Matrix -->
@@ -137,52 +140,6 @@
                             <div>Min</div>
                         </div>
 
-                        @php
-                            $matrix = [
-                                [
-                                    ['day' => 10, 'date' => '2026-08-10'],
-                                    ['day' => 11, 'date' => '2026-08-11'],
-                                    ['day' => 12, 'date' => '2026-08-12'],
-                                    ['day' => 13, 'date' => '2026-08-13'],
-                                    ['day' => 14, 'date' => '2026-08-14'],
-                                    ['day' => 15, 'date' => '2026-08-15', 'isWeekend' => true],
-                                    ['day' => 16, 'date' => '2026-08-16', 'isWeekend' => true],
-                                ],
-                                [
-                                    ['day' => 17, 'date' => '2026-08-17', 'isWeekend' => true],
-                                    ['day' => 18, 'date' => '2026-08-18'],
-                                    ['day' => 19, 'date' => '2026-08-19'],
-                                    ['day' => 20, 'date' => '2026-08-20'],
-                                    ['day' => 21, 'date' => '2026-08-21'],
-                                    ['day' => 22, 'date' => '2026-08-22', 'isWeekend' => true],
-                                    ['day' => 23, 'date' => '2026-08-23', 'isWeekend' => true],
-                                ],
-                                [
-                                    ['day' => 24, 'date' => '2026-08-24', 'highlight' => true],
-                                    ['day' => 25, 'date' => '2026-08-25'],
-                                    ['day' => 26, 'date' => '2026-08-26'],
-                                    ['day' => 27, 'date' => '2026-08-27'],
-                                    ['day' => 28, 'date' => '2026-08-28'],
-                                    ['day' => 29, 'date' => '2026-08-29', 'isWeekend' => true],
-                                    ['day' => 30, 'date' => '2026-08-30', 'isWeekend' => true],
-                                ],
-                                [
-                                    ['day' => 31, 'date' => '2026-08-31'],
-                                    ['day' => 1, 'date' => '2026-09-01'],
-                                    ['day' => 2, 'date' => '2026-09-02'],
-                                    ['day' => 3, 'date' => '2026-09-03'],
-                                    ['day' => 4, 'date' => '2026-09-04'],
-                                    ['day' => 5, 'date' => '2026-09-05', 'isWeekend' => true],
-                                    ['day' => 6, 'date' => '2026-09-06', 'isWeekend' => true],
-                                ],
-                                [
-                                    ['day' => 7, 'date' => '2026-09-07'],
-                                    ['day' => 8, 'date' => '2026-09-08'],
-                                    ['day' => 9, 'date' => '2026-09-09'],
-                                ]
-                            ];
-                        @endphp
-
                         <!-- Dynamic Calendar Dates Matrix -->
                         <div class="divide-y divide-slate-200 dark:divide-slate-700">
                             @foreach($matrix as $week)
@@ -193,7 +150,10 @@
                                             $dateCarbon = \Carbon\Carbon::parse($dateStr)->startOfDay();
                                             $todayCarbon = \Carbon\Carbon::today();
                                             $entry = $logbooks[$dateStr] ?? null;
+                                            $unlockReq = $unlockRequestsMap[$dateStr] ?? null;
+                                            $isUnlocked = $unlockReq && $unlockReq->unlocked_until && $unlockReq->unlocked_until->isFuture();
                                             $isWeekend = $item['isWeekend'] ?? false;
+                                            $isPadding = $item['isPadding'] ?? false;
                                             $highlight = $item['highlight'] ?? false;
                                             
                                             $holidayObj = $holidaysMap[$dateStr] ?? null;
@@ -204,6 +164,8 @@
 
                                             if ($entry) {
                                                 $status = $entry->status;
+                                            } elseif ($isUnlocked) {
+                                                $status = 'unlocked'; // Dispensasi Pembukaan Presensi Aktif
                                             } elseif ($isHoliday) {
                                                 $status = 'weekend';
                                             } elseif ($isPast) {
@@ -214,14 +176,14 @@
                                         @endphp
 
                                         <a href="{{ route('candidate.logbook.show', ['date' => $dateStr]) }}" 
-                                           class="py-3.5 px-1 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 transition flex flex-col items-center justify-center gap-1.5 min-h-[68px] {{ $highlight ? 'bg-blue-50/80 dark:bg-blue-950/50' : ($isWeekend ? 'bg-slate-50/60 dark:bg-slate-900/40' : ($status === 'absent' ? 'bg-rose-50/30 dark:bg-rose-950/20' : '')) }}">
+                                           class="py-3.5 px-1 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 transition flex flex-col items-center justify-center gap-1.5 min-h-[68px] {{ $isPadding ? 'opacity-40 bg-slate-50/40 dark:bg-slate-900/20' : ($highlight ? 'bg-blue-50/80 dark:bg-blue-950/50' : ($status === 'unlocked' ? 'bg-emerald-50/50 dark:bg-emerald-950/30' : ($isWeekend ? 'bg-slate-50/60 dark:bg-slate-900/40' : ($status === 'absent' ? 'bg-rose-50/30 dark:bg-rose-950/20' : '')))) }}">
                                             
                                             @if($highlight)
                                                 <div class="w-7 h-7 rounded-full border-2 border-blue-600 text-blue-600 dark:text-blue-400 font-black text-xs flex items-center justify-center bg-white dark:bg-slate-800 shadow-2xs">
                                                     {{ $item['day'] }}
                                                 </div>
                                             @else
-                                                <span class="text-xs font-extrabold {{ $status === 'absent' ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300' }}">{{ $item['day'] }}</span>
+                                                <span class="text-xs font-extrabold {{ $status === 'absent' ? 'text-rose-600 dark:text-rose-400' : ($status === 'unlocked' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300') }}">{{ $item['day'] }}</span>
                                             @endif
 
                                             @if($status === 'approved')
@@ -232,6 +194,8 @@
                                                 <span class="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[9px] border-b-amber-600 inline-block"></span>
                                             @elseif($status === 'rejected')
                                                 <i class="fa-solid fa-xmark text-red-600 text-xs font-bold"></i>
+                                            @elseif($status === 'unlocked')
+                                                <i class="fa-solid fa-lock-open text-emerald-500 text-xs" title="Dispensasi Disetujui (Buka Kunci)"></i>
                                             @elseif($status === 'absent')
                                                 <span class="w-2.5 h-2.5 bg-rose-500 rounded-full inline-block" title="Terlewat / Lupa Absen (Terkunci)"></span>
                                             @elseif($status === 'weekend')
@@ -287,6 +251,11 @@
                             <div class="flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
                                 <span class="w-2.5 h-2.5 bg-slate-800 dark:bg-slate-400 rounded-2xs inline-block"></span>
                                 <span>Hari Libur</span>
+                            </div>
+
+                            <div class="flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
+                                <i class="fa-solid fa-lock-open text-emerald-500"></i>
+                                <span>Dispensasi Aktif</span>
                             </div>
 
                         </div>

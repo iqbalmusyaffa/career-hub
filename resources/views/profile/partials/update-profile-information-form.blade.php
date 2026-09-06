@@ -1,63 +1,92 @@
 <section>
-    <header>
-        <h2 class="text-lg font-bold text-gray-900">
-            {{ __('Informasi Akun') }}
-        </h2>
-
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __("Perbarui nama akun dan alamat email Anda.") }}
-        </p>
-    </header>
+    <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700/60 mb-6">
+        <div>
+            <h3 class="font-bold text-sm text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                <i class="fa-solid fa-id-card text-blue-600 dark:text-blue-400 text-xs"></i>
+                Informasi Akun
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Perbarui nama lengkap dan alamat email yang terhubung dengan akun Anda.
+            </p>
+        </div>
+    </div>
 
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" class="space-y-5">
         @csrf
         @method('patch')
 
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full bg-gray-50 focus:bg-white transition-colors" :value="old('name', $user->name)" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Full Name -->
+            <div class="space-y-1.5">
+                <label for="name" class="block font-semibold text-xs text-slate-700 dark:text-slate-300">
+                    Nama Lengkap <span class="text-rose-500">*</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500 text-xs">
+                        <i class="fa-solid fa-user"></i>
+                    </span>
+                    <input id="name" name="name" type="text" 
+                        class="pl-9 block w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-xl text-xs focus:ring-1 focus:ring-blue-600 focus:border-blue-600 transition shadow-2xs py-2.5" 
+                        value="{{ old('name', $user->name) }}" required autofocus autocomplete="name" />
+                </div>
+                <x-input-error class="mt-1" :messages="$errors->get('name')" />
+            </div>
+
+            <!-- Email Address -->
+            <div class="space-y-1.5">
+                <label for="email" class="block font-semibold text-xs text-slate-700 dark:text-slate-300">
+                    Alamat Email <span class="text-rose-500">*</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500 text-xs">
+                        <i class="fa-solid fa-envelope"></i>
+                    </span>
+                    <input id="email" name="email" type="email" 
+                        class="pl-9 block w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-xl text-xs focus:ring-1 focus:ring-blue-600 focus:border-blue-600 transition shadow-2xs py-2.5" 
+                        value="{{ old('email', $user->email) }}" required autocomplete="username" />
+                </div>
+                <x-input-error class="mt-1" :messages="$errors->get('email')" />
+            </div>
         </div>
 
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full bg-gray-50 focus:bg-white transition-colors" :value="old('email', $user->email)" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
-
-            @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
-                <div>
-                    <p class="text-sm mt-2 text-gray-800 dark:text-gray-200">
-                        {{ __('Your email address is unverified.') }}
-
-                        <button form="send-verification" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
-                            {{ __('Click here to re-send the verification email.') }}
-                        </button>
-                    </p>
-
+        @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
+            <div class="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-start gap-3">
+                <i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm mt-0.5"></i>
+                <div class="text-xs text-amber-800 dark:text-amber-300">
+                    <p class="font-semibold">Alamat email Anda belum diverifikasi.</p>
+                    <button form="send-verification" class="mt-1 underline text-xs font-semibold text-amber-900 dark:text-amber-200 hover:text-amber-950">
+                        Klik di sini untuk mengirim ulang email verifikasi.
+                    </button>
                     @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600 dark:text-green-400">
-                            {{ __('A new verification link has been sent to your email address.') }}
+                        <p class="mt-1.5 font-semibold text-emerald-600 dark:text-emerald-400">
+                            Tautan verifikasi baru telah dikirim ke alamat email Anda.
                         </p>
                     @endif
                 </div>
-            @endif
-        </div>
+            </div>
+        @endif
 
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Simpan') }}</x-primary-button>
+        <div class="flex items-center gap-3 pt-2">
+            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-xs rounded-xl shadow-xs transition">
+                <i class="fa-solid fa-check text-xs"></i>
+                <span>Simpan Perubahan</span>
+            </button>
 
             @if (session('status') === 'profile-updated')
-                <p
+                <span
                     x-data="{ show: true }"
                     x-show="show"
                     x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-green-600 font-medium"
-                >{{ __('Tersimpan.') }}</p>
+                    x-init="setTimeout(() => show = false, 3000)"
+                    class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-xs font-semibold rounded-lg border border-emerald-200 dark:border-emerald-800"
+                >
+                    <i class="fa-solid fa-circle-check text-xs"></i>
+                    Perubahan berhasil disimpan
+                </span>
             @endif
         </div>
     </form>

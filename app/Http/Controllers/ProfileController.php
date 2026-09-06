@@ -38,6 +38,26 @@ class ProfileController extends Controller
     }
 
     /**
+     * Update user theme preference (synced across devices/browsers).
+     */
+    public function updateTheme(Request $request)
+    {
+        $request->validate([
+            'theme' => ['required', 'string', 'in:light,dark,system'],
+        ]);
+
+        $user = $request->user();
+        $user->theme_preference = $request->input('theme');
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'theme' => $user->theme_preference,
+            'message' => 'Theme preference synchronized successfully.',
+        ]);
+    }
+
+    /**
      * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse
@@ -58,3 +78,4 @@ class ProfileController extends Controller
         return Redirect::to('/');
     }
 }
+

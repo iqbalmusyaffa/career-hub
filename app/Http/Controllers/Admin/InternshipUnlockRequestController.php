@@ -92,4 +92,20 @@ class InternshipUnlockRequestController extends Controller
         return redirect()->route('admin.internship-unlocks.index')
             ->with('warning', "Permohonan buka kunci tanggal {$unlockRequest->target_date->format('d M Y')} telah ditolak.");
     }
+
+    public function downloadPdf($id)
+    {
+        $unlockRequest = InternshipUnlockRequest::with(['mentor', 'intern.candidateProfile', 'intern.applications.job', 'company', 'resolver'])->findOrFail($id);
+
+        if ($unlockRequest->status !== 'approved') {
+            return redirect()->back()->with('error', 'Dokumen Surat Resmi Dispensasi hanya dapat diunduh untuk permohonan yang telah disetujui (Approved).');
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.internship_unlock_dispensation', compact('unlockRequest'))
+            ->setPaper('a4', 'portrait');
+
+        $filename = 'Surat_Dispensasi_Presensi_' . \Illuminate\Support\Str::slug($unlockRequest->intern->name) . '_' . $unlockRequest->target_date->format('Ymd') . '.pdf';
+
+        return $pdf->download($filename);
+    }
 }

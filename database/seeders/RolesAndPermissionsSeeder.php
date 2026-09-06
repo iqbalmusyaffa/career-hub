@@ -98,7 +98,19 @@ class RolesAndPermissionsSeeder extends Seeder
         );
         $candidate->assignRole($candidateRole);
 
-        // Seed Complete Internship Logbooks for Entire Period 1 (10 Aug 2026 - 9 Sep 2026)
+        // Seed Internship Period / Batch
+        \App\Models\InternshipPeriod::firstOrCreate(
+            [
+                'user_id' => $candidate->id,
+                'period_name' => 'Batch 1 - Semester Genap 2026',
+            ],
+            [
+                'company_id' => $company->id,
+                'start_date' => '2026-08-10',
+                'end_date' => '2026-09-09',
+                'target_hours' => 400,
+            ]
+        );
         $fullPeriodData = [
             '2026-08-10' => ['status' => 'approved', 'type' => 'present', 'activities' => 'Orientasi lingkungan kerja dan setup environment Laravel.', 'learnings' => 'Mempelajari arsitektur dasar Laravel 11.', 'challenges' => 'Konfigurasi environment lokal.'],
             '2026-08-11' => ['status' => 'approved', 'type' => 'present', 'activities' => 'Eksplorasi modul autentikasi dan database migration.', 'learnings' => 'Memahami Spatie permission dan Sanctum token.', 'challenges' => 'Memahami relasi database yang kompleks.'],

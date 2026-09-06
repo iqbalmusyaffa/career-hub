@@ -12,53 +12,136 @@ class CandidateLogbookController extends Controller
     {
         $user = auth()->user();
 
-        // Load active period configured by HR / Mentor
+        // 1. Determine active period & batch from candidate's applied job or configured period
+        $latestApp = $user->applications()->with('job')->latest()->first();
         $periodSetting = \App\Models\InternshipPeriod::where('user_id', $user->id)->first();
-        
-        $startDate = $periodSetting ? $periodSetting->start_date : Carbon::create(2026, 8, 10);
-        $endDate = $periodSetting ? $periodSetting->end_date : Carbon::create(2026, 9, 9);
+
+        $periodName = 'Batch 1 - Semester Genap 2026';
+        if ($periodSetting && $periodSetting->period_name) {
+            $periodName = $periodSetting->period_name;
+        } elseif ($latestApp && $latestApp->job && $latestApp->job->batch) {
+            $periodName = $latestApp->job->batch;
+        }
+
+        // 2. Month navigation or base start/end date
+        $requestedMonth = $request->query('month');
+        if ($requestedMonth) {
+            $startOfMonth = Carbon::parse($requestedMonth . '-01')->startOfMonth();
+            $startDate = $startOfMonth->copy();
+            $endDate = $startOfMonth->copy()->endOfMonth();
+        } elseif ($periodSetting) {
+            $startDate = $periodSetting->start_date->copy();
+            $endDate = $periodSetting->end_date->copy();
+        } elseif ($latestApp && $latestApp->job && $latestApp->job->start_date) {
+            $startDate = Carbon::parse($latestApp->job->start_date)->startOfDay();
+            $endDate = $startDate->copy()->addMonths(1)->subDay();
+        } else {
+            $startDate = Carbon::create(2026, 8, 10);
+            $endDate = Carbon::create(2026, 9, 9);
+        }
+
+        $prevMonth = $startDate->copy()->subMonth()->format('Y-m');
+        $nextMonth = $startDate->copy()->addMonth()->format('Y-m');
+
         $targetWorkHours = $periodSetting ? $periodSetting->target_hours : 400;
-        $periodName = $periodSetting ? $periodSetting->period_name : 'Periode 1';
 
-        // Load global holidays set by Super Admin
+        // 3. Holidays & Overrides
         $holidaysMap = \App\Models\CompanyHoliday::all()->keyBy(fn($h) => $h->date->format('Y-m-d'));
-
-        // Load company holiday overrides set by HR/Mentor (if HR/Mentor rejected a holiday to force work)
-        $companyId = 1;
+        $companyId = $latestApp->job->company_profile_id ?? 1;
         $overridesMap = \App\Models\CompanyHolidayOverride::where('company_id', $companyId)
             ->where('is_working_day', true)
             ->get()
             ->keyBy('company_holiday_id');
 
+        // 4. Logbooks & Unlock Requests
         $logbooks = InternshipLogbook::where('user_id', $user->id)
             ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get()
             ->keyBy(fn($item) => $item->date->format('Y-m-d'));
 
-        // Calculate Widgets (Hours Logged & Attendance %)
+        $unlockRequestsMap = \App\Models\InternshipUnlockRequest::where('intern_id', $user->id)
+            ->where('status', 'approved')
+            ->get()
+            ->keyBy(fn($u) => $u->target_date->format('Y-m-d'));
+
+        // 5. Dynamic Calendar Matrix generation
+        $matrix = [];
+        $currentWeek = [];
+        $cursor = $startDate->copy();
+        $firstDayOfWeek = $cursor->dayOfWeekIso; // 1 (Senin) - 7 (Minggu)
+        
+        // Pad days before start date to align with Monday
+        for ($i = 1; $i < $firstDayOfWeek; $i++) {
+            $padDate = $cursor->copy()->subDays($firstDayOfWeek - $i);
+            $currentWeek[] = [
+                'day' => $padDate->day,
+                'date' => $padDate->format('Y-m-d'),
+                'isPadding' => true,
+                'isWeekend' => $padDate->isWeekend(),
+            ];
+        }
+
+        while ($cursor->lessThanOrEqualTo($endDate)) {
+            $dateStr = $cursor->format('Y-m-d');
+            $currentWeek[] = [
+                'day' => $cursor->day,
+                'date' => $dateStr,
+                'isPadding' => false,
+                'isWeekend' => $cursor->isWeekend(),
+                'highlight' => $cursor->isToday() || $dateStr === '2026-08-24',
+            ];
+
+            if (count($currentWeek) === 7) {
+                $matrix[] = $currentWeek;
+                $currentWeek = [];
+            }
+
+            $cursor->addDay();
+        }
+
+        if (count($currentWeek) > 0) {
+            $padCount = 7 - count($currentWeek);
+            for ($i = 1; $i <= $padCount; $i++) {
+                $padDate = $cursor->copy();
+                $currentWeek[] = [
+                    'day' => $padDate->day,
+                    'date' => $padDate->format('Y-m-d'),
+                    'isPadding' => true,
+                    'isWeekend' => $padDate->isWeekend(),
+                ];
+                $cursor->addDay();
+            }
+            $matrix[] = $currentWeek;
+        }
+
+        // 6. Calculate metrics
         $allLogbooks = InternshipLogbook::where('user_id', $user->id)->get();
         $approvedCount = $allLogbooks->where('status', 'approved')->count();
         $pendingCount = $allLogbooks->where('status', 'pending')->count();
         $totalFilled = $approvedCount + $pendingCount;
         
-        $totalWorkingDays = 22; // Periode standar 22 hari kerja
+        $totalWorkingDays = 22;
         $attendancePercentage = min(100, round(($totalFilled / max(1, $totalWorkingDays)) * 100));
 
         $totalWorkHoursLogged = $allLogbooks->where('status', 'approved')->sum('work_hours');
         if ($totalWorkHoursLogged == 0 && $approvedCount > 0) {
             $totalWorkHoursLogged = $approvedCount * 8;
         }
-        if ($approvedCount >= 5) {
+        if ($approvedCount >= 5 && $totalWorkHoursLogged < 320) {
             $totalWorkHoursLogged = 320;
         }
 
         return view('candidate.logbook.index', compact(
             'logbooks',
+            'unlockRequestsMap',
             'holidaysMap',
             'overridesMap',
             'startDate',
             'endDate',
             'periodName',
+            'matrix',
+            'prevMonth',
+            'nextMonth',
             'attendancePercentage',
             'totalWorkHoursLogged',
             'targetWorkHours'
@@ -86,7 +169,11 @@ class CandidateLogbookController extends Controller
         // 3. Or Super Admin approved an active Unlock Request
         // 4. Past dates WITHOUT prior submission or unlock are STRICTLY LOCKED (Anti-Rapel Policy)
         $isRevisionAllowed = $logbook->exists && in_array($logbook->status, ['rejected', 'action_required']);
-        $isSuperAdminUnlocked = \App\Models\InternshipUnlockRequest::isCurrentlyUnlockedForUser($user->id, $carbonDate->format('Y-m-d'));
+        $unlockRequest = \App\Models\InternshipUnlockRequest::where('intern_id', $user->id)
+            ->where('target_date', $carbonDate->format('Y-m-d'))
+            ->where('status', 'approved')
+            ->first();
+        $isSuperAdminUnlocked = $unlockRequest && $unlockRequest->unlocked_until && $unlockRequest->unlocked_until->isFuture();
         
         $isEditable = false;
         $lockReason = '';
@@ -117,7 +204,7 @@ class CandidateLogbookController extends Controller
             }
         }
 
-        return view('candidate.logbook.show', compact('logbook', 'carbonDate', 'isEditable', 'lockReason', 'isPastDate', 'isFutureDate', 'isToday', 'isSuperAdminUnlocked'));
+        return view('candidate.logbook.show', compact('logbook', 'carbonDate', 'isEditable', 'lockReason', 'isPastDate', 'isFutureDate', 'isToday', 'isSuperAdminUnlocked', 'unlockRequest'));
     }
 
     public function store(Request $request)
@@ -222,5 +309,24 @@ class CandidateLogbookController extends Controller
         }
 
         return view('candidate.logbook.evaluation', compact('user', 'evaluation'));
+    }
+
+    public function downloadUnlockPdf($id)
+    {
+        $user = auth()->user();
+        $unlockRequest = \App\Models\InternshipUnlockRequest::with(['mentor', 'intern.candidateProfile', 'intern.applications.job', 'company', 'resolver'])
+            ->where('intern_id', $user->id)
+            ->findOrFail($id);
+
+        if ($unlockRequest->status !== 'approved') {
+            return redirect()->back()->with('error', 'Dokumen Surat Resmi Dispensasi hanya dapat diunduh untuk permohonan yang telah disetujui (Approved).');
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.internship_unlock_dispensation', compact('unlockRequest'))
+            ->setPaper('a4', 'portrait');
+
+        $filename = 'Surat_Dispensasi_Presensi_' . \Illuminate\Support\Str::slug($unlockRequest->intern->name) . '_' . $unlockRequest->target_date->format('Ymd') . '.pdf';
+
+        return $pdf->download($filename);
     }
 }

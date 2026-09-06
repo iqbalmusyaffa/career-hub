@@ -77,22 +77,29 @@ class MentorSettingsController extends Controller
         $user = auth()->user();
         $companyId = $user->companyProfile ? $user->companyProfile->id : 1;
 
+        $holiday = CompanyHoliday::findOrFail($holidayId);
+
+        // Libur Nasional mutlak libur dan tidak boleh di-override
+        if ($holiday->type === 'national_holiday') {
+            return redirect()->back()->with('error', 'Hari Libur Nasional bersifat mutlak (Wajib Libur) dan tidak dapat diubah menjadi hari kerja.');
+        }
+
         $override = CompanyHolidayOverride::where('company_id', $companyId)
             ->where('company_holiday_id', $holidayId)
             ->first();
 
         if ($override) {
-            // Toggle state or delete to restore default
+            // Batalkan pengajuan / restore default
             $override->delete();
-            $message = 'Pengaturan libur dikembalikan ke standar Pemerintah (Super Admin).';
+            $message = 'Pengajuan izin masuk kerja pada Cuti Bersama telah dibatalkan. Status dikembalikan ke Libur Pemerintah.';
         } else {
             CompanyHolidayOverride::create([
                 'company_id' => $companyId,
                 'company_holiday_id' => $holidayId,
                 'is_working_day' => true,
-                'reason' => 'Ditetapkan tetap masuk kerja oleh HR / Mentor Perusahaan.',
+                'reason' => $request->input('reason', 'Permohonan dispensasi operasional kerja pada Cuti Bersama Pemerintah diajukan ke Super Admin.'),
             ]);
-            $message = 'Hari Libur Nasional / Cuti Bersama BERHASIL DITOLAK (Ditetapkan TETAP MASUK KERJA untuk anak magang).';
+            $message = 'Permohonan operasional kerja pada Cuti Bersama "' . $holiday->name . '" berhasil dikirimkan ke Super Admin.';
         }
 
         return redirect()->back()->with('success', $message);

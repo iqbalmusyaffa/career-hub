@@ -53,55 +53,127 @@
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-        <style>
-            @keyframes talentflowSpin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            @keyframes talentflowPulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.1); }
-            }
-            @keyframes talentflowBlink {
-                0% { opacity: 0.5; }
-                100% { opacity: 1; }
-            }
-        </style>
-
-        <!-- Dark Mode Initialization Script -->
+        <!-- Dark Mode Initialization Script (Cross-Browser & Database Synced) -->
         <script>
-            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
+            @auth
+                const userDbTheme = "{{ auth()->user()->theme_preference ?? 'system' }}";
+                if (userDbTheme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                } else if (userDbTheme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                }
+            @else
+                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            @endauth
         </script>
+
+        <!-- Global Dark Mode Core Stylesheet -->
+        <style>
+            .dark { color-scheme: dark; }
+            .dark body { background-color: #0b1120 !important; color: #f1f5f9 !important; }
+            .dark .bg-white:not([data-theme="light"]):not(.keep-white) { background-color: #1e293b !important; color: #f8fafc !important; }
+            .dark .bg-slate-50:not([data-theme="light"]):not(.keep-light),
+            .dark .bg-slate-50\/60, .dark .bg-slate-50\/70, .dark .bg-slate-50\/80,
+            .dark .bg-gray-50, .dark .bg-gray-50\/50, .dark .bg-gray-50\/60, .dark .bg-gray-50\/70, .dark .bg-gray-50\/80,
+            .dark .bg-zinc-50, .dark .bg-neutral-50 { background-color: #0b1120 !important; }
+            .dark .bg-slate-100:not([data-theme="light"]),
+            .dark .bg-gray-100, .dark .bg-zinc-100 { background-color: #1e293b !important; }
+            .dark .bg-slate-200, .dark .bg-gray-200, .dark .bg-zinc-200 { background-color: #334155 !important; }
+            
+            .dark .border-slate-100, .dark .border-slate-200, .dark .border-slate-200\/60,
+            .dark .border-slate-200\/70, .dark .border-slate-200\/80, .dark .border-slate-200\/90,
+            .dark .border-slate-300, .dark .border-gray-100, .dark .border-gray-200, .dark .border-gray-300 {
+                border-color: #334155 !important;
+            }
+            .dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+            .dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+            .dark .divide-slate-300 > :not([hidden]) ~ :not([hidden]),
+            .dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+            .dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+                border-color: #334155 !important;
+            }
+            
+            .dark .text-slate-900, .dark .text-slate-800, .dark .text-gray-900, .dark .text-gray-800 { color: #f8fafc !important; }
+            .dark .text-slate-700, .dark .text-slate-600, .dark .text-gray-700, .dark .text-gray-600 { color: #cbd5e1 !important; }
+            .dark .text-slate-500, .dark .text-slate-400, .dark .text-gray-500, .dark .text-gray-400 { color: #94a3b8 !important; }
+            
+            .dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="file"]),
+            .dark select, .dark textarea {
+                background-color: #0f172a !important;
+                color: #f8fafc !important;
+                border-color: #334155 !important;
+            }
+            .dark input[type="file"] {
+                color: #94a3b8 !important;
+            }
+            .dark input::placeholder, .dark textarea::placeholder { color: #64748b !important; }
+            .dark select option { background-color: #0f172a !important; color: #f8fafc !important; }
+            
+            .dark tr:hover, .dark tr.hover\:bg-slate-50:hover, .dark tr.hover\:bg-slate-50\/70:hover, .dark tr.hover\:bg-slate-50\/80:hover {
+                background-color: rgba(51, 65, 85, 0.4) !important;
+            }
+            .dark .hover\:bg-slate-50:hover, .dark .hover\:bg-slate-100:hover, .dark .hover\:bg-slate-50\/80:hover {
+                background-color: #334155 !important;
+            }
+            .dark thead tr { background-color: #0f172a !important; border-color: #334155 !important; }
+            
+            .dark .bg-emerald-50, .dark .bg-emerald-50\/40, .dark .bg-emerald-50\/50 {
+                background-color: rgba(6, 78, 59, 0.35) !important; color: #6ee7b7 !important; border-color: rgba(6, 95, 70, 0.6) !important;
+            }
+            .dark .text-emerald-700, .dark .text-emerald-800, .dark .text-emerald-900 { color: #6ee7b7 !important; }
+            
+            .dark .bg-blue-50, .dark .bg-blue-50\/40, .dark .bg-blue-50\/50 {
+                background-color: rgba(30, 58, 138, 0.35) !important; color: #93c5fd !important; border-color: rgba(30, 64, 175, 0.6) !important;
+            }
+            .dark .text-blue-700, .dark .text-blue-800, .dark .text-blue-900 { color: #93c5fd !important; }
+            
+            .dark .bg-indigo-50, .dark .bg-indigo-50\/40, .dark .bg-indigo-50\/50 {
+                background-color: rgba(49, 46, 129, 0.35) !important; color: #a5b4fc !important; border-color: rgba(55, 48, 163, 0.6) !important;
+            }
+            .dark .text-indigo-700, .dark .text-indigo-800, .dark .text-indigo-900 { color: #a5b4fc !important; }
+            
+            .dark .bg-amber-50, .dark .bg-amber-50\/40, .dark .bg-amber-50\/50 {
+                background-color: rgba(120, 53, 15, 0.35) !important; color: #fcd34d !important; border-color: rgba(146, 64, 14, 0.6) !important;
+            }
+            .dark .text-amber-700, .dark .text-amber-800, .dark .text-amber-900 { color: #fcd34d !important; }
+            
+            .dark .bg-rose-50, .dark .bg-rose-50\/40, .dark .bg-rose-50\/50 {
+                background-color: rgba(136, 19, 55, 0.35) !important; color: #fda4af !important; border-color: rgba(159, 18, 57, 0.6) !important;
+            }
+            .dark .text-rose-700, .dark .text-rose-800, .dark .text-rose-900 { color: #fda4af !important; }
+        </style>
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans antialiased bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
+    <body class="font-sans antialiased bg-slate-50/60 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen overflow-x-hidden selection:bg-blue-500 selection:text-white">
         
-        <!-- PURE CSS & JS FULLSCREEN SPLASH LOADING SCREEN -->
-        <div id="talentflow-splash-screen" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease, visibility 0.5s ease; visibility: visible; opacity: 1;">
-            <div style="background: #ffffff; padding: 32px 40px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.4); display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; min-width: 240px;">
-                <!-- Glowing Spinning Outer Ring -->
-                <div style="position: relative; width: 72px; height: 72px; display: flex; align-items: center; justify-content: center;">
-                    <div style="position: absolute; inset: 0; border: 4px solid #cbd5e1; border-top: 4px solid #0f172a; border-radius: 50%; animation: talentflowSpin 0.75s linear infinite;"></div>
-                    <div style="width: 44px; height: 44px; background: #0f172a; color: #ffffff; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; box-shadow: 0 8px 16px rgba(15, 23, 42, 0.25); animation: talentflowPulse 1.2s ease-in-out infinite;">
-                        ⚡
-                    </div>
+        @if(session()->has('impersonator_id'))
+            <div class="bg-gradient-to-r from-amber-600 to-amber-700 text-white text-xs font-semibold px-4 py-2 flex items-center justify-between shadow-md relative z-50">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-amber-200 animate-pulse"></span>
+                    <span>Mode Simulasi Aktif: Anda sedang masuk sebagai <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->email }})</span>
                 </div>
-                <div>
-                    <h3 style="font-size: 18px; font-weight: 900; color: #0f172a; margin: 0; font-family: system-ui, -apple-system, sans-serif;">{{ $siteName }}</h3>
-                    <p style="font-size: 11px; font-weight: 800; color: #475569; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; font-family: system-ui, -apple-system, sans-serif; animation: talentflowBlink 1s infinite alternate;">Memuat Halaman...</p>
-                </div>
-                <!-- Progress Line -->
-                <div style="width: 140px; height: 4px; background: #e2e8f0; border-radius: 99px; overflow: hidden; position: relative; margin-top: 4px;">
-                    <div id="talentflow-progress-fill" style="position: absolute; top: 0; left: 0; height: 100%; width: 45%; background: #0f172a; transition: width 0.3s ease; border-radius: 99px;"></div>
-                </div>
+                <form method="POST" action="{{ route('admin.impersonate.leave') }}">
+                    @csrf
+                    <button type="submit" class="bg-white text-amber-900 hover:bg-amber-50 font-bold px-3 py-1 rounded-lg text-xs transition shadow-xs flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        <span>Kembali ke Super Admin</span>
+                    </button>
+                </form>
             </div>
-        </div>
+        @endif
 
         @auth
             @if(auth()->user()->hasRole('Super Admin') || auth()->user()->hasRole('HR') || auth()->user()->hasRole('Company Owner'))
@@ -147,62 +219,5 @@
                 @include('layouts.footer')
             </div>
         @endauth
-
-        <script>
-            (function() {
-                const splash = document.getElementById('talentflow-splash-screen');
-                const fill = document.getElementById('talentflow-progress-fill');
-                
-                function showLoadingScreen() {
-                    if (splash) {
-                        splash.style.visibility = 'visible';
-                        splash.style.opacity = '1';
-                    }
-                    if (fill) fill.style.width = '60%';
-                }
-
-                function hideLoadingScreen() {
-                    if (fill) fill.style.width = '100%';
-                    setTimeout(function() {
-                        if (splash) {
-                            splash.style.opacity = '0';
-                            setTimeout(function() {
-                                splash.style.visibility = 'hidden';
-                            }, 500);
-                        }
-                    }, 600);
-                }
-
-                // Show for guaranteed 1.0 second on load so animation is clearly visible
-                showLoadingScreen();
-
-                window.addEventListener('load', function() {
-                    setTimeout(hideLoadingScreen, 1000);
-                });
-
-                setTimeout(hideLoadingScreen, 2200);
-
-                document.addEventListener('DOMContentLoaded', function() {
-                    document.querySelectorAll('a[href]').forEach(function(link) {
-                        const href = link.getAttribute('href');
-                        if (href && href.startsWith(window.location.origin) && !href.includes('#') && !link.getAttribute('target')) {
-                            link.addEventListener('click', function() {
-                                showLoadingScreen();
-                            });
-                        }
-                    });
-
-                    document.querySelectorAll('form').forEach(function(form) {
-                        form.addEventListener('submit', function() {
-                            showLoadingScreen();
-                        });
-                    });
-                });
-
-                window.addEventListener('beforeunload', function() {
-                    showLoadingScreen();
-                });
-            })();
-        </script>
     </body>
 </html>

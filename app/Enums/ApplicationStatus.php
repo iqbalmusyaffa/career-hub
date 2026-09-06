@@ -21,15 +21,32 @@ enum ApplicationStatus: string
     {
         return match($this) {
             self::PENDING => 'Menunggu Review',
-            self::SCREENING => 'Tahap HR Screening Call',
-            self::PROCESSING => 'Sedang Diproses',
-            self::REVIEWED => 'Tahap Peninjauan Berkas',
-            self::TEST => 'Tahap Tes Online / Psikotes',
-            self::INTERVIEW, self::INTERVIEW_HR => 'Tahap Wawancara HR',
-            self::INTERVIEW_USER => 'Tahap Wawancara User (User Manager)',
-            self::BACKGROUND_CHECK => 'Tahap Background Check & Verifikasi Dokumen',
-            self::OFFERED => 'Tahap Penawaran Kerja (Offer Letter)',
+            self::SCREENING => 'Screening HR',
+            self::PROCESSING => 'Diproses',
+            self::REVIEWED => 'Review Berkas',
+            self::TEST => 'Tes Online',
+            self::INTERVIEW, self::INTERVIEW_HR => 'Wawancara HR',
+            self::INTERVIEW_USER => 'Wawancara User',
+            self::BACKGROUND_CHECK => 'Background Check',
+            self::OFFERED => 'Penawaran (Offering)',
             self::ACCEPTED => 'Diterima (Hired)',
+            self::REJECTED => 'Ditolak',
+        };
+    }
+
+    public function shortLabel(): string
+    {
+        return match($this) {
+            self::PENDING => 'Review',
+            self::SCREENING => 'Screening',
+            self::PROCESSING => 'Diproses',
+            self::REVIEWED => 'Review Berkas',
+            self::TEST => 'Tes Online',
+            self::INTERVIEW, self::INTERVIEW_HR => 'Interview HR',
+            self::INTERVIEW_USER => 'Interview User',
+            self::BACKGROUND_CHECK => 'Bg Check',
+            self::OFFERED => 'Offering',
+            self::ACCEPTED => 'Hired',
             self::REJECTED => 'Ditolak',
         };
     }

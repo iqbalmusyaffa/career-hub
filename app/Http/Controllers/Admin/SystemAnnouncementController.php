@@ -13,15 +13,50 @@ use Illuminate\Support\Facades\Auth;
 
 class SystemAnnouncementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $perPage = (int) request('per_page', 10);
-        $announcements = SystemAnnouncement::with('creator')
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString();
+        $search = $request->input('search');
+        $type = $request->input('type');
+        $targetRole = $request->input('target_role');
+        $status = $request->input('status');
 
-        return view('admin.announcements.index', compact('announcements'));
+        $query = SystemAnnouncement::with('creator')->latest();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('content', 'like', "%{$search}%");
+            });
+        }
+
+        if ($type) {
+            $query->where('type', $type);
+        }
+
+        if ($targetRole) {
+            $query->where('target_role', $targetRole);
+        }
+
+        if ($status !== null && $status !== '') {
+            $query->where('is_active', $status === 'active');
+        }
+
+        $perPage = (int) $request->input('per_page', 10);
+        $announcements = $query->paginate($perPage)->withQueryString();
+
+        // Summary metrics
+        $totalAnnouncements = SystemAnnouncement::count();
+        $activeAnnouncements = SystemAnnouncement::where('is_active', true)->count();
+        $urgentAnnouncements = SystemAnnouncement::where('type', 'danger')->count();
+        $allAudienceAnnouncements = SystemAnnouncement::where('target_role', 'all')->count();
+
+        return view('admin.announcements.index', compact(
+            'announcements',
+            'totalAnnouncements',
+            'activeAnnouncements',
+            'urgentAnnouncements',
+            'allAudienceAnnouncements'
+        ));
     }
 
     public function store(Request $request)

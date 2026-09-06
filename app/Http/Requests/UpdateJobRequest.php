@@ -11,6 +11,15 @@ class UpdateJobRequest extends FormRequest
         return $this->user()->hasRole('HR') || $this->user()->hasRole('Super Admin') || $this->user()->hasRole('Company Owner');
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (is_array($this->benefits)) {
+            $this->merge([
+                'benefits' => implode(', ', array_filter($this->benefits)),
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -21,6 +30,9 @@ class UpdateJobRequest extends FormRequest
             'work_type' => 'required|string|max:255',
             'salary' => 'nullable|string|max:255',
             'quota' => 'nullable|integer|min:1',
+            'batch' => 'nullable|string|max:255',
+            'duration' => 'nullable|string|max:255',
+            'start_date' => 'nullable|date',
             'description' => 'required|string',
             'requirements' => 'required|string',
             'benefits' => 'nullable|string',
@@ -30,6 +42,7 @@ class UpdateJobRequest extends FormRequest
             'education_level' => 'nullable|string|max:255',
             'major_requirement' => 'nullable|string|max:255',
             'skills_required' => 'nullable|string|max:255',
+            'company_name' => 'nullable|string|max:255',
             'gender_requirement' => 'nullable|string|max:255',
             'age_range' => 'nullable|string|max:255',
         ];

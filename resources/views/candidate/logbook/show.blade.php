@@ -202,6 +202,29 @@
                                 </div>
                             </div>
 
+                            @if(isset($unlockRequest) && $unlockRequest)
+                                <!-- Super Admin Unlock Dispensation Banner -->
+                                <div class="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm shrink-0">
+                                            <i class="fa-solid fa-file-circle-check"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                                                Dispensasi Resmi Presensi Disetujui
+                                            </h4>
+                                            <p class="text-3xs text-emerald-700 dark:text-emerald-300 font-medium mt-0.5">
+                                                Permohonan buka kunci oleh Mentor telah disetujui Super Admin (Aktif s/d: {{ $unlockRequest->unlocked_until ? $unlockRequest->unlocked_until->format('d/m/Y H:i') . ' WIB' : '-' }}).
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <a href="{{ route('candidate.unlock-requests.pdf', $unlockRequest->id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition shrink-0 shadow-2xs">
+                                        <i class="fa-solid fa-file-pdf"></i>
+                                        <span>Unduh Surat Resmi PDF</span>
+                                    </a>
+                                </div>
+                            @endif
+
                             @if(!$isEditable)
                                 <!-- Read-Only Lock Banner -->
                                 <div class="p-4 bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-start gap-3">
@@ -247,17 +270,16 @@
                                 </div>
                             @endif
 
-                            <!-- Field 1: Status Kehadiran -->
+                            <!-- Field 1: Kehadiran -->
                             <div>
                                 <label class="block text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2 flex items-center gap-2">
                                     <i class="fa-solid fa-user-check text-blue-500"></i>
-                                    Status Kehadiran Hari Ini
+                                    Kehadiran
                                 </label>
                                 <select name="attendance_type" {{ !$isEditable ? 'disabled' : '' }} class="w-full text-xs font-extrabold rounded-2xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 py-3.5 px-4 transition {{ !$isEditable ? 'bg-slate-100 dark:bg-slate-900/80 cursor-not-allowed opacity-80' : '' }}">
-                                    <option value="present" {{ old('attendance_type', $logbook->attendance_type) === 'present' ? 'selected' : '' }}>Hadir (WFO / WFH)</option>
-                                    <option value="sick" {{ old('attendance_type', $logbook->attendance_type) === 'sick' ? 'selected' : '' }}>Sakit (Dengan Surat Dokter)</option>
-                                    <option value="permission" {{ old('attendance_type', $logbook->attendance_type) === 'permission' ? 'selected' : '' }}>Izin (Kegiatan Kampus / Penting)</option>
-                                    <option value="absent" {{ old('attendance_type', $logbook->attendance_type) === 'absent' ? 'selected' : '' }}>Tidak Hadir</option>
+                                    <option value="Hadir" {{ old('attendance_type', $logbook->attendance_type_label ?? $logbook->attendance_type) === 'Hadir' ? 'selected' : '' }}>Hadir</option>
+                                    <option value="Tidak Hadir Dengan Keterangan" {{ old('attendance_type', $logbook->attendance_type_label ?? $logbook->attendance_type) === 'Tidak Hadir Dengan Keterangan' ? 'selected' : '' }}>Tidak Hadir Dengan Keterangan</option>
+                                    <option value="Tidak Hadir Tanpa Keterangan" {{ old('attendance_type', $logbook->attendance_type_label ?? $logbook->attendance_type) === 'Tidak Hadir Tanpa Keterangan' ? 'selected' : '' }}>Tidak Hadir Tanpa Keterangan</option>
                                 </select>
                             </div>
 

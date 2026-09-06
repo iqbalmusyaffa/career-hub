@@ -16,6 +16,7 @@ class EmailTemplateManagementController extends Controller
 
         $query = EmailTemplate::query();
 
+        // Search Filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -25,12 +26,49 @@ class EmailTemplateManagementController extends Controller
             });
         }
 
-        $perPage = $request->input('per_page', 10);
+        // Category / Stage Filter
+        if ($request->filled('type') && $request->type !== 'all') {
+            if ($request->type === 'interview') {
+                $query->whereIn('type', ['interview', 'interview_hr', 'interview_user']);
+            } else {
+                $query->where('type', $request->type);
+            }
+        }
+
+        $perPage = $request->input('per_page', 12);
         $templates = $query->latest()->paginate($perPage)->withQueryString();
 
-        $applications = Application::with(['user', 'job'])->latest()->get();
+        // Stats calculation
+        $allTemplates = EmailTemplate::all();
+        $totalTemplates = $allTemplates->count();
+        $countsByType = [
+            'all' => $totalTemplates,
+            'screening' => $allTemplates->where('type', 'screening')->count(),
+            'test_invitation' => $allTemplates->where('type', 'test_invitation')->count(),
+            'interview' => $allTemplates->whereIn('type', ['interview', 'interview_hr', 'interview_user'])->count(),
+            'offering' => $allTemplates->where('type', 'offering')->count(),
+            'background_check' => $allTemplates->where('type', 'background_check')->count(),
+            'reminder' => $allTemplates->where('type', 'reminder')->count(),
+            'rejection' => $allTemplates->where('type', 'rejection')->count(),
+        ];
 
-        return view('admin.email_templates.index', compact('templates', 'applications'));
+        // Candidate Applications Query (Scoped by company for non-superadmin)
+        $user = auth()->user();
+        $companyName = null;
+        if ($user && !$user->hasRole('Super Admin')) {
+            $profile = $user->currentCompanyProfile();
+            $companyName = $profile ? $profile->company_name : null;
+        }
+
+        $appQuery = Application::with(['user', 'job'])->latest();
+        if ($companyName) {
+            $appQuery->whereHas('job', function($j) use ($companyName) {
+                $j->where('company_name', 'LIKE', '%' . $companyName . '%');
+            });
+        }
+        $applications = $appQuery->take(100)->get();
+
+        return view('admin.email_templates.index', compact('templates', 'applications', 'countsByType', 'totalTemplates'));
     }
 
     public function store(Request $request)

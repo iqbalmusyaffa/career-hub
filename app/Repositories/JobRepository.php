@@ -13,14 +13,8 @@ class JobRepository implements JobRepositoryInterface
 
         $user = auth()->user();
         if ($user && !$user->hasRole('Super Admin')) {
-            $ownerId = $user->id;
-            $teamMember = \App\Models\CompanyTeamMember::where('user_id', $user->id)->first();
-            if ($teamMember) {
-                $ownerId = $teamMember->owner_id;
-            }
-
-            $ownerProfile = \App\Models\CompanyProfile::where('user_id', $ownerId)->first();
-            $companyName = $ownerProfile ? $ownerProfile->company_name : ($user->companyProfile ? $user->companyProfile->company_name : null);
+            $companyProfile = $user->currentCompanyProfile();
+            $companyName = $companyProfile ? $companyProfile->company_name : null;
 
             if ($companyName) {
                 $query->where('company_name', 'LIKE', '%' . $companyName . '%');

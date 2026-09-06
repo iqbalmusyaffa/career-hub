@@ -26,6 +26,7 @@ class User extends Authenticatable
         'password',
         'google_id',
         'avatar',
+        'theme_preference',
         'is_suspended',
         'status_reason',
     ];
@@ -87,5 +88,39 @@ class User extends Authenticatable
     public function jobs()
     {
         return $this->hasMany(Job::class);
+    }
+
+    public function logbooks()
+    {
+        return $this->hasMany(InternshipLogbook::class, 'user_id');
+    }
+
+    public function internshipPeriods()
+    {
+        return $this->hasMany(InternshipPeriod::class, 'user_id');
+    }
+
+    public function internshipPeriod()
+    {
+        return $this->hasOne(InternshipPeriod::class, 'user_id')->latestOfMany();
+    }
+
+    /**
+     * Resolve the active CompanyProfile for this user (whether Company Owner or HR Team Member).
+     */
+    public function currentCompanyProfile(): ?CompanyProfile
+    {
+        // 1. Cek apakah user tergabung dalam tim HR perusahaan
+        $teamMember = CompanyTeamMember::where('user_id', $this->id)->with('companyProfile')->first();
+        if ($teamMember && $teamMember->companyProfile) {
+            return $teamMember->companyProfile;
+        }
+
+        // 2. Cek apakah user adalah Owner langsung dari profil perusahaan
+        if ($this->companyProfile) {
+            return $this->companyProfile;
+        }
+
+        return CompanyProfile::where('user_id', $this->id)->first();
     }
 }

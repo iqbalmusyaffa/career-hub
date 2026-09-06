@@ -2,131 +2,152 @@
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-                <h2 class="font-black text-2xl text-slate-900 tracking-tight flex items-center gap-2">
-                    <span class="px-2.5 py-0.5 bg-rose-600 text-white text-[10px] font-bold rounded-md uppercase tracking-wider shadow-2xs">Super Admin</span>
-                    Command Center Platform
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="px-2.5 py-0.5 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 text-[11px] font-semibold rounded-md border border-rose-200 dark:border-rose-800">
+                        Super Administrator
+                    </span>
+                    <span class="text-xs text-slate-400 dark:text-slate-500 font-normal">| Pusat Kontrol Platform</span>
+                </div>
+                <h2 class="font-bold text-xl text-slate-900 dark:text-white tracking-tight">
+                    Dashboard Kontrol Sistem
                 </h2>
-                <p class="text-xs text-slate-500 mt-1 font-medium">Pengawasan master ekosistem akun pengguna, legalitas perusahaan, dan moderasi sistem.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-normal">
+                    Pengawasan akun pengguna, verifikasi berkas legalitas perusahaan, dan pemantauan sistem rekrutmen.
+                </p>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                <a href="{{ route('admin.users.index') }}" class="bg-slate-900 hover:bg-black text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-md flex items-center gap-2 border border-slate-900">
-                    <i class="fa-solid fa-users-gear text-slate-300"></i> Kelola Pengguna
+                <a href="{{ route('admin.users.index') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3.5 rounded-xl text-xs transition shadow-xs flex items-center gap-2">
+                    <i class="fa-solid fa-users text-xs"></i> Kelola Pengguna
                 </a>
-                <a href="{{ route('admin.companies.index') }}" class="bg-white hover:bg-slate-100 text-slate-800 font-bold py-2.5 px-4 rounded-xl text-xs transition border border-slate-300 shadow-2xs flex items-center gap-2">
-                    <i class="fa-solid fa-building-circle-check text-blue-600"></i> Kelola Perusahaan
+                <a href="{{ route('admin.companies.index') }}" class="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold py-2 px-3.5 rounded-xl text-xs transition border border-slate-200 dark:border-slate-700 shadow-xs flex items-center gap-2">
+                    <i class="fa-solid fa-building-circle-check text-slate-500 dark:text-slate-400 text-xs"></i> Verifikasi Perusahaan
                 </a>
-                <a href="{{ route('admin.settings.smtp.edit') }}" class="bg-white hover:bg-slate-100 text-slate-800 font-bold py-2.5 px-4 rounded-xl text-xs transition border border-slate-300 shadow-2xs flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-emerald-600"></i> Pengaturan SMTP
+                <a href="{{ route('admin.settings.smtp.edit') }}" class="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold py-2 px-3.5 rounded-xl text-xs transition border border-slate-200 dark:border-slate-700 shadow-xs flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-slate-500 dark:text-slate-400 text-xs"></i> Pengaturan SMTP
                 </a>
-                <a href="{{ route('admin.audit-logs.index') }}" class="bg-white hover:bg-slate-100 text-slate-800 font-bold py-2.5 px-4 rounded-xl text-xs transition border border-slate-300 shadow-2xs flex items-center gap-2">
-                    <i class="fa-solid fa-list-check text-purple-600"></i> Audit Logs
+                <a href="{{ route('admin.audit-logs.index') }}" class="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold py-2 px-3.5 rounded-xl text-xs transition border border-slate-200 dark:border-slate-700 shadow-xs flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-slate-500 dark:text-slate-400 text-xs"></i> Log Audit
                 </a>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-8 bg-slate-50/70 min-h-screen">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <div class="py-6 min-h-screen bg-slate-50/60 dark:bg-slate-900 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             @if(session('success'))
-                <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-xs font-bold flex items-center gap-3 shadow-2xs">
-                    <div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-sm shrink-0">
-                        <i class="fa-solid fa-circle-check"></i>
-                    </div>
+                <div class="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-medium flex items-center gap-3 shadow-xs">
+                    <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 text-sm shrink-0"></i>
                     <span>{{ session('success') }}</span>
                 </div>
             @endif
 
-            <!-- Master KPI Cards (6 Cards Grid) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
-                <!-- Total Users -->
-                <div class="bg-white p-5 rounded-3xl shadow-2xs hover:shadow-md transition-all duration-300 border border-slate-200/90 space-y-2 group">
-                    <div class="flex items-center justify-between text-slate-400">
-                        <span class="text-3xs font-extrabold uppercase tracking-wider text-slate-500">Total Akun</span>
-                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-black border border-blue-100 group-hover:scale-110 transition duration-300">
+            <!-- KPI Metric Cards Grid (6 Columns) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+                
+                <!-- 1. Total Users -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-2xs border border-slate-200/80 dark:border-slate-700/80 space-y-2">
+                    <div class="flex items-center justify-between text-slate-400 dark:text-slate-500">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Akun</span>
+                        <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs border border-blue-100 dark:border-blue-800">
                             <i class="fa-solid fa-users"></i>
                         </div>
                     </div>
-                    <div class="text-2xl font-black text-slate-900 tracking-tight">{{ number_format($totalUsers) }}</div>
-                    <p class="text-3xs font-semibold text-slate-500">Terdaftar di Platform</p>
+                    <div>
+                        <div class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ number_format($totalUsers) }}</div>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-normal">Terdaftar di sistem</p>
+                    </div>
                 </div>
 
-                <!-- Candidates -->
-                <div class="bg-white p-5 rounded-3xl shadow-2xs hover:shadow-md transition-all duration-300 border border-slate-200/90 space-y-2 group">
-                    <div class="flex items-center justify-between text-slate-400">
-                        <span class="text-3xs font-extrabold uppercase tracking-wider text-slate-500">Kandidat</span>
-                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-black border border-indigo-100 group-hover:scale-110 transition duration-300">
+                <!-- 2. Candidates -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-2xs border border-slate-200/80 dark:border-slate-700/80 space-y-2">
+                    <div class="flex items-center justify-between text-slate-400 dark:text-slate-500">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Kandidat</span>
+                        <div class="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs border border-indigo-100 dark:border-indigo-800">
                             <i class="fa-solid fa-user-graduate"></i>
                         </div>
                     </div>
-                    <div class="text-2xl font-black text-indigo-600 tracking-tight">{{ number_format($totalCandidates) }}</div>
-                    <p class="text-3xs font-semibold text-slate-500">Pencari Kerja Active</p>
+                    <div>
+                        <div class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ number_format($totalCandidates) }}</div>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-normal">Pencari kerja aktif</p>
+                    </div>
                 </div>
 
-                <!-- Companies -->
-                <div class="bg-white p-5 rounded-3xl shadow-2xs hover:shadow-md transition-all duration-300 border border-slate-200/90 space-y-2 group">
-                    <div class="flex items-center justify-between text-slate-400">
-                        <span class="text-3xs font-extrabold uppercase tracking-wider text-slate-500">Perusahaan</span>
-                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm font-black border border-amber-100 group-hover:scale-110 transition duration-300">
+                <!-- 3. Companies -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-2xs border border-slate-200/80 dark:border-slate-700/80 space-y-2">
+                    <div class="flex items-center justify-between text-slate-400 dark:text-slate-500">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Perusahaan</span>
+                        <div class="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs border border-amber-100 dark:border-amber-800">
                             <i class="fa-solid fa-building"></i>
                         </div>
                     </div>
-                    <div class="text-2xl font-black text-amber-600 tracking-tight">{{ number_format($totalCompanies) }}</div>
-                    <p class="text-3xs font-semibold text-slate-500"><span class="font-extrabold text-emerald-600">{{ $verifiedCompanies }}</span> Verified</p>
+                    <div>
+                        <div class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ number_format($totalCompanies) }}</div>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-normal"><span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ $verifiedCompanies }}</span> terverifikasi</p>
+                    </div>
                 </div>
 
-                <!-- Pending SIUP -->
-                <div class="bg-white p-5 rounded-3xl shadow-2xs hover:shadow-md transition-all duration-300 border border-slate-200/90 space-y-2 group">
-                    <div class="flex items-center justify-between text-slate-400">
-                        <span class="text-3xs font-extrabold uppercase tracking-wider text-slate-500">Pending Legal</span>
-                        <div class="w-10 h-10 rounded-xl {{ $pendingCompanyVerifications > 0 ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100' }} flex items-center justify-center text-sm font-black group-hover:scale-110 transition duration-300">
+                <!-- 4. Pending Legal Verifications -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-2xs border border-slate-200/80 dark:border-slate-700/80 space-y-2">
+                    <div class="flex items-center justify-between text-slate-400 dark:text-slate-500">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Verifikasi NIB</span>
+                        <div class="w-9 h-9 rounded-lg {{ $pendingCompanyVerifications > 0 ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800' : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' }} flex items-center justify-center text-xs">
                             <i class="fa-solid {{ $pendingCompanyVerifications > 0 ? 'fa-file-circle-exclamation' : 'fa-circle-check' }}"></i>
                         </div>
                     </div>
-                    <div class="text-2xl font-black {{ $pendingCompanyVerifications > 0 ? 'text-rose-600' : 'text-emerald-600' }} tracking-tight">{{ $pendingCompanyVerifications }}</div>
-                    <p class="text-3xs font-extrabold {{ $pendingCompanyVerifications > 0 ? 'text-rose-700' : 'text-emerald-700' }}">
-                        {{ $pendingCompanyVerifications > 0 ? 'Perlu Verifikasi SIUP 🚨' : 'Semua Terverifikasi 🟢' }}
-                    </p>
+                    <div>
+                        <div class="text-2xl font-bold {{ $pendingCompanyVerifications > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' }} tracking-tight">
+                            {{ $pendingCompanyVerifications }}
+                        </div>
+                        <p class="text-[11px] font-normal {{ $pendingCompanyVerifications > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400' }}">
+                            {{ $pendingCompanyVerifications > 0 ? 'Menunggu review' : 'Semua diproses' }}
+                        </p>
+                    </div>
                 </div>
 
-                <!-- Total Jobs -->
-                <div class="bg-white p-5 rounded-3xl shadow-2xs hover:shadow-md transition-all duration-300 border border-slate-200/90 space-y-2 group">
-                    <div class="flex items-center justify-between text-slate-400">
-                        <span class="text-3xs font-extrabold uppercase tracking-wider text-slate-500">Lowongan</span>
-                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-black border border-emerald-100 group-hover:scale-110 transition duration-300">
+                <!-- 5. Total Jobs -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-2xs border border-slate-200/80 dark:border-slate-700/80 space-y-2">
+                    <div class="flex items-center justify-between text-slate-400 dark:text-slate-500">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Lowongan</span>
+                        <div class="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs border border-emerald-100 dark:border-emerald-800">
                             <i class="fa-solid fa-briefcase"></i>
                         </div>
                     </div>
-                    <div class="text-2xl font-black text-emerald-600 tracking-tight">{{ number_format($totalJobs) }}</div>
-                    <p class="text-3xs font-semibold text-slate-500"><span class="font-extrabold text-emerald-700">{{ $activeJobs }}</span> Aktif Tayang</p>
+                    <div>
+                        <div class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ number_format($totalJobs) }}</div>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-normal"><span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ $activeJobs }}</span> lowongan aktif</p>
+                    </div>
                 </div>
 
-                <!-- Suspended Users -->
-                <div class="bg-white p-5 rounded-3xl shadow-2xs hover:shadow-md transition-all duration-300 border border-slate-200/90 space-y-2 group">
-                    <div class="flex items-center justify-between text-slate-400">
-                        <span class="text-3xs font-extrabold uppercase tracking-wider text-slate-500">Akun Diblokir</span>
-                        <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-sm font-black border border-slate-200 group-hover:scale-110 transition duration-300">
+                <!-- 6. Suspended Accounts -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-2xs border border-slate-200/80 dark:border-slate-700/80 space-y-2">
+                    <div class="flex items-center justify-between text-slate-400 dark:text-slate-500">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Akun Suspend</span>
+                        <div class="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs border border-slate-200 dark:border-slate-600">
                             <i class="fa-solid fa-user-slash"></i>
                         </div>
                     </div>
-                    <div class="text-2xl font-black text-slate-800 tracking-tight">{{ $suspendedUsers }}</div>
-                    <p class="text-3xs font-semibold text-slate-500">Status Suspended</p>
+                    <div>
+                        <div class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ $suspendedUsers }}</div>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-normal">Akses dibatasi</p>
+                    </div>
                 </div>
+
             </div>
 
             <!-- Content Grid: Pending Legal Documents & Recent Registrations -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                 <!-- Table 1: Pending Company Legal Approvals -->
-                <div class="bg-white rounded-3xl shadow-2xs border border-slate-200/90 p-6 space-y-6">
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xs border border-slate-200/80 dark:border-slate-700/80 p-5 sm:p-6 space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700/60 pb-3">
                         <div>
-                            <h3 class="font-black text-base text-slate-900 tracking-tight flex items-center gap-2">
-                                <i class="fa-solid fa-file-circle-check text-amber-500"></i> Pengajuan Verifikasi Dokumen Legalitas
+                            <h3 class="font-bold text-sm text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                                <i class="fa-solid fa-file-shield text-amber-500 text-xs"></i> Permohonan Verifikasi Legalitas
                             </h3>
-                            <p class="text-xs text-slate-500 mt-0.5 font-medium">Perusahaan yang mengunggah berkas SIUP / NIB.</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-normal">Perusahaan yang mengunggah berkas legalitas (NIB / SIUP).</p>
                         </div>
-                        <a href="{{ route('admin.companies.index') }}" class="text-xs font-black text-blue-600 hover:underline">
+                        <a href="{{ route('admin.companies.index') }}" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
                             Lihat Semua &rarr;
                         </a>
                     </div>
@@ -134,68 +155,118 @@
                     @if(count($pendingCompaniesList) > 0)
                         <div class="space-y-3">
                             @foreach($pendingCompaniesList as $cp)
-                                <div class="p-4 bg-slate-50/80 rounded-2xl border border-slate-200 flex items-center justify-between text-xs gap-3">
-                                    <div>
-                                        <p class="font-black text-slate-900 text-sm">{{ $cp->company_name }}</p>
-                                        <p class="text-slate-500 font-medium mt-0.5">Akun: {{ $cp->user->name ?? '-' }} ({{ $cp->user->email ?? '-' }})</p>
+                                <div class="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200/80 dark:border-slate-700/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-slate-900 dark:text-white text-xs">{{ $cp->company_name }}</span>
+                                            <span class="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded text-[10px] font-semibold border border-amber-200 dark:border-amber-800">Menunggu Review</span>
+                                        </div>
+                                        <p class="text-slate-500 dark:text-slate-400 text-[11px] font-normal">
+                                            Penanggung Jawab: {{ $cp->user->name ?? '-' }} ({{ $cp->user->email ?? '-' }})
+                                        </p>
                                     </div>
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-2 shrink-0">
                                         @if($cp->legal_doc_path)
-                                            <a href="{{ asset('storage/' . $cp->legal_doc_path) }}" target="_blank" class="px-3 py-1.5 bg-blue-50 text-blue-800 font-extrabold rounded-lg border border-blue-200 hover:bg-blue-100 transition text-3xs shadow-2xs flex items-center gap-1">
-                                                <i class="fa-solid fa-file-pdf"></i> Dokumen
+                                            <a href="{{ asset('storage/' . $cp->legal_doc_path) }}" target="_blank" class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-xs transition flex items-center gap-1.5 shadow-2xs">
+                                                <i class="fa-solid fa-file-pdf text-rose-500 text-xs"></i> Dokumen
                                             </a>
                                         @endif
-                                        <a href="{{ route('admin.companies.index') }}" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-lg transition text-3xs shadow-2xs">
-                                            Verifikasi →
+                                        <a href="{{ route('admin.companies.index') }}" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition text-xs shadow-2xs">
+                                            Tinjau &rarr;
                                         </a>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
                     @else
-                        <div class="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-xs text-slate-400 font-medium">
-                            Semua dokumen legalitas perusahaan telah diverifikasi.
+                        <div class="p-8 text-center bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 font-normal">
+                            <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 text-lg mb-1 block"></i>
+                            Semua dokumen legalitas perusahaan telah selesai diverifikasi.
                         </div>
                     @endif
                 </div>
 
                 <!-- Table 2: Recent User Registrations -->
-                <div class="bg-white rounded-3xl shadow-2xs border border-slate-200/90 p-6 space-y-6">
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xs border border-slate-200/80 dark:border-slate-700/80 p-5 sm:p-6 space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700/60 pb-3">
                         <div>
-                            <h3 class="font-black text-base text-slate-900 tracking-tight flex items-center gap-2">
-                                <i class="fa-solid fa-user-plus text-blue-600"></i> Pengguna Baru Terdaftar
+                            <h3 class="font-bold text-sm text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                                <i class="fa-solid fa-user-plus text-blue-600 dark:text-blue-400 text-xs"></i> Pengguna Baru Terdaftar
                             </h3>
-                            <p class="text-xs text-slate-500 mt-0.5 font-medium">Pendaftaran akun pengguna terbaru di platform.</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-normal">Akun pengguna yang baru saja mendaftar di portal.</p>
                         </div>
-                        <a href="{{ route('admin.users.index') }}" class="text-xs font-black text-blue-600 hover:underline">
-                            Semua Akun &rarr;
+                        <a href="{{ route('admin.users.index') }}" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                            Semua Pengguna &rarr;
                         </a>
                     </div>
 
-                    <div class="space-y-3">
+                    <div class="space-y-2.5">
                         @foreach($recentUsers as $u)
-                            <div class="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200 flex items-center justify-between text-xs">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-xl bg-slate-900 text-white font-black flex items-center justify-center text-xs border border-slate-800 shadow-2xs">
+                            <div class="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200/70 dark:border-slate-700/60 flex items-center justify-between text-xs">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-8 h-8 rounded-lg bg-slate-800 dark:bg-slate-700 text-white font-bold flex items-center justify-center text-xs shrink-0">
                                         {{ strtoupper(substr($u->name, 0, 1)) }}
                                     </div>
-                                    <div>
-                                        <p class="font-black text-slate-900">{{ $u->name }}</p>
-                                        <p class="text-3xs text-slate-400 font-medium">{{ $u->email }}</p>
+                                    <div class="min-w-0">
+                                        <p class="font-semibold text-slate-900 dark:text-white text-xs truncate">{{ $u->name }}</p>
+                                        <p class="text-[11px] text-slate-400 dark:text-slate-500 font-normal truncate">{{ $u->email }}</p>
                                     </div>
                                 </div>
-                                <div class="text-right">
-                                    <span class="px-2.5 py-1 bg-white text-slate-800 font-extrabold rounded-md border border-slate-200 text-3xs uppercase tracking-wider shadow-2xs">
+                                <div class="text-right shrink-0 ml-3">
+                                    <span class="px-2 py-0.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold rounded-md border border-slate-200 dark:border-slate-700 text-[10px] uppercase tracking-wider">
                                         {{ $u->getRoleNames()->first() ?? 'User' }}
                                     </span>
-                                    <p class="text-3xs text-slate-400 font-medium mt-1">{{ $u->created_at->diffForHumans() }}</p>
+                                    <p class="text-[10px] text-slate-400 dark:text-slate-500 font-normal mt-0.5">{{ $u->created_at->diffForHumans() }}</p>
                                 </div>
                             </div>
                         @endforeach
                     </div>
                 </div>
 
+            </div>
+
+            <!-- Master Control Shortcuts -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xs border border-slate-200/80 dark:border-slate-700/80 p-5 sm:p-6 space-y-4">
+                <div class="border-b border-slate-100 dark:border-slate-700/60 pb-3">
+                    <h3 class="font-bold text-sm text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-gears text-slate-500 dark:text-slate-400 text-xs"></i> Konfigurasi Master & Fitur Administrator
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-normal">Akses cepat ke modul pengaturan, keamanan, dan moderasi portal.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-1">
+                    <a href="{{ route('admin.settings.smtp.edit') }}" class="p-4 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100/80 dark:hover:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-700 transition space-y-1 block group">
+                        <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs font-semibold mb-2 border border-blue-100 dark:border-blue-800">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <h4 class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">Pengaturan SMTP Email</h4>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-normal">Konfigurasi pengiriman notifikasi email otomatis ke pelamar & HR.</p>
+                    </a>
+
+                    <a href="{{ route('admin.settings.seo.edit') }}" class="p-4 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100/80 dark:hover:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-700 transition space-y-1 block group">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs font-semibold mb-2 border border-indigo-100 dark:border-indigo-800">
+                            <i class="fa-solid fa-globe"></i>
+                        </div>
+                        <h4 class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">Branding & SEO Portal</h4>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-normal">Ubah nama platform, favicon, meta deskripsi, dan integrasi Google Analytics.</p>
+                    </a>
+
+                    <a href="{{ route('admin.blacklists.index') }}" class="p-4 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100/80 dark:hover:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-700 transition space-y-1 block group">
+                        <div class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xs font-semibold mb-2 border border-rose-100 dark:border-rose-800">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                        <h4 class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">Anti-Fraud & Blacklist</h4>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-normal">Blokir pengguna fiktif, pelapor palsu, atau spammer yang melanggar aturan.</p>
+                    </a>
+
+                    <a href="{{ route('admin.certificates.index') }}" class="p-4 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100/80 dark:hover:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-700 transition space-y-1 block group">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs font-semibold mb-2 border border-emerald-100 dark:border-emerald-800">
+                            <i class="fa-solid fa-award"></i>
+                        </div>
+                        <h4 class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">Master Sertifikat</h4>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-normal">Pantau penerbitan sertifikat magang dan nomor seri verifikasi QR code.</p>
+                    </a>
+                </div>
             </div>
 
         </div>

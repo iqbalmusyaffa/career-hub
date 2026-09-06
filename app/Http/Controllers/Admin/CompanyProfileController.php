@@ -19,16 +19,13 @@ class CompanyProfileController extends Controller
             return redirect()->route('admin.companies.index');
         }
 
-        $ownerId = $user->id;
-        $teamMember = \App\Models\CompanyTeamMember::where('user_id', $user->id)->first();
-        if ($teamMember) {
-            $ownerId = $teamMember->owner_id;
+        $profile = $user->currentCompanyProfile();
+        if (!$profile) {
+            $profile = CompanyProfile::create([
+                'user_id' => $user->id,
+                'company_name' => $user->name ? 'PT ' . $user->name : 'PT Perusahaan Mitra',
+            ]);
         }
-
-        $profile = CompanyProfile::firstOrCreate(
-            ['user_id' => $ownerId],
-            ['company_name' => $user->name . ' Company']
-        );
 
         return view('admin.company_profile', compact('profile'));
     }
@@ -43,6 +40,11 @@ class CompanyProfileController extends Controller
             'website' => 'nullable|url|max:255',
             'phone' => 'nullable|string|max:255',
             'address' => 'nullable|string',
+            'province' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'district' => 'nullable|string|max:255',
+            'village' => 'nullable|string|max:255',
+            'postal_code' => 'nullable|string|max:20',
             'bank_name' => 'nullable|string|max:100',
             'bank_account_number' => 'nullable|string|max:100',
             'bank_account_name' => 'nullable|string|max:255',
@@ -56,14 +58,10 @@ class CompanyProfileController extends Controller
         ]);
 
         $user = Auth::user();
-
-        $ownerId = $user->id;
-        $teamMember = \App\Models\CompanyTeamMember::where('user_id', $user->id)->first();
-        if ($teamMember) {
-            $ownerId = $teamMember->owner_id;
+        $profile = $user->currentCompanyProfile();
+        if (!$profile) {
+            $profile = CompanyProfile::create(['user_id' => $user->id]);
         }
-
-        $profile = CompanyProfile::firstOrCreate(['user_id' => $ownerId]);
 
         $data = [
             'company_name' => $request->company_name,
@@ -73,6 +71,11 @@ class CompanyProfileController extends Controller
             'website' => $request->website,
             'phone' => $request->phone,
             'address' => $request->address,
+            'province' => $request->province,
+            'city' => $request->city,
+            'district' => $request->district,
+            'village' => $request->village,
+            'postal_code' => $request->postal_code,
             'bank_name' => $request->bank_name,
             'bank_account_number' => $request->bank_account_number,
             'bank_account_name' => $request->bank_account_name,
@@ -80,6 +83,8 @@ class CompanyProfileController extends Controller
             'description' => $request->description,
             'culture_description' => $request->culture_description,
             'benefits' => $request->benefits ?? [],
+            'allow_saturday_work' => $request->has('allow_saturday_work'),
+            'allow_sunday_work' => $request->has('allow_sunday_work'),
         ];
 
         $companyFolder = 'company_files/' . \Illuminate\Support\Str::slug($request->company_name);

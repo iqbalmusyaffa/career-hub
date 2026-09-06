@@ -20,12 +20,48 @@ class JobController extends Controller
     public function index()
     {
         $jobs = $this->jobService->getAllJobs();
-        return view('admin.jobs.index', compact('jobs'));
+        $user = auth()->user();
+        $companyProfile = null;
+        if ($user) {
+            $companyProfile = $user->currentCompanyProfile();
+            if (!$companyProfile && !$user->hasRole('Super Admin')) {
+                $companyProfile = \App\Models\CompanyProfile::create([
+                    'user_id' => $user->id,
+                    'company_name' => $user->name ? 'PT ' . $user->name : 'PT Perusahaan Mitra',
+                ]);
+            }
+        }
+
+        $availableBatches = \App\Models\InternshipPeriod::whereNotNull('period_name')
+            ->pluck('period_name')
+            ->merge(\App\Models\Job::whereNotNull('batch')->where('batch', '!=', '')->pluck('batch'))
+            ->unique()
+            ->values();
+
+        return view('admin.jobs.index', compact('jobs', 'companyProfile', 'availableBatches'));
     }
 
     public function create()
     {
-        return view('admin.jobs.create');
+        $user = auth()->user();
+        $companyProfile = null;
+        if ($user) {
+            $companyProfile = $user->currentCompanyProfile();
+            if (!$companyProfile && !$user->hasRole('Super Admin')) {
+                $companyProfile = \App\Models\CompanyProfile::create([
+                    'user_id' => $user->id,
+                    'company_name' => $user->name ? 'PT ' . $user->name : 'PT Perusahaan Mitra',
+                ]);
+            }
+        }
+
+        $availableBatches = \App\Models\InternshipPeriod::whereNotNull('period_name')
+            ->pluck('period_name')
+            ->merge(\App\Models\Job::whereNotNull('batch')->where('batch', '!=', '')->pluck('batch'))
+            ->unique()
+            ->values();
+
+        return view('admin.jobs.create', compact('companyProfile', 'availableBatches'));
     }
 
     public function store(StoreJobRequest $request)
@@ -33,10 +69,29 @@ class JobController extends Controller
         $data = $request->validated();
         $message = 'Lowongan kerja berhasil dipublikasikan!';
 
+        // Tetapkan nama perusahaan otomatis sesuai akun HR / Company Owner yang sedang login
+        $user = auth()->user();
+        if (!$user->hasRole('Super Admin')) {
+            $companyProfile = $user->currentCompanyProfile();
+            if (!$companyProfile) {
+                $companyProfile = \App\Models\CompanyProfile::create([
+                    'user_id' => $user->id,
+                    'company_name' => $user->name ? 'PT ' . $user->name : 'PT Perusahaan Mitra',
+                ]);
+            }
+            $data['company_name'] = $companyProfile->company_name;
+        } elseif (empty($data['company_name'])) {
+            $data['company_name'] = config('app.name', 'CareerHub');
+        }
+
         // Moderasi Otomatis untuk Lowongan Full-Time di Bawah UMK
         $umk = \App\Models\UmkReference::findByLocation($data['location'] ?? '');
-        if ($umk && strtolower($data['work_type'] ?? '') === 'full-time') {
-            preg_match_all('/\d[\d\.\,]*/', $data['salary'] ?? '', $matches);
+        $salaryLower = strtolower($data['salary'] ?? '');
+        $isExplicitUmk = str_contains($salaryLower, 'sesuai umk') || str_contains($salaryLower, 'standar umk') || str_contains($salaryLower, 'mengikuti umk');
+
+        if ($umk && strtolower($data['work_type'] ?? '') === 'full-time' && !$isExplicitUmk) {
+            $cleanSalary = preg_replace('/202[0-9]/', '', $salaryLower);
+            preg_match_all('/\d[\d\.\,]*/', $cleanSalary, $matches);
             $numSalary = 0;
             if (!empty($matches[0])) {
                 $rawNum = str_replace(['.', ','], '', $matches[0][0]);
@@ -52,7 +107,7 @@ class JobController extends Controller
         }
 
         $job = $this->jobService->createJob($data);
-        AuditLog::record('job_created', 'Mempublikasikan lowongan kerja baru: ' . $request->title);
+        AuditLog::record('job_created', "Mempublikasikan lowongan kerja baru: {$request->title} untuk perusahaan {$data['company_name']}");
 
         return redirect()->route('admin.jobs.index')->with('success', $message);
     }
@@ -60,15 +115,44 @@ class JobController extends Controller
     public function edit($id)
     {
         $job = $this->jobService->getJobById($id);
-        return view('admin.jobs.edit', compact('job'));
+        $user = auth()->user();
+        $companyProfile = null;
+        if ($user) {
+            $companyProfile = $user->currentCompanyProfile();
+            if (!$companyProfile && !$user->hasRole('Super Admin')) {
+                $companyProfile = \App\Models\CompanyProfile::create([
+                    'user_id' => $user->id,
+                    'company_name' => $user->name ? 'PT ' . $user->name : 'PT Perusahaan Mitra',
+                ]);
+            }
+        }
+
+        $availableBatches = \App\Models\InternshipPeriod::whereNotNull('period_name')
+            ->pluck('period_name')
+            ->merge(\App\Models\Job::whereNotNull('batch')->where('batch', '!=', '')->pluck('batch'))
+            ->unique()
+            ->values();
+
+        return view('admin.jobs.edit', compact('job', 'companyProfile', 'availableBatches'));
     }
 
     public function update(UpdateJobRequest $request, $id)
     {
-        $this->jobService->updateJob($id, $request->validated());
+        $data = $request->validated();
+        $user = auth()->user();
+
+        // Kunci nama perusahaan ke profil HR/Owner login jika bukan Super Admin
+        if (!$user->hasRole('Super Admin')) {
+            $companyProfile = $user->currentCompanyProfile();
+            if ($companyProfile) {
+                $data['company_name'] = $companyProfile->company_name;
+            }
+        }
+
+        $this->jobService->updateJob($id, $data);
         AuditLog::record('job_updated', 'Memperbarui data lowongan kerja: ' . $request->title);
 
-        return redirect()->route('admin.jobs.index')->with('success', 'Job updated successfully.');
+        return redirect()->route('admin.jobs.index')->with('success', 'Lowongan kerja berhasil diperbarui.');
     }
 
     public function destroy($id)

@@ -15,6 +15,8 @@ class CompanyProfile extends Model
         'is_verified' => 'boolean',
         'is_suspended' => 'boolean',
         'benefits' => 'array',
+        'allow_saturday_work' => 'boolean',
+        'allow_sunday_work' => 'boolean',
     ];
 
     public function user()
@@ -29,6 +31,11 @@ class CompanyProfile extends Model
 
     public function teamMembers()
     {
-        return $this->hasMany(CompanyTeamMember::class, 'owner_id', 'user_id');
+        return $this->hasMany(CompanyTeamMember::class, 'company_profile_id', 'id');
+    }
+
+    public function jobs()
+    {
+        return $this->hasMany(Job::class, 'company_name', 'company_name');
     }
 }

@@ -31,14 +31,13 @@ class AdminCompanyTeamApiController extends Controller
     public function teamIndex(Request $request)
     {
         $user = $request->user();
-        $ownerId = $user->id;
-        $teamMember = CompanyTeamMember::where('user_id', $user->id)->first();
-        if ($teamMember) {
-            $ownerId = $teamMember->owner_id;
+        $companyProfile = $user->currentCompanyProfile();
+        if (!$companyProfile) {
+            return $this->successResponse([], 'Perusahaan belum terdaftar.');
         }
 
         $members = CompanyTeamMember::with('user')
-            ->where('owner_id', $ownerId)
+            ->where('company_profile_id', $companyProfile->id)
             ->latest()
             ->paginate(15);
 
@@ -68,6 +67,11 @@ class AdminCompanyTeamApiController extends Controller
             return $this->errorResponse('Validasi pendaftaran anggota tim gagal.', 422, $validator->errors());
         }
 
+        $companyProfile = $user->currentCompanyProfile();
+        if (!$companyProfile) {
+            $companyProfile = CompanyProfile::firstOrCreate(['user_id' => $user->id], ['company_name' => 'PT ' . $user->name]);
+        }
+
         $newUser = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -78,9 +82,10 @@ class AdminCompanyTeamApiController extends Controller
         $newUser->assignRole($request->role);
 
         $member = CompanyTeamMember::create([
-            'owner_id' => $user->id,
+            'company_profile_id' => $companyProfile->id,
             'user_id' => $newUser->id,
             'role_title' => $request->role,
+            'invited_by' => $user->id,
         ]);
 
         return $this->successResponse($member, "Anggota tim {$newUser->name} ({$request->role}) berhasil ditambahkan!", 201);
@@ -124,13 +129,12 @@ class AdminCompanyTeamApiController extends Controller
     public function branchesIndex(Request $request)
     {
         $user = $request->user();
-        $ownerId = $user->id;
-        $teamMember = CompanyTeamMember::where('user_id', $user->id)->first();
-        if ($teamMember) {
-            $ownerId = $teamMember->owner_id;
+        $companyProfile = $user->currentCompanyProfile();
+        if (!$companyProfile) {
+            return $this->successResponse([], 'Perusahaan belum terdaftar.');
         }
 
-        $branches = CompanyBranch::where('company_user_id', $ownerId)->latest()->get();
+        $branches = CompanyBranch::where('company_profile_id', $companyProfile->id)->latest()->get();
         return $this->successResponse($branches, 'Daftar cabang perusahaan berhasil diambil.');
     }
 
@@ -158,13 +162,18 @@ class AdminCompanyTeamApiController extends Controller
             return $this->errorResponse('Validasi data cabang gagal.', 422, $validator->errors());
         }
 
+        $companyProfile = $user->currentCompanyProfile();
+        if (!$companyProfile) {
+            $companyProfile = CompanyProfile::firstOrCreate(['user_id' => $user->id], ['company_name' => 'PT ' . $user->name]);
+        }
+
         $branch = CompanyBranch::create([
-            'company_user_id' => $user->id,
+            'company_profile_id' => $companyProfile->id,
             'branch_name' => $request->branch_name,
             'city' => $request->city,
             'address' => $request->address,
             'phone' => $request->phone,
-            'is_main' => $request->boolean('is_main'),
+            'is_headquarter' => $request->boolean('is_main'),
         ]);
 
         return $this->successResponse($branch, "Cabang {$branch->branch_name} berhasil ditambahkan!", 201);

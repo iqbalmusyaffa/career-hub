@@ -15,13 +15,8 @@ class HeadcountBudgetController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $companyUserId = $user->id;
-
-        // If team member, find owner
-        $team = CompanyTeamMember::where('user_id', $user->id)->first();
-        if ($team) {
-            $companyUserId = $team->owner_id;
-        }
+        $companyProfile = $user->currentCompanyProfile();
+        $companyUserId = $companyProfile ? $companyProfile->user_id : $user->id;
 
         $fiscalYear = $request->input('fiscal_year', 2026);
         $budgets = HeadcountBudget::where('company_user_id', $companyUserId)
@@ -29,7 +24,6 @@ class HeadcountBudgetController extends Controller
             ->get();
 
         // Calculate actual hired count per division for this company
-        $companyProfile = \App\Models\CompanyProfile::where('user_id', $companyUserId)->first();
         $companyName = $companyProfile ? $companyProfile->company_name : null;
 
         $divisionJobMap = $companyName ? Job::where('company_name', 'LIKE', '%' . $companyName . '%')->get()->groupBy('division') : Job::all()->groupBy('division');
@@ -78,11 +72,8 @@ class HeadcountBudgetController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
-        $companyUserId = $user->id;
-        $team = CompanyTeamMember::where('user_id', $user->id)->first();
-        if ($team) {
-            $companyUserId = $team->owner_id;
-        }
+        $companyProfile = $user->currentCompanyProfile();
+        $companyUserId = $companyProfile ? $companyProfile->user_id : $user->id;
 
         $request->validate([
             'division' => 'required|string|max:255',

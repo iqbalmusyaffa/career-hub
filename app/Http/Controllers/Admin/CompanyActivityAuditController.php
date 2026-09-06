@@ -14,9 +14,11 @@ class CompanyActivityAuditController extends Controller
         $user = auth()->user();
         $teamUserIds = [$user->id];
 
-        // Get all HR team members for this company
-        $teamMembers = CompanyTeamMember::where('owner_id', $user->id)->pluck('user_id');
-        $teamUserIds = array_merge($teamUserIds, $teamMembers->toArray());
+        $companyProfile = $user->currentCompanyProfile();
+        if ($companyProfile) {
+            $teamMembers = CompanyTeamMember::where('company_profile_id', $companyProfile->id)->pluck('user_id');
+            $teamUserIds = array_values(array_unique(array_merge($teamUserIds, [$companyProfile->user_id], $teamMembers->toArray())));
+        }
 
         $query = AuditLog::with('user')->whereIn('user_id', $teamUserIds);
 

@@ -17,7 +17,6 @@ class GlobalAttendanceSettingsController extends Controller
             'anti_fake_gps' => SystemSetting::getByKey('attendance_anti_fake_gps', '1') === '1',
             'target_hours' => (int) SystemSetting::getByKey('attendance_default_target_hours', '400'),
             'min_percentage' => (int) SystemSetting::getByKey('attendance_min_passing_percentage', '80'),
-            'allow_weekend_work' => SystemSetting::getByKey('attendance_allow_weekend_work', '0') === '1',
         ];
 
         return view('admin.attendance_settings.index', compact('settings'));
@@ -37,7 +36,6 @@ class GlobalAttendanceSettingsController extends Controller
         SystemSetting::setKey('attendance_anti_fake_gps', $request->has('anti_fake_gps') ? '1' : '0', 'Aktifkan filter deteksi Fake GPS & Mock Location otomatis');
         SystemSetting::setKey('attendance_default_target_hours', (string) $request->target_hours, 'Standar akumulasi jam kerja target magang');
         SystemSetting::setKey('attendance_min_passing_percentage', (string) $request->min_percentage, 'Persentase minimal kehadiran kelulusan magang');
-        SystemSetting::setKey('attendance_allow_weekend_work', $request->has('allow_weekend_work') ? '1' : '0', 'Izinkan pengisian absensi pada akhir pekan');
 
         $user = auth()->user();
         AuditLog::record(

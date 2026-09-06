@@ -11,7 +11,47 @@ Route::get('/', function () {
     if ($latestJobs->isEmpty()) {
         $latestJobs = \App\Models\Job::latest()->take(3)->get();
     }
-    $trustedCompanies = \App\Models\CompanyProfile::whereNotNull('company_name')->where('company_name', '!=', '')->latest()->take(6)->get();
+    
+    // Perusahaan terkemuka berdasarkan lowongan aktif terbanyak
+    $topCompanyNames = \App\Models\Job::where('status', 'active')
+        ->where(function($q) {
+            $q->whereNull('deadline')->orWhere('deadline', '>=', now()->startOfDay());
+        })
+        ->whereNotNull('company_name')
+        ->where('company_name', '!=', '')
+        ->select('company_name', \Illuminate\Support\Facades\DB::raw('count(*) as active_jobs_count'))
+        ->groupBy('company_name')
+        ->orderByDesc('active_jobs_count')
+        ->take(6)
+        ->get();
+
+    $trustedCompanies = $topCompanyNames->map(function ($item) {
+        $profile = \App\Models\CompanyProfile::where('company_name', $item->company_name)->first();
+        return (object) [
+            'company_name' => $item->company_name,
+            'logo_path' => $profile ? $profile->logo_path : null,
+            'is_verified' => $profile ? $profile->is_verified : true,
+            'jobs_count' => $item->active_jobs_count,
+        ];
+    });
+
+    // Fallback jika belum ada lowongan aktif yang terkumpul
+    if ($trustedCompanies->isEmpty()) {
+        $trustedCompanies = \App\Models\CompanyProfile::whereNotNull('company_name')
+            ->where('company_name', '!=', '')
+            ->latest()
+            ->take(6)
+            ->get()
+            ->map(function ($p) {
+                return (object) [
+                    'company_name' => $p->company_name,
+                    'logo_path' => $p->logo_path,
+                    'is_verified' => $p->is_verified,
+                    'jobs_count' => \App\Models\Job::where('company_name', $p->company_name)->where('status', 'active')->count(),
+                ];
+            });
+    }
+
     return view('welcome', compact('latestJobs', 'trustedCompanies'));
 });
 
@@ -19,6 +59,10 @@ Route::get('/dashboard', function () {
     $user = auth()->user();
     if ($user && ($user->hasRole('Super Admin') || $user->hasRole('HR') || $user->hasRole('Company Owner'))) {
         return redirect()->route('admin.dashboard');
+    }
+
+    if ($user && $user->hasRole('Mentor')) {
+        return redirect()->route('mentor.dashboard');
     }
 
     $applications = \App\Models\Application::with(['job', 'offerLetter', 'messages'])->where('user_id', $user->id)->latest()->get();
@@ -42,8 +86,11 @@ use App\Http\Controllers\CompanyDirectoryController;
 Route::get('/jobs', [JobListingController::class, 'index'])->name('jobs.index');
 Route::get('/jobs/{id}', [JobListingController::class, 'show'])->name('jobs.show');
 
-// Public Informational Pages (Help Center, Privacy Policy, Terms of Service)
+// Public Informational Pages (Help Center, Privacy Policy, Terms of Service, Guide)
 Route::view('/faq', 'pages.faq')->name('pages.faq');
+Route::view('/panduan', 'pages.guide')->name('pages.guide');
+Route::view('/panduan/pelamar', 'pages.guide-candidate')->name('pages.guide.candidate');
+Route::view('/panduan/penyelenggara', 'pages.guide-employer')->name('pages.guide.employer');
 Route::view('/privacy-policy', 'pages.privacy')->name('pages.privacy');
 Route::view('/terms-of-service', 'pages.terms')->name('pages.terms');
 
@@ -61,6 +108,7 @@ Route::middleware(['auth', 'role:Candidate'])->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/theme', [ProfileController::class, 'updateTheme'])->name('profile.theme.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/candidate', [CandidateProfileController::class, 'update'])->name('profile.candidate.update');
     
@@ -114,10 +162,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/candidate/internship/logbook/{date}', [\App\Http\Controllers\CandidateLogbookController::class, 'show'])->name('candidate.logbook.show');
     Route::post('/candidate/internship/logbook', [\App\Http\Controllers\CandidateLogbookController::class, 'store'])->name('candidate.logbook.store');
     Route::get('/candidate/internship/evaluation', [\App\Http\Controllers\CandidateLogbookController::class, 'evaluation'])->name('candidate.logbook.evaluation');
+    Route::get('/candidate/internship/unlock-requests/{id}/pdf', [\App\Http\Controllers\CandidateLogbookController::class, 'downloadUnlockPdf'])->name('candidate.unlock-requests.pdf');
 
     // Dedicated Mentor Role Workspace, ACC Absensi, & Final Performance Rating Routes
     Route::get('/mentor/dashboard', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'dashboard'])->name('mentor.dashboard');
     Route::get('/mentor/logbooks', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'index'])->name('mentor.logbooks.index');
+    Route::post('/mentor/logbooks/batch', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'storeBatch'])->name('mentor.logbooks.batch.store');
+    Route::get('/mentor/logbooks/intern/{internId}', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'internLogbooks'])->name('mentor.logbooks.intern');
     Route::get('/mentor/logbooks/{id}', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'show'])->name('mentor.logbooks.show');
     Route::post('/mentor/logbooks/{id}/approve', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'approve'])->name('mentor.logbooks.approve');
     Route::post('/mentor/logbooks/{id}/reject', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'reject'])->name('mentor.logbooks.reject');
@@ -128,6 +179,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/mentor/unlock-requests', [\App\Http\Controllers\Mentor\MentorUnlockRequestController::class, 'index'])->name('mentor.unlock-requests.index');
     Route::get('/mentor/unlock-requests/create', [\App\Http\Controllers\Mentor\MentorUnlockRequestController::class, 'create'])->name('mentor.unlock-requests.create');
     Route::post('/mentor/unlock-requests', [\App\Http\Controllers\Mentor\MentorUnlockRequestController::class, 'store'])->name('mentor.unlock-requests.store');
+    Route::get('/mentor/unlock-requests/{id}/pdf', [\App\Http\Controllers\Mentor\MentorUnlockRequestController::class, 'downloadPdf'])->name('mentor.unlock-requests.pdf');
 
     // HR & Mentor Settings for Internship Periods, Government Holidays, & Custom Company Holidays
     Route::get('/mentor/settings', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'index'])->name('mentor.settings.index');
@@ -202,6 +254,9 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
 
     Route::post('/applications/{application}/verify-onboarding', [\App\Http\Controllers\CandidateOnboardingController::class, 'verifyByHr'])->name('applications.verify-onboarding');
 
+    // Super Admin Impersonation Exit
+    Route::post('/impersonate/leave', [\App\Http\Controllers\Admin\UserController::class, 'leaveImpersonation'])->name('admin.impersonate.leave');
+
     // HR Digital Agreement Builder routes
     Route::get('/applications/{application}/agreements/create', [\App\Http\Controllers\ApplicationAgreementController::class, 'create'])->name('applications.agreements.create');
     Route::post('/applications/{application}/agreements', [\App\Http\Controllers\ApplicationAgreementController::class, 'store'])->name('applications.agreements.store');
@@ -258,9 +313,10 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
     // Visual Recruitment Analytics (Chart.js)
     Route::get('/analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
 
-    // Interactive Recruitment Calendar (FullCalendar.js)
+    // Interactive Recruitment Calendar (FullCalendar.js & Google Calendar Sync)
     Route::get('/calendar', [\App\Http\Controllers\Admin\RecruitmentCalendarController::class, 'index'])->name('calendar.index');
     Route::get('/calendar/events', [\App\Http\Controllers\Admin\RecruitmentCalendarController::class, 'events'])->name('calendar.events');
+    Route::get('/calendar/feed.ics', [\App\Http\Controllers\Admin\RecruitmentCalendarController::class, 'exportIcs'])->name('calendar.feed');
 
     // HR Cancellation Appeal Submission Route
     Route::post('/applications/{application}/cancel-acceptance', [\App\Http\Controllers\Admin\AcceptanceCancellationController::class, 'store'])->name('cancellation-tickets.store');
@@ -286,10 +342,17 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
 
     // Dynamic System Flow & Auto-Generated ERD Visualizer
     Route::get('/system-flow', [\App\Http\Controllers\Admin\SystemFlowController::class, 'index'])->name('system-flow.index');
+    Route::get('/system-flow-alias', [\App\Http\Controllers\Admin\SystemFlowController::class, 'index'])->name('system-flow');
 
     // Super Admin Exclusive Control & Moderation
     Route::middleware('role:Super Admin')->group(function () {
+        Route::get('/users/export', [\App\Http\Controllers\Admin\UserController::class, 'export'])->name('users.export');
+        Route::post('/users/bulk-action', [\App\Http\Controllers\Admin\UserController::class, 'bulkAction'])->name('users.bulk-action');
         Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
+        Route::patch('/users/{user}/update-role', [\App\Http\Controllers\Admin\UserController::class, 'updateRole'])->name('users.update-role');
+        Route::post('/users/{user}/send-password-reset', [\App\Http\Controllers\Admin\UserController::class, 'sendPasswordReset'])->name('users.send-password-reset');
+        Route::post('/users/{user}/toggle-email-verification', [\App\Http\Controllers\Admin\UserController::class, 'toggleEmailVerification'])->name('users.toggle-email-verification');
+        Route::post('/users/{user}/impersonate', [\App\Http\Controllers\Admin\UserController::class, 'impersonate'])->name('users.impersonate');
         Route::patch('/users/{user}/toggle-suspend', [\App\Http\Controllers\Admin\UserController::class, 'toggleSuspend'])->name('users.toggle-suspend');
         Route::delete('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
 
@@ -309,6 +372,7 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
         Route::post('/settings/seo', [\App\Http\Controllers\Admin\SeoBrandingController::class, 'update'])->name('settings.seo.update');
 
         // Audit Logs
+        Route::get('/audit-logs/export', [\App\Http\Controllers\Admin\AuditLogController::class, 'export'])->name('audit-logs.export');
         Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('audit-logs.index');
 
         // Super Admin Company & HR Role Request Approval Center
@@ -332,11 +396,17 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
         Route::post('/blacklists', [\App\Http\Controllers\Admin\BlacklistController::class, 'store'])->name('blacklists.store');
         Route::delete('/blacklists/{blacklist}', [\App\Http\Controllers\Admin\BlacklistController::class, 'destroy'])->name('blacklists.destroy');
 
+        // Super Admin Moderasi & ACC Laporan Red Flag Perusahaan
+        Route::get('/company-reports', [\App\Http\Controllers\Admin\CompanyReportController::class, 'index'])->name('company-reports.index');
+        Route::patch('/company-reports/{report}/status', [\App\Http\Controllers\Admin\CompanyReportController::class, 'updateStatus'])->name('company-reports.updateStatus');
+        Route::delete('/company-reports/{report}', [\App\Http\Controllers\Admin\CompanyReportController::class, 'destroy'])->name('company-reports.destroy');
+
         // FITUR A: Super Admin Pusat Tiket Buka Kunci Presensi
         Route::get('/internship-unlocks', [\App\Http\Controllers\Admin\InternshipUnlockRequestController::class, 'index'])->name('internship-unlocks.index');
         Route::get('/internship-unlocks/{id}', [\App\Http\Controllers\Admin\InternshipUnlockRequestController::class, 'show'])->name('internship-unlocks.show');
         Route::post('/internship-unlocks/{id}/approve', [\App\Http\Controllers\Admin\InternshipUnlockRequestController::class, 'approve'])->name('internship-unlocks.approve');
         Route::post('/internship-unlocks/{id}/reject', [\App\Http\Controllers\Admin\InternshipUnlockRequestController::class, 'reject'])->name('internship-unlocks.reject');
+        Route::get('/internship-unlocks/{id}/pdf', [\App\Http\Controllers\Admin\InternshipUnlockRequestController::class, 'downloadPdf'])->name('internship-unlocks.pdf');
 
         // FITUR B: Master Pengaturan Kebijakan Presensi & GPS Global
         Route::get('/attendance-settings', [\App\Http\Controllers\Admin\GlobalAttendanceSettingsController::class, 'index'])->name('attendance-settings.index');

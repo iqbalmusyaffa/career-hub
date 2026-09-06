@@ -22,10 +22,14 @@ class CompanyTeamController extends Controller
     {
         $user = Auth::user();
         
-        $companyProfile = CompanyProfile::firstOrCreate(
-            ['user_id' => $user->id],
-            ['company_name' => 'PT ' . $user->name, 'is_verified' => false]
-        );
+        $companyProfile = $user->currentCompanyProfile();
+        if (!$companyProfile) {
+            $companyProfile = CompanyProfile::create([
+                'user_id' => $user->id,
+                'company_name' => 'PT ' . $user->name,
+                'is_verified' => false
+            ]);
+        }
 
         $perPage = (int) request('per_page', 10);
         $teamMembers = CompanyTeamMember::with(['user', 'inviter'])
@@ -49,21 +53,31 @@ class CompanyTeamController extends Controller
         ]);
 
         $currentUser = Auth::user();
-        $companyProfile = CompanyProfile::firstOrCreate(
-            ['user_id' => $currentUser->id],
-            ['company_name' => 'PT ' . $currentUser->name, 'is_verified' => false]
-        );
+        $companyProfile = $currentUser->currentCompanyProfile();
+        if (!$companyProfile) {
+            $companyProfile = CompanyProfile::create([
+                'user_id' => $currentUser->id,
+                'company_name' => 'PT ' . $currentUser->name,
+                'is_verified' => false
+            ]);
+        }
 
         // Find or create user
         $user = User::where('email', $request->email)->first();
+        $tempPassword = null;
 
         if (!$user) {
+            $tempPassword = 'HR' . rand(100000, 999999) . '!';
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make(Str::random(12)),
+                'password' => Hash::make($tempPassword),
             ]);
             $user->assignRole('HR');
+        } else {
+            if (!$user->hasRole('HR') && !$user->hasRole('Company Owner') && !$user->hasRole('Super Admin')) {
+                $user->assignRole('HR');
+            }
         }
 
         // Check if already in team
@@ -93,7 +107,13 @@ class CompanyTeamController extends Controller
             'success'
         );
 
-        return back()->with('success', "Anggota tim HR {$user->name} ({$request->role_title}) berhasil ditambahkan!");
+        if ($tempPassword) {
+            $successMsg = "🎉 Akun HR baru untuk '{$user->name}' ({$user->email}) berhasil dibuatkan dan terhubung ke perusahaan! Password sementara: {$tempPassword} (Staf HR juga dapat langsung masuk via Login Google atau Lupa Password).";
+        } else {
+            $successMsg = "Anggota tim HR {$user->name} ({$request->role_title}) berhasil ditambahkan ke tim perusahaan!";
+        }
+
+        return back()->with('success', $successMsg);
     }
 
     /**
@@ -102,7 +122,7 @@ class CompanyTeamController extends Controller
     public function destroy($id)
     {
         $currentUser = Auth::user();
-        $companyProfile = CompanyProfile::where('user_id', $currentUser->id)->firstOrFail();
+        $companyProfile = $currentUser->currentCompanyProfile() ?: CompanyProfile::where('user_id', $currentUser->id)->firstOrFail();
 
         $member = CompanyTeamMember::where('company_profile_id', $companyProfile->id)
             ->findOrFail($id);
@@ -121,7 +141,7 @@ class CompanyTeamController extends Controller
     public function approveCoOwner($id)
     {
         $currentUser = Auth::user();
-        $companyProfile = CompanyProfile::where('user_id', $currentUser->id)->firstOrFail();
+        $companyProfile = $currentUser->currentCompanyProfile() ?: CompanyProfile::where('user_id', $currentUser->id)->firstOrFail();
 
         $member = CompanyTeamMember::where('company_profile_id', $companyProfile->id)
             ->findOrFail($id);
@@ -153,7 +173,7 @@ class CompanyTeamController extends Controller
     public function rejectCoOwner($id)
     {
         $currentUser = Auth::user();
-        $companyProfile = CompanyProfile::where('user_id', $currentUser->id)->firstOrFail();
+        $companyProfile = $currentUser->currentCompanyProfile() ?: CompanyProfile::where('user_id', $currentUser->id)->firstOrFail();
 
         $member = CompanyTeamMember::where('company_profile_id', $companyProfile->id)
             ->findOrFail($id);

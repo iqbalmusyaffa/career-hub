@@ -53,11 +53,11 @@ class CustomReportBuilderController extends Controller
                 'id' => 'ID Scorecard',
                 'candidate_name' => 'Nama Kandidat',
                 'job_title' => 'Posisi Target',
-                'evaluator_name' => 'Nama Pewawancara (HR/User)',
-                'technical_score' => 'Skor Teknis (1-5 ⭐)',
-                'communication_score' => 'Skor Komunikasi (1-5 ⭐)',
-                'problem_solving_score' => 'Skor Problem Solving (1-5 ⭐)',
-                'culture_fit_score' => 'Skor Culture Fit (1-5 ⭐)',
+                'evaluator_name' => 'Nama Pewawancara',
+                'technical_score' => 'Skor Teknis (1-5)',
+                'communication_score' => 'Skor Komunikasi (1-5)',
+                'problem_solving_score' => 'Skor Problem Solving (1-5)',
+                'culture_fit_score' => 'Skor Culture Fit (1-5)',
                 'average_score' => 'Skor Rata-Rata',
                 'recommendation' => 'Rekomendasi Akhir',
                 'notes' => 'Catatan Evaluasi',
@@ -89,7 +89,22 @@ class CustomReportBuilderController extends Controller
         $startDate = $request->input('start_date', now()->subDays(30)->format('Y-m-d'));
         $endDate = $request->input('end_date', now()->format('Y-m-d'));
 
-        $reportData = $this->queryReportData($domain, $startDate, $endDate);
+        $allData = $this->queryReportData($domain, $startDate, $endDate);
+        $totalRecords = $allData->count();
+
+        // Paginate preview dataset (10 records per page)
+        $perPage = (int)$request->input('per_page', 10);
+        $page = (int)$request->input('page', 1);
+        $offset = ($page * $perPage) - $perPage;
+        $itemsForCurrentPage = $allData->slice($offset, $perPage)->values();
+
+        $reportData = new \Illuminate\Pagination\LengthAwarePaginator(
+            $itemsForCurrentPage,
+            $totalRecords,
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         return view('admin.reports.builder', compact(
             'domain',
@@ -99,7 +114,8 @@ class CustomReportBuilderController extends Controller
             'selectedColumns',
             'startDate',
             'endDate',
-            'reportData'
+            'reportData',
+            'totalRecords'
         ));
     }
 
@@ -142,19 +158,16 @@ class CustomReportBuilderController extends Controller
         $start = Carbon::parse($startDate)->startOfDay();
         $end = Carbon::parse($endDate)->endOfDay();
 
-        $ownerId = $user->id;
-        $teamMember = \App\Models\CompanyTeamMember::where('user_id', $user->id)->first();
-        if ($teamMember) {
-            $ownerId = $teamMember->owner_id;
-        }
-        $companyProfile = CompanyProfile::where('user_id', $ownerId)->first();
+        $companyProfile = $user ? $user->currentCompanyProfile() : null;
         $companyName = $companyProfile ? $companyProfile->company_name : null;
+
+        $isSuperAdmin = $user ? $user->hasRole('Super Admin') : true;
 
         if ($domain === 'applications') {
             $query = Application::with(['user.candidateProfile', 'job'])
                 ->whereBetween('created_at', [$start, $end]);
 
-            if (!$user->hasRole('Super Admin') && $companyName) {
+            if (!$isSuperAdmin && $companyName) {
                 $query->whereHas('job', function($j) use ($companyName) {
                     $j->where('company_name', 'LIKE', '%' . $companyName . '%');
                 });
@@ -184,23 +197,27 @@ class CustomReportBuilderController extends Controller
             $query = Job::withCount('applications')
                 ->whereBetween('created_at', [$start, $end]);
 
-            if (!$user->hasRole('Super Admin') && $companyName) {
+            if (!$isSuperAdmin && $companyName) {
                 $query->where('company_name', 'LIKE', '%' . $companyName . '%');
             }
 
             return $query->latest()->get()->map(function($j) {
+                $statusVal = is_object($j->status) ? ($j->status->value ?? (string)$j->status) : (string)$j->status;
+                $workType = is_object($j->work_type) ? ($j->work_type->value ?? (string)$j->work_type) : (string)$j->work_type;
+                $eduLevel = is_object($j->education_level) ? ($j->education_level->value ?? (string)$j->education_level) : (string)$j->education_level;
+
                 return [
                     'id' => $j->id,
                     'title' => $j->title,
                     'division' => $j->division,
                     'company_name' => $j->company_name,
                     'location' => $j->location,
-                    'work_type' => $j->work_type,
-                    'education_level' => $j->education_level,
+                    'work_type' => $workType,
+                    'education_level' => $eduLevel,
                     'major_requirement' => $j->major_requirement ?? 'Semua Jurusan',
                     'quota' => $j->quota ?? 1,
                     'applications_count' => $j->applications_count ?? 0,
-                    'status_label' => strtoupper($j->status),
+                    'status_label' => strtoupper($statusVal),
                     'deadline_formatted' => $j->deadline ? Carbon::parse($j->deadline)->format('d/m/Y') : 'Tanpa Deadline',
                 ];
             });
@@ -210,7 +227,7 @@ class CustomReportBuilderController extends Controller
             $query = InterviewScorecard::with(['application.user', 'application.job', 'evaluator'])
                 ->whereBetween('created_at', [$start, $end]);
 
-            if (!$user->hasRole('Super Admin') && $companyName) {
+            if (!$isSuperAdmin && $companyName) {
                 $query->whereHas('application.job', function($j) use ($companyName) {
                     $j->where('company_name', 'LIKE', '%' . $companyName . '%');
                 });
@@ -226,7 +243,7 @@ class CustomReportBuilderController extends Controller
                     'communication_score' => $sc->communication_score . ' / 5',
                     'problem_solving_score' => $sc->problem_solving_score . ' / 5',
                     'culture_fit_score' => $sc->culture_fit_score . ' / 5',
-                    'average_score' => number_format($sc->average_score, 1) . ' ⭐',
+                    'average_score' => number_format($sc->average_score, 1) . ' / 5.0',
                     'recommendation' => $sc->recommendation,
                     'notes' => $sc->notes ?? '-',
                     'created_at_formatted' => $sc->created_at->format('d/m/Y H:i'),
@@ -237,7 +254,7 @@ class CustomReportBuilderController extends Controller
         if ($domain === 'headcount') {
             $query = HeadcountBudget::whereBetween('created_at', [$start, $end]);
 
-            if (!$user->hasRole('Super Admin')) {
+            if (!$isSuperAdmin && $ownerId) {
                 $query->where('company_user_id', $ownerId);
             }
 

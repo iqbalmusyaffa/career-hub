@@ -5,6 +5,7 @@ namespace App\Interfaces;
 interface ApplicationRepositoryInterface
 {
     public function getAll();
+    public function getStatusCounts();
     public function getByJobId($jobId);
     public function getByUserId($userId);
     public function findById($id);

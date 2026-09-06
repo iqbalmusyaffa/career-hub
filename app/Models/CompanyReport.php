@@ -41,4 +41,18 @@ class CompanyReport extends Model
             default => '🚩 Indikasi Red Flag Umum',
         };
     }
+
+    public function getEvidenceListAttribute(): array
+    {
+        if (empty($this->evidence_url)) {
+            return [];
+        }
+
+        $decoded = json_decode($this->evidence_url, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
+        return [$this->evidence_url];
+    }
 }

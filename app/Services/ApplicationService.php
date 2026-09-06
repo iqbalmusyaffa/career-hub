@@ -38,6 +38,7 @@ class ApplicationService
     }
 
     public function getAllApplications() { return $this->applicationRepository->getAll(); }
+    public function getStatusCounts() { return $this->applicationRepository->getStatusCounts(); }
     public function getApplicationsByJob($jobId) { return $this->applicationRepository->getByJobId($jobId); }
     public function getApplicationsByUser($userId) { return $this->applicationRepository->getByUserId($userId); }
     public function getApplicationById($id) { return $this->applicationRepository->findById($id); }

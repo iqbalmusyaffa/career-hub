@@ -21,7 +21,8 @@ class ApplicationController extends Controller
     public function index(Request $request)
     {
         $applications = $this->applicationService->getAllApplications();
-        return view('admin.applications.index', compact('applications'));
+        $statusCounts = $this->applicationService->getStatusCounts();
+        return view('admin.applications.index', compact('applications', 'statusCounts'));
     }
 
     public function show($id)

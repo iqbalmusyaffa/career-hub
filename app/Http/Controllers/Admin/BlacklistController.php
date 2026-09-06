@@ -21,14 +21,28 @@ class BlacklistController extends Controller
 
         if (request()->filled('search')) {
             $search = request('search');
-            $query->where('value', 'like', "%{$search}%")
+            $query->where(function($q) use ($search) {
+                $q->where('value', 'like', "%{$search}%")
                   ->orWhere('reason', 'like', "%{$search}%");
+            });
         }
 
         $perPage = (int) request('per_page', 10);
         $blacklists = $query->paginate($perPage)->withQueryString();
 
-        return view('admin.blacklists.index', compact('blacklists'));
+        // Summary metrics
+        $totalBlacklists = Blacklist::count();
+        $emailBlacklists = Blacklist::where('type', 'email')->count();
+        $ipBlacklists = Blacklist::where('type', 'ip')->count();
+        $otherBlacklists = Blacklist::whereIn('type', ['phone', 'company_name'])->count();
+
+        return view('admin.blacklists.index', compact(
+            'blacklists',
+            'totalBlacklists',
+            'emailBlacklists',
+            'ipBlacklists',
+            'otherBlacklists'
+        ));
     }
 
     public function store(Request $request)

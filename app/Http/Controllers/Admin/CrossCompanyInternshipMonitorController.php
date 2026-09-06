@@ -45,20 +45,80 @@ class CrossCompanyInternshipMonitorController extends Controller
             ? round(($totalApprovedLogbooks / max(1, $totalLogbooksCount)) * 100)
             : 100;
 
-        // Company Breakdown Stats
+        // Company Breakdown Stats with nested candidate & logbook details
         $companyBreakdown = $companies->map(function ($company) {
-            $logbooks = InternshipLogbook::where('company_id', $company->id)->get();
+            $logbooks = InternshipLogbook::with(['intern', 'mentor'])
+                ->where('company_id', $company->id)
+                ->orderBy('date', 'desc')
+                ->get();
+
             $approved = $logbooks->where('status', 'approved')->count();
             $pending = $logbooks->where('status', 'pending')->count();
+            $rejected = $logbooks->where('status', 'rejected')->count();
             $total = $logbooks->count();
             $rate = $total > 0 ? round(($approved / max(1, $total)) * 100) : 0;
+
+            // Group logbooks by intern for expandable modal/drill-down
+            $internsGrouped = $logbooks->groupBy('user_id')->map(function ($internLogbooks) {
+                $first = $internLogbooks->first();
+                $internUser = $first->intern ?? null;
+                $iApproved = $internLogbooks->where('status', 'approved')->count();
+                $iPending = $internLogbooks->where('status', 'pending')->count();
+                $iRejected = $internLogbooks->where('status', 'rejected')->count();
+                $iTotal = $internLogbooks->count();
+
+                return [
+                    'user' => $internUser,
+                    'user_id' => $first->user_id,
+                    'name' => $internUser->name ?? 'Peserta Magang',
+                    'email' => $internUser->email ?? '-',
+                    'total_logbooks' => $iTotal,
+                    'approved_count' => $iApproved,
+                    'pending_count' => $iPending,
+                    'rejected_count' => $iRejected,
+                    'rate' => $iTotal > 0 ? round(($iApproved / max(1, $iTotal)) * 100) : 0,
+                    'logbooks' => $internLogbooks->map(function ($l) {
+                        return [
+                            'id' => $l->id,
+                            'date' => $l->date ? $l->date->isoFormat('D MMM YYYY') : '-',
+                            'status' => $l->status,
+                            'status_badge' => $l->status_badge,
+                            'attendance_type' => $l->attendance_type ?? 'WFO',
+                            'activities' => $l->activities ?? '-',
+                            'location_address' => $l->location_address ?? 'Lokasi Terverifikasi',
+                            'has_gps' => !empty($l->latitude),
+                            'mentor_name' => $l->mentor->name ?? 'Belum Ditugaskan',
+                            'mentor_notes' => $l->mentor_notes,
+                            'show_url' => route('mentor.logbooks.show', $l->id),
+                            'approve_url' => route('mentor.logbooks.approve', $l->id),
+                        ];
+                    })->values(),
+                ];
+            })->values();
 
             return [
                 'company' => $company,
                 'total_logbooks' => $total,
                 'approved_count' => $approved,
                 'pending_count' => $pending,
+                'rejected_count' => $rejected,
                 'attendance_rate' => $rate,
+                'interns_count' => $internsGrouped->count(),
+                'interns_list' => $internsGrouped,
+                'recent_logbooks' => $logbooks->take(20)->map(function ($l) {
+                    return [
+                        'id' => $l->id,
+                        'intern_name' => $l->intern->name ?? 'Peserta',
+                        'intern_email' => $l->intern->email ?? '-',
+                        'date' => $l->date ? $l->date->isoFormat('D MMM YYYY') : '-',
+                        'status' => $l->status,
+                        'status_badge' => $l->status_badge,
+                        'activities' => $l->activities ?? '-',
+                        'mentor_name' => $l->mentor->name ?? 'Belum Ditugaskan',
+                        'show_url' => route('mentor.logbooks.show', $l->id),
+                        'approve_url' => route('mentor.logbooks.approve', $l->id),
+                    ];
+                })->values(),
             ];
         });
 
