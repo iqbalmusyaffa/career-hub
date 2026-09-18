@@ -11,23 +11,51 @@ use Carbon\Carbon;
 
 class MentorUnlockRequestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $mentorId = auth()->id();
-        $requests = InternshipUnlockRequest::with(['intern', 'resolver'])
-            ->where('mentor_id', $mentorId)
-            ->latest()
-            ->paginate(15);
+        $user = auth()->user();
+        $companyId = $user?->companyProfile?->id;
 
-        return view('mentor.unlock_requests.index', compact('requests'));
+        $selectedBatch = $request->query('batch');
+        $batches = \App\Models\InternshipBatch::getActiveBatches($companyId);
+
+        $query = InternshipUnlockRequest::with(['intern.candidateProfile', 'intern.internshipPeriod', 'intern.applications.job', 'resolver'])
+            ->where('mentor_id', $mentorId);
+
+        if ($selectedBatch) {
+            $query->whereHas('intern', function($q) use ($selectedBatch) {
+                $q->whereHas('internshipPeriods', function($p) use ($selectedBatch) {
+                    $p->where('period_name', $selectedBatch);
+                })->orWhereHas('applications.job', function($j) use ($selectedBatch) {
+                    $j->where('batch', $selectedBatch);
+                });
+            });
+        }
+
+        $requests = $query->latest()->paginate(15)->withQueryString();
+
+        return view('mentor.unlock_requests.index', compact('requests', 'batches', 'selectedBatch'));
     }
 
     public function create()
     {
-        // Get all active interns under mentor / candidates
-        $interns = User::role('Candidate')->get();
+        $user = auth()->user();
+        $companyId = $user?->companyProfile?->id;
 
-        return view('mentor.unlock_requests.create', compact('interns'));
+        $batches = \App\Models\InternshipBatch::getActiveBatches($companyId);
+
+        // Get all active interns under mentor / candidates with their batch details
+        $interns = User::role('Candidate')
+            ->whereDoesntHave('internshipResignations', function($q) {
+                $q->where('status', 'approved');
+            })
+            ->whereDoesntHave('employeeTerminations')
+            ->with(['candidateProfile', 'internshipPeriod', 'applications.job'])
+            ->orderBy('name')
+            ->get();
+
+        return view('mentor.unlock_requests.create', compact('interns', 'batches'));
     }
 
     public function store(Request $request)

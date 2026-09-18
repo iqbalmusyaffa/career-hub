@@ -193,8 +193,8 @@
 <body>
 
 @php
-    $verificationUrl = route('candidate.transcripts.show', $transcript);
-    $qrCodeBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(65)->generate($verificationUrl));
+    $verificationUrl = route('certificates.verify.public', ['code' => $transcript->transcript_number]);
+    $qrCodeBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(65)->generate($verificationUrl));
 @endphp
 
     <div class="top-bar"></div>
@@ -321,7 +321,7 @@
                     Hukum Otentikasi: Terverifikasi Sistem Karir Digital &bull; Tgl Pengesahan: {{ $transcript->issued_at ? $transcript->issued_at->format('d M Y') : '-' }}
                 </td>
                 <td style="width: 65px; text-align: right; vertical-align: middle;">
-                    <img src="data:image/png;base64,{{ $qrCodeBase64 }}" style="width: 50px; height: 50px; border: 1px solid #cbd5e1; padding: 1px; background: #fff; border-radius: 4px;">
+                    <img src="data:image/svg+xml;base64,{{ $qrCodeBase64 }}" style="width: 50px; height: 50px; border: 1px solid #cbd5e1; padding: 1px; background: #fff; border-radius: 4px;">
                 </td>
             </tr>
         </table>

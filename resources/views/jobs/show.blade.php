@@ -162,6 +162,22 @@
                                                     @endif
                                                 @endif
                                             </div>
+                                        @elseif($isAlreadyEnrolled)
+                                            <div class="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900 rounded-2xl text-left space-y-2.5 max-w-sm">
+                                                <div class="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-bold text-xs">
+                                                    <i class="fa-solid fa-circle-exclamation text-amber-600"></i>
+                                                    <span>Ketentuan Program Magang</span>
+                                                </div>
+                                                <p class="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
+                                                    {{ $internshipBlockReason ?? 'Anda tidak dapat mendaftar lowongan magang ini sesuai ketentuan program magang.' }}
+                                                </p>
+                                                @if(auth()->user()->internshipPeriod)
+                                                    <a href="{{ route('candidate.logbook.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-xl shadow-xs transition">
+                                                        <i class="fa-solid fa-calendar-check text-[10px]"></i>
+                                                        <span>Buka Presensi Magang</span>
+                                                    </a>
+                                                @endif
+                                            </div>
                                         @else
                                             <form action="{{ route('jobs.apply', $job) }}" method="POST" class="space-y-3">
                                                 @csrf

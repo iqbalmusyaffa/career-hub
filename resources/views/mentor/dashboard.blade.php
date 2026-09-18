@@ -44,6 +44,39 @@
                 </div>
             @endif
 
+            <!-- Batch Filter Header Bar -->
+            <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm shrink-0 border border-indigo-200/80 dark:border-indigo-900/60">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                            Filter Berdasarkan Batch Angkatan
+                        </h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
+                            Menampilkan statistik kehadiran dan laporan harian per angkatan.
+                        </p>
+                    </div>
+                </div>
+
+                <form method="GET" action="{{ route('mentor.dashboard') }}" class="flex items-center gap-2">
+                    <select name="batch" onchange="this.form.submit()" class="text-xs font-semibold rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 py-2 px-3">
+                        <option value="">-- Semua Batch Angkatan Magang --</option>
+                        @foreach($batches as $batchName)
+                            <option value="{{ $batchName }}" {{ $selectedBatch === $batchName ? 'selected' : '' }}>
+                                {{ $batchName }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @if($selectedBatch)
+                        <a href="{{ route('mentor.dashboard') }}" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-semibold transition" title="Reset Filter">
+                            <i class="fa-solid fa-rotate-left text-xs"></i>
+                        </a>
+                    @endif
+                </form>
+            </div>
+
             <!-- Summary Stat Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 <!-- 1. Pending Approvals -->

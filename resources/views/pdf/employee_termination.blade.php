@@ -162,7 +162,7 @@
 
 @php
     $verificationUrl = route('candidate.terminations.show', $termination);
-    $qrCodeBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(65)->generate($verificationUrl));
+    $qrCodeBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(65)->generate($verificationUrl));
 @endphp
 
     <div class="top-bar"></div>
@@ -269,7 +269,7 @@
                     Status Otentikasi: Terverifikasi Digital &bull; Tgl Terbit: {{ $termination->issued_at ? $termination->issued_at->format('d M Y') : '-' }}
                 </td>
                 <td style="width: 65px; text-align: right; vertical-align: middle;">
-                    <img src="data:image/png;base64,{{ $qrCodeBase64 }}" style="width: 50px; height: 50px; border: 1px solid #cbd5e1; padding: 1px; background: #fff; border-radius: 4px;">
+                    <img src="data:image/svg+xml;base64,{{ $qrCodeBase64 }}" style="width: 50px; height: 50px; border: 1px solid #cbd5e1; padding: 1px; background: #fff; border-radius: 4px;">
                 </td>
             </tr>
         </table>

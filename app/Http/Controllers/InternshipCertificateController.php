@@ -111,7 +111,7 @@ class InternshipCertificateController extends Controller
         $realId = \App\Helpers\IdHasher::decode($certificateId) ?? $certificateId;
         $certificate = InternshipCertificate::with(['application.job', 'user'])->findOrFail($realId);
 
-        if ($certificate->user_id !== Auth::id() && !Auth::user()->hasAnyRole(['HR', 'Super Admin', 'Company Owner'])) {
+        if ($certificate->user_id !== Auth::id() && !Auth::user()->hasAnyRole(['HR', 'Super Admin', 'Company Owner', 'Mentor'])) {
             abort(403, 'Anda tidak memiliki otorisasi melihat sertifikat ini.');
         }
 

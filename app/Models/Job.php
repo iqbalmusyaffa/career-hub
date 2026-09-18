@@ -66,6 +66,16 @@ class Job extends Model
         return $this->belongsTo(CompanyBranch::class, 'company_branch_id');
     }
 
+    public function companyProfile()
+    {
+        return $this->belongsTo(CompanyProfile::class, 'company_name', 'company_name');
+    }
+
+    public function company()
+    {
+        return $this->companyProfile();
+    }
+
     public function applications()
     {
         return $this->hasMany(Application::class);
@@ -81,9 +91,34 @@ class Job extends Model
         return $this->hasMany(CandidateTestResult::class, 'job_id');
     }
 
+    public function curriculum()
+    {
+        return $this->hasOne(InternshipCurriculum::class, 'job_id');
+    }
+
+    public function curriculums()
+    {
+        return $this->hasMany(InternshipCurriculum::class, 'job_id');
+    }
+
     public function isExpired(): bool
     {
         return $this->deadline && $this->deadline->isPast();
+    }
+
+    public function isInternship(): bool
+    {
+        $workType = strtolower($this->work_type ?? '');
+        $title = strtolower($this->title ?? '');
+        $exp = strtolower($this->experience_level ?? '');
+        
+        return str_contains($workType, 'intern') 
+            || str_contains($workType, 'magang')
+            || str_contains($title, 'magang')
+            || str_contains($title, 'intern')
+            || str_contains($exp, 'magang')
+            || str_contains($exp, 'intern')
+            || !empty($this->batch);
     }
 
     public function isQuotaFull(): bool

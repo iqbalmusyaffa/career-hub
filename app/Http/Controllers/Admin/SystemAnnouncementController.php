@@ -64,7 +64,7 @@ class SystemAnnouncementController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'target_role' => 'required|string|in:all,company_owner,hr,candidate',
+            'target_role' => 'required|string|in:all,company_owner,hr,candidate,intern,mentor',
             'type' => 'required|string|in:info,warning,success,danger',
             'expires_at' => 'nullable|date',
         ]);
@@ -87,8 +87,10 @@ class SystemAnnouncementController extends Controller
             $usersQuery->role('Company Owner');
         } elseif ($request->target_role === 'hr') {
             $usersQuery->role(['HR Manager', 'HR Staff']);
-        } elseif ($request->target_role === 'candidate') {
-            $usersQuery->role('Candidate');
+        } elseif ($request->target_role === 'candidate' || $request->target_role === 'intern') {
+            $usersQuery->role(['Candidate', 'Intern']);
+        } elseif ($request->target_role === 'mentor') {
+            $usersQuery->role('Mentor');
         }
 
         $users = $usersQuery->take(100)->get();

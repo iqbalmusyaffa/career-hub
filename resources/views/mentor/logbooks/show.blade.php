@@ -146,6 +146,33 @@
                             {{ $logbook->challenges ?? 'Tidak ada kendala yang dilaporkan.' }}
                         </div>
                     </div>
+
+                    @if($logbook->doctor_note_path)
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
+                                Lampiran Surat Dokter / Dokumen Izin
+                            </label>
+                            <div class="p-4 rounded-xl bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900 flex items-center justify-between gap-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm shrink-0">
+                                        @if(\Illuminate\Support\Str::endsWith($logbook->doctor_note_path, '.pdf'))
+                                            <i class="fa-solid fa-file-pdf text-rose-500"></i>
+                                        @else
+                                            <i class="fa-solid fa-file-image text-blue-500"></i>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-bold text-slate-900 dark:text-white">Surat Keterangan Dokter Terlampir</div>
+                                        <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Dokumen bukti ketidakhadiran diunggah oleh peserta.</div>
+                                    </div>
+                                </div>
+                                <a href="{{ asset('storage/' . $logbook->doctor_note_path) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition shadow-2xs">
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                    <span>Buka Dokumen</span>
+                                </a>
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Mentor / Super Admin ACC Action Form or Approved Verification Summary -->

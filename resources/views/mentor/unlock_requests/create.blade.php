@@ -46,23 +46,78 @@
                     </div>
                 @endif
 
-                <form action="{{ route('mentor.unlock-requests.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-                    @csrf
+                <div x-data="{
+                    selectedBatch: '{{ old('batch_filter', '') }}',
+                    selectedInternId: '{{ old('intern_id', '') }}',
+                    allInterns: {{ Js::from($interns->map(fn($i) => [
+                        'id' => $i->id,
+                        'name' => $i->name,
+                        'email' => $i->email,
+                        'batch' => $i->internshipPeriod?->period_name ?? $i->applications->first()?->job?->batch ?? 'Batch 1 - 2026',
+                        'job_title' => $i->applications->first()?->job?->title ?? 'Peserta Magang',
+                    ])) }},
+                    get filteredInterns() {
+                        if (!this.selectedBatch) return this.allInterns;
+                        return this.allInterns.filter(i => i.batch === this.selectedBatch);
+                    },
+                    get selectedIntern() {
+                        return this.allInterns.find(i => i.id == this.selectedInternId) || null;
+                    },
+                    onBatchChange() {
+                        if (this.selectedIntern && this.selectedBatch && this.selectedIntern.batch !== this.selectedBatch) {
+                            this.selectedInternId = '';
+                        }
+                    }
+                }">
+                    <form action="{{ route('mentor.unlock-requests.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                        @csrf
 
-                    <!-- Field 1: Pilih Anak Magang -->
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                            Pilih Peserta Magang <span class="text-rose-500">*</span>
-                        </label>
-                        <select name="intern_id" required class="w-full rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950/70 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition p-3">
-                            <option value="" class="dark:bg-slate-900">-- Pilih Peserta Magang --</option>
-                            @foreach($interns as $intern)
-                                <option value="{{ $intern->id }}" {{ old('intern_id') == $intern->id ? 'selected' : '' }} class="dark:bg-slate-900">
-                                    {{ $intern->name }} ({{ $intern->email }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Field: Filter / Pilih Batch Magang -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
+                                    <span>Pilih / Filter Batch Magang</span>
+                                    <span class="text-[10px] text-slate-400 font-normal">Opsional</span>
+                                </label>
+                                <select name="batch_filter" x-model="selectedBatch" @change="onBatchChange()" class="w-full rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950/70 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition p-3">
+                                    <option value="">-- Semua Batch Magang --</option>
+                                    @foreach($batches as $batchName)
+                                        <option value="{{ $batchName }}">{{ $batchName }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Field 1: Pilih Anak Magang -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                    Pilih Peserta Magang <span class="text-rose-500">*</span>
+                                </label>
+                                <select name="intern_id" x-model="selectedInternId" required class="w-full rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950/70 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition p-3">
+                                    <option value="" class="dark:bg-slate-900">-- Pilih Peserta Magang --</option>
+                                    <template x-for="intern in filteredInterns" :key="intern.id">
+                                        <option :value="intern.id" x-text="intern.name + ' (' + intern.email + ') — [' + intern.batch + ']'"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Selected Intern Detail Preview Card -->
+                        <template x-if="selectedIntern">
+                            <div class="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 flex items-center justify-between gap-3 text-xs animate-fade-in">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                                        <span x-text="selectedIntern.name.charAt(0)"></span>
+                                    </div>
+                                    <div>
+                                        <div class="font-bold text-slate-900 dark:text-white" x-text="selectedIntern.name"></div>
+                                        <div class="text-[11px] text-slate-500 dark:text-slate-400" x-text="selectedIntern.email + ' • ' + selectedIntern.job_title"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="px-2.5 py-1 rounded-lg bg-blue-100 dark:bg-blue-900/80 text-blue-700 dark:text-blue-300 font-bold text-[10px]" x-text="selectedIntern.batch"></span>
+                                </div>
+                            </div>
+                        </template>
 
                     <!-- Field 2: Tanggal yang Terkunci -->
                     <div>
@@ -161,7 +216,8 @@
                         </button>
                     </div>
 
-                </form>
+                    </form>
+                </div>
 
             </div>
 

@@ -38,8 +38,12 @@
                         <p class="text-xs text-slate-500 mt-0.5">Diterbitkan oleh: <strong>{{ $agreement->application->job->company_name ?? 'Perusahaan' }}</strong></p>
                     </div>
                     @if($agreement->status === 'signed')
-                        <a href="{{ route('agreements.download', $agreement) }}" target="_blank" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-2xs transition flex items-center gap-2 border border-rose-600">
-                            <i class="fa-solid fa-file-pdf"></i> Pratinjau & Cetak PDF Resmi
+                        <a href="{{ route('agreements.download', $agreement) }}" target="_blank" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-2xs transition flex items-center gap-2 border border-emerald-600">
+                            <i class="fa-solid fa-file-pdf"></i> Unduh PDF Resmi (Sah)
+                        </a>
+                    @else
+                        <a href="{{ route('agreements.download', $agreement) }}" target="_blank" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center gap-2 border border-slate-300">
+                            <i class="fa-solid fa-file-pdf text-rose-600"></i> Unduh Draft PDF
                         </a>
                     @endif
                 </div>

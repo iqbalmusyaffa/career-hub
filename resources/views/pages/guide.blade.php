@@ -18,71 +18,137 @@
     <div class="py-14 bg-white min-h-screen">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
 
-            <!-- 2 Major Choice Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- 4 Major Choice Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- 1. Panduan Pelamar Kerja -->
-                <div class="bg-gradient-to-br from-blue-50/50 via-white to-slate-50/50 p-8 rounded-3xl border border-blue-100 hover:border-blue-300 hover:shadow-lg transition-all group flex flex-col justify-between">
+                <div class="bg-gradient-to-br from-blue-50/50 via-white to-slate-50/50 p-7 rounded-3xl border border-blue-100 hover:border-blue-300 hover:shadow-lg transition-all group flex flex-col justify-between">
                     <div>
-                        <div class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-2xl shadow-sm mb-6 group-hover:scale-105 transition-transform">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl shadow-xs mb-5 group-hover:scale-105 transition-transform">
                             <i class="fa-solid fa-user-graduate"></i>
                         </div>
-                        <span class="text-xs font-bold uppercase tracking-wider text-blue-600 block mb-1">Untuk Kandidat</span>
-                        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mb-3">Panduan Pelamar Kerja & Magang</h2>
-                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
-                            Panduan lengkap mulai dari pembuatan CV online ATS, pencarian lowongan terpercaya, pengiriman lamaran kerja, tes asesmen online, hingga tanda tangan kontrak kerja digital.
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600 block mb-1">Untuk Kandidat & Pelamar</span>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-900 mb-2">Panduan Pelamar Kerja & Magang</h2>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+                            Panduan lengkap mulai dari pembuatan CV online ATS, pencarian lowongan terpercaya, tes asesmen online, hingga tanda tangan kontrak kerja digital.
                         </p>
 
-                        <div class="space-y-2.5 mb-8 text-xs text-slate-700">
-                            <div class="flex items-center gap-2.5 font-medium">
+                        <div class="space-y-2 mb-6 text-xs text-slate-700">
+                            <div class="flex items-center gap-2 font-medium">
                                 <i class="fa-solid fa-circle-check text-blue-600 text-xs"></i>
-                                <span>Cara Membuat & Mengunduh CV ATS</span>
+                                <span>Pembuatan & Download CV Standar ATS</span>
                             </div>
-                            <div class="flex items-center gap-2.5 font-medium">
+                            <div class="flex items-center gap-2 font-medium">
                                 <i class="fa-solid fa-circle-check text-blue-600 text-xs"></i>
-                                <span>Tips Lolos Screening & Tes Ujian Online</span>
+                                <span>Alur Ujian Online & Video Pitch</span>
                             </div>
-                            <div class="flex items-center gap-2.5 font-medium">
+                            <div class="flex items-center gap-2 font-medium">
                                 <i class="fa-solid fa-circle-check text-blue-600 text-xs"></i>
-                                <span>Pengisian Logbook & Penerbitan Sertifikat</span>
+                                <span>Pengisian Logbook Harian & Onboarding</span>
                             </div>
                         </div>
                     </div>
 
-                    <a href="{{ route('pages.guide.candidate') }}" class="w-full py-3 px-5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
-                        Buka Panduan Pelamar Lengkap <i class="fa-solid fa-arrow-right text-xs"></i>
+                    <a href="{{ route('pages.guide.candidate') }}" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                        Buka Panduan Pelamar <i class="fa-solid fa-arrow-right text-xs"></i>
                     </a>
                 </div>
 
                 <!-- 2. Panduan Penyelenggara Lowongan -->
-                <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-8 rounded-3xl border border-slate-700 hover:shadow-xl transition-all group flex flex-col justify-between">
+                <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-7 rounded-3xl border border-slate-700 hover:shadow-xl transition-all group flex flex-col justify-between">
                     <div>
-                        <div class="w-14 h-14 rounded-2xl bg-blue-500 text-white flex items-center justify-center text-2xl shadow-sm mb-6 group-hover:scale-105 transition-transform">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-500 text-white flex items-center justify-center text-xl shadow-xs mb-5 group-hover:scale-105 transition-transform">
                             <i class="fa-solid fa-building"></i>
                         </div>
-                        <span class="text-xs font-bold uppercase tracking-wider text-blue-400 block mb-1">Untuk Perusahaan & HR</span>
-                        <h2 class="text-xl sm:text-2xl font-bold text-white mb-3">Panduan Penyelenggara Lowongan</h2>
-                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6">
-                            Petunjuk komprehensif bagi tim HR & perusahaan untuk verifikasi legalitas, memasang lowongan kerja, membuat modul soal tes online, mengelola pipeline kandidat, dan onboarding.
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-blue-400 block mb-1">Untuk Perusahaan & HR</span>
+                        <h2 class="text-lg sm:text-xl font-bold text-white mb-2">Panduan Penyelenggara Lowongan</h2>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-5">
+                            Petunjuk komprehensif bagi tim HR untuk verifikasi legalitas, memasang lowongan, membuat soal tes online, mengelola pipeline seleksi, dan payroll magang.
                         </p>
 
-                        <div class="space-y-2.5 mb-8 text-xs text-slate-300">
-                            <div class="flex items-center gap-2.5 font-medium">
+                        <div class="space-y-2 mb-6 text-xs text-slate-300">
+                            <div class="flex items-center gap-2 font-medium">
                                 <i class="fa-solid fa-circle-check text-blue-400 text-xs"></i>
-                                <span>Verifikasi Profil & Legalitas Instansi</span>
+                                <span>Verifikasi Legalitas & Profil Instansi</span>
                             </div>
-                            <div class="flex items-center gap-2.5 font-medium">
+                            <div class="flex items-center gap-2 font-medium">
                                 <i class="fa-solid fa-circle-check text-blue-400 text-xs"></i>
                                 <span>Manajemen Pipeline Funnel & Asesmen</span>
                             </div>
-                            <div class="flex items-center gap-2.5 font-medium">
+                            <div class="flex items-center gap-2 font-medium">
                                 <i class="fa-solid fa-circle-check text-blue-400 text-xs"></i>
-                                <span>Penerbitan Offer Letter & Kontrak OTP</span>
+                                <span>Penerbitan Kontrak OTP & Transfer Uang Saku</span>
                             </div>
                         </div>
                     </div>
 
-                    <a href="{{ route('pages.guide.employer') }}" class="w-full py-3 px-5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
-                        Buka Panduan Penyelenggara Lengkap <i class="fa-solid fa-arrow-right text-xs"></i>
+                    <a href="{{ route('pages.guide.employer') }}" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                        Buka Panduan Penyelenggara <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+                <!-- 3. Panduan Mentor Magang -->
+                <div class="bg-gradient-to-br from-purple-50/50 via-white to-indigo-50/30 p-7 rounded-3xl border border-purple-100 hover:border-purple-300 hover:shadow-lg transition-all group flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center text-xl shadow-xs mb-5 group-hover:scale-105 transition-transform">
+                            <i class="fa-solid fa-chalkboard-user"></i>
+                        </div>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-purple-600 block mb-1">Untuk Pembimbing / Mentor</span>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-900 mb-2">Panduan Mentor & Pembimbing Magang</h2>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+                            Tata cara memeriksa laporan presensi harian mentee, menyetujui (ACC), memvalidasi modul silabus kurikulum, serta mengajukan uang saku bulanan.
+                        </p>
+
+                        <div class="space-y-2 mb-6 text-xs text-slate-700">
+                            <div class="flex items-center gap-2 font-medium">
+                                <i class="fa-solid fa-circle-check text-purple-600 text-xs"></i>
+                                <span>Persetujuan (ACC) Presensi & Logbook</span>
+                            </div>
+                            <div class="flex items-center gap-2 font-medium">
+                                <i class="fa-solid fa-circle-check text-purple-600 text-xs"></i>
+                                <span>Validasi Kelulusan Modul Silabus</span>
+                            </div>
+                            <div class="flex items-center gap-2 font-medium">
+                                <i class="fa-solid fa-circle-check text-purple-600 text-xs"></i>
+                                <span>Rekomendasi Uang Saku & Scorecard</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{{ route('pages.guide.mentor') }}" class="w-full py-2.5 px-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                        Buka Panduan Mentor <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+                <!-- 4. Aturan & Kebijakan Magang -->
+                <div class="bg-gradient-to-br from-indigo-50/50 via-white to-blue-50/30 p-7 rounded-3xl border border-indigo-100 hover:border-indigo-300 hover:shadow-lg transition-all group flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-xs mb-5 group-hover:scale-105 transition-transform">
+                            <i class="fa-solid fa-scale-balanced"></i>
+                        </div>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600 block mb-1">Tata Tertib & Kebijakan</span>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-900 mb-2">Aturan & Ketentuan Program Magang</h2>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+                            Pedoman resmi mengenai jam kerja, batas pengisian 23:59 WIB, hari libur nasional, batas toleransi izin 4 hari, dan formula pemotongan uang saku.
+                        </p>
+
+                        <div class="space-y-2 mb-6 text-xs text-slate-700">
+                            <div class="flex items-center gap-2 font-medium">
+                                <i class="fa-solid fa-circle-check text-indigo-600 text-xs"></i>
+                                <span>Toleransi Izin / Sakit Maksimal 4 Hari</span>
+                            </div>
+                            <div class="flex items-center gap-2 font-medium">
+                                <i class="fa-solid fa-circle-check text-indigo-600 text-xs"></i>
+                                <span>Perhitungan Pemotongan Uang Saku</span>
+                            </div>
+                            <div class="flex items-center gap-2 font-medium">
+                                <i class="fa-solid fa-circle-check text-indigo-600 text-xs"></i>
+                                <span>Ketentuan Validasi Rekening Bank KTP</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{{ route('pages.guide.rules') }}" class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                        Baca Aturan & Kebijakan <i class="fa-solid fa-arrow-right text-xs"></i>
                     </a>
                 </div>
             </div>

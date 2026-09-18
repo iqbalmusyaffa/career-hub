@@ -176,37 +176,11 @@
         @endif
 
         @auth
-            @if(auth()->user()->hasRole('Super Admin') || auth()->user()->hasRole('HR') || auth()->user()->hasRole('Company Owner'))
-                <!-- Left Sidebar Layout for Admin / Management Roles -->
-                @include('layouts.sidebar')
-            @else
-                <!-- Top Navigation Layout for Candidates -->
-                <div class="min-h-screen flex flex-col justify-between pt-16">
-                    <div>
-                        @include('layouts.navigation')
-
-                        @if (isset($header))
-                            <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-xs transition-colors">
-                                <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-                                    {{ $header }}
-                                </div>
-                            </header>
-                        @endif
-
-                        <main>
-                            @if (isset($slot))
-                                {{ $slot }}
-                            @endif
-                            @yield('content')
-                        </main>
-                    </div>
-
-                    @include('layouts.footer')
-                </div>
-            @endif
+            <!-- Unified Left Sidebar Layout for All Authenticated Roles -->
+            @include('layouts.sidebar')
         @else
-            <!-- Guest Layout -->
-            <div class="min-h-screen flex flex-col justify-between">
+            <!-- Top Navigation Layout for Public Guests -->
+            <div class="min-h-screen flex flex-col justify-between pt-16">
                 <div>
                     @include('layouts.navigation')
                     <main>

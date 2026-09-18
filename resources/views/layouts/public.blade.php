@@ -45,7 +45,7 @@
                             <!-- Panduan Dropdown -->
                             <div class="relative" x-data="{ panduanOpen: false }">
                                 <button @click="panduanOpen = !panduanOpen" @click.outside="panduanOpen = false" class="inline-flex items-center px-4 py-2 text-sm rounded-full transition {{ request()->routeIs('pages.guide*') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-50' }}">
-                                    <span>Panduan</span>
+                                    <span>Panduan & Aturan</span>
                                     <i class="fa-solid fa-chevron-down text-[10px] ml-1.5 opacity-70 transition-transform duration-200" :class="{ 'rotate-180': panduanOpen }"></i>
                                 </button>
 
@@ -56,31 +56,61 @@
                                      x-transition:leave="transition ease-in duration-150"
                                      x-transition:leave-start="opacity-100 scale-100"
                                      x-transition:leave-end="opacity-0 scale-95"
-                                     class="absolute left-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200/90 py-2 z-50" 
+                                     class="absolute left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200/90 py-2.5 z-50 divide-y divide-slate-100" 
                                      style="display: none;">
-                                    <a href="{{ route('pages.guide.candidate') }}" @click="panduanOpen = false" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition">
-                                        <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs shrink-0 border border-blue-100">
-                                            <i class="fa-solid fa-user-graduate"></i>
-                                        </div>
-                                        <div>
-                                            <div>Panduan Pelamar</div>
-                                            <div class="text-[10px] text-slate-400 font-normal">Alur CV, tes online & melamar</div>
-                                        </div>
-                                    </a>
-                                    <a href="{{ route('pages.guide.employer') }}" @click="panduanOpen = false" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition">
-                                        <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs shrink-0 border border-slate-200">
-                                            <i class="fa-solid fa-building"></i>
-                                        </div>
-                                        <div>
-                                            <div>Panduan Penyelenggara</div>
-                                            <div class="text-[10px] text-slate-400 font-normal">Pasang lowongan & kelola HR</div>
-                                        </div>
-                                    </a>
-                                    <div class="border-t border-slate-100 my-1"></div>
-                                    <a href="{{ route('pages.guide') }}" @click="panduanOpen = false" class="flex items-center justify-between px-4 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50 transition">
-                                        <span>Pusat Panduan Utama</span>
-                                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                                    </a>
+                                    
+                                    <div class="py-1 space-y-0.5">
+                                        <!-- Panduan Pelamar -->
+                                        <a href="{{ route('pages.guide.candidate') }}" @click="panduanOpen = false" class="flex items-center gap-3 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition group">
+                                            <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs shrink-0 border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition">
+                                                <i class="fa-solid fa-user-graduate"></i>
+                                            </div>
+                                            <div>
+                                                <div>Panduan Pelamar</div>
+                                                <div class="text-[10px] text-slate-400 font-normal">Alur CV ATS, tes online & melamar</div>
+                                            </div>
+                                        </a>
+
+                                        <!-- Panduan Penyelenggara -->
+                                        <a href="{{ route('pages.guide.employer') }}" @click="panduanOpen = false" class="flex items-center gap-3 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition group">
+                                            <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs shrink-0 border border-slate-200 group-hover:bg-slate-900 group-hover:text-white transition">
+                                                <i class="fa-solid fa-building"></i>
+                                            </div>
+                                            <div>
+                                                <div>Panduan Penyelenggara</div>
+                                                <div class="text-[10px] text-slate-400 font-normal">Pasang lowongan & kelola HR</div>
+                                            </div>
+                                        </a>
+
+                                        <!-- Panduan Mentor -->
+                                        <a href="{{ route('pages.guide.mentor') }}" @click="panduanOpen = false" class="flex items-center gap-3 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-purple-600 transition group">
+                                            <div class="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-xs shrink-0 border border-purple-100 group-hover:bg-purple-600 group-hover:text-white transition">
+                                                <i class="fa-solid fa-chalkboard-user"></i>
+                                            </div>
+                                            <div>
+                                                <div>Panduan Mentor Magang</div>
+                                                <div class="text-[10px] text-slate-400 font-normal">ACC presensi, silabus & uang saku</div>
+                                            </div>
+                                        </a>
+
+                                        <!-- Aturan & Kebijakan Magang -->
+                                        <a href="{{ route('pages.guide.rules') }}" @click="panduanOpen = false" class="flex items-center gap-3 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition group">
+                                            <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs shrink-0 border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition">
+                                                <i class="fa-solid fa-scale-balanced"></i>
+                                            </div>
+                                            <div>
+                                                <div>Aturan & Kebijakan Magang</div>
+                                                <div class="text-[10px] text-slate-400 font-normal">Jam kerja, libur, izin & uang saku</div>
+                                            </div>
+                                        </a>
+                                    </div>
+
+                                    <div class="pt-1.5 pb-0.5">
+                                        <a href="{{ route('pages.guide') }}" @click="panduanOpen = false" class="flex items-center justify-between px-4 py-2 text-xs font-bold text-blue-600 hover:bg-blue-50 transition">
+                                            <span>Pusat Panduan Utama</span>
+                                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
 
@@ -186,13 +216,19 @@
                         Penyelenggara
                     </a>
                     <a href="{{ route('pages.guide.candidate') }}" class="flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold transition {{ request()->routeIs('pages.guide.candidate') ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50' }}">
-                        Panduan Pelamar
+                        <i class="fa-solid fa-user-graduate w-5 text-xs text-blue-600"></i> Panduan Pelamar
                     </a>
                     <a href="{{ route('pages.guide.employer') }}" class="flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold transition {{ request()->routeIs('pages.guide.employer') ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50' }}">
-                        Panduan Penyelenggara
+                        <i class="fa-solid fa-building w-5 text-xs text-slate-700"></i> Panduan Penyelenggara
+                    </a>
+                    <a href="{{ route('pages.guide.mentor') }}" class="flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold transition {{ request()->routeIs('pages.guide.mentor') ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50' }}">
+                        <i class="fa-solid fa-chalkboard-user w-5 text-xs text-purple-600"></i> Panduan Mentor Magang
+                    </a>
+                    <a href="{{ route('pages.guide.rules') }}" class="flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold transition {{ request()->routeIs('pages.guide.rules') ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50' }}">
+                        <i class="fa-solid fa-scale-balanced w-5 text-xs text-indigo-600"></i> Aturan & Kebijakan Magang
                     </a>
                     <a href="{{ route('pages.faq') }}" class="flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold transition {{ request()->routeIs('pages.faq') ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50' }}">
-                        FAQ
+                        <i class="fa-solid fa-circle-question w-5 text-xs text-blue-600"></i> FAQ & Bantuan
                     </a>
                     @auth
                         @if(auth()->user()->hasRole('Candidate'))

@@ -64,6 +64,160 @@
                 </div>
             </div>
 
+            <!-- Section: Progres Kurikulum & Verifikasi Modul Materi Magang -->
+            @if($curriculum && $curriculum->materials->isNotEmpty())
+                <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-800 p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center text-sm border border-purple-200/60 dark:border-purple-900/60">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                                    Progres Silabus & Verifikasi Modul: {{ $curriculum->title }}
+                                </h3>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
+                                    Validasi penguasaan materi pembelajaran dan kompetensi peserta magang per modul.
+                                </p>
+                            </div>
+                        </div>
+
+                        @php
+                            $totalMats = $curriculum->materials->count();
+                            $completedMats = $curriculum->materials->filter(function($m) use ($progressMap) {
+                                return isset($progressMap[$m->id]) && $progressMap[$m->id]->status === 'completed';
+                            })->count();
+                            $percentProgress = $totalMats > 0 ? round(($completedMats / $totalMats) * 100) : 0;
+                        @endphp
+
+                        <div class="flex items-center gap-2 self-start sm:self-auto">
+                            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                {{ $completedMats }}/{{ $totalMats }} Modul Lulus ({{ $percentProgress }}%)
+                            </span>
+                            <div class="w-24 bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-200 dark:border-slate-700">
+                                <div class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: {{ $percentProgress }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Materials Grid / List -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        @foreach($curriculum->materials as $mat)
+                            @php
+                                $prog = $progressMap[$mat->id] ?? null;
+                                $status = $prog?->status ?? 'pending';
+                            @endphp
+                            <div class="p-4 rounded-xl border {{ $status === 'completed' ? 'border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/30 dark:bg-emerald-950/20' : ($status === 'in_progress' ? 'border-blue-200 dark:border-blue-800/80 bg-blue-50/30 dark:bg-blue-950/20' : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40') }} space-y-3 flex flex-col justify-between">
+                                <div class="space-y-2">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-6 h-6 rounded-lg {{ $status === 'completed' ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300' }} flex items-center justify-center text-[10px] font-bold">
+                                                {{ $mat->sequence }}
+                                            </span>
+                                            <h4 class="text-xs font-bold text-slate-900 dark:text-white">
+                                                {{ $mat->title }}
+                                            </h4>
+                                        </div>
+
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ $status === 'completed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800' : ($status === 'in_progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-300 dark:border-blue-800' : 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400') }}">
+                                            {{ $status === 'completed' ? '✓ Lulus / Selesai' : ($status === 'in_progress' ? 'Sedang Berjalan' : 'Belum Mulai') }}
+                                        </span>
+                                    </div>
+
+                                    @if($mat->description)
+                                        <p class="text-[11px] text-slate-600 dark:text-slate-400">
+                                            {{ $mat->description }}
+                                        </p>
+                                    @endif
+
+                                    @if(!empty($mat->competencies))
+                                        <div class="flex flex-wrap gap-1 pt-1">
+                                            @foreach($mat->competencies as $comp)
+                                                <span class="px-2 py-0.5 rounded-md text-[10px] font-medium bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800">
+                                                    {{ $comp }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @endif
+
+                                    @if($prog && $prog->mentor_notes)
+                                        <div class="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300">
+                                            <span class="font-bold text-slate-700 dark:text-slate-200 block text-[10px]">Catatan Mentor:</span>
+                                            {{ $prog->mentor_notes }}
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <!-- Mentor Verification Form -->
+                                <form method="POST" action="{{ route('mentor.interns.materials.progress', [$intern->id, $mat->id]) }}" class="pt-2 border-t border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                                    @csrf
+                                    <div class="flex items-center gap-1.5 flex-1">
+                                        <input type="text" name="mentor_notes" value="{{ $prog?->mentor_notes ?? '' }}" placeholder="Catatan evaluasi mentor..." class="w-full text-[11px] py-1 px-2.5 rounded-lg border-slate-200 dark:border-slate-700 dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400">
+                                    </div>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        @if($status !== 'completed')
+                                            <button type="submit" name="status" value="completed" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold shadow-2xs transition flex items-center gap-1" title="Validasi Lulus Modul">
+                                                <i class="fa-solid fa-check text-[10px]"></i>
+                                                <span>Lulus</span>
+                                            </button>
+                                        @else
+                                            <button type="submit" name="status" value="in_progress" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-[11px] font-semibold transition" title="Ubah ke Sedang Berjalan">
+                                                <span>Revisi</span>
+                                            </button>
+                                        @endif
+                                    </div>
+                                </form>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            <!-- Filter Bar for Logbooks -->
+            <div class="p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-800">
+                <form method="GET" action="{{ route('mentor.logbooks.intern', $intern->id) }}" class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+                        <!-- Kehadiran Filter -->
+                        <div class="w-48">
+                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-1">Kehadiran</label>
+                            <select name="attendance" onchange="this.form.submit()" class="w-full text-xs font-semibold rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:ring-blue-500 focus:border-blue-500 py-1.5 px-2.5">
+                                <option value="">Semua Kehadiran</option>
+                                <option value="present" {{ $selectedAttendance === 'present' ? 'selected' : '' }}>🟢 Hadir</option>
+                                <option value="izin_sakit" {{ in_array($selectedAttendance, ['izin_sakit', 'excused']) ? 'selected' : '' }}>🟡 Izin / Sakit</option>
+                                <option value="alpha" {{ in_array($selectedAttendance, ['alpha', 'unexcused']) ? 'selected' : '' }}>🔴 Tidak Hadir / Alpa</option>
+                            </select>
+                        </div>
+
+                        <!-- Status ACC Filter -->
+                        <div class="w-48">
+                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-1">Status ACC</label>
+                            <select name="status" onchange="this.form.submit()" class="w-full text-xs font-semibold rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:ring-blue-500 focus:border-blue-500 py-1.5 px-2.5">
+                                <option value="">Semua Status</option>
+                                <option value="approved" {{ $selectedStatus === 'approved' ? 'selected' : '' }}>Disetujui</option>
+                                <option value="pending" {{ $selectedStatus === 'pending' ? 'selected' : '' }}>Menunggu ACC</option>
+                                <option value="action_required" {{ $selectedStatus === 'action_required' ? 'selected' : '' }}>Perlu Revisi</option>
+                                <option value="rejected" {{ $selectedStatus === 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                            </select>
+                        </div>
+
+                        <!-- Month Filter -->
+                        <div class="w-44">
+                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-1">Periode Bulan</label>
+                            <input type="month" name="month" value="{{ $selectedMonth }}" onchange="this.form.submit()" class="w-full text-xs font-semibold rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:ring-blue-500 focus:border-blue-500 py-1.5 px-2.5">
+                        </div>
+                    </div>
+
+                    @if($selectedAttendance || $selectedStatus || $selectedMonth)
+                        <div class="self-end pb-0.5">
+                            <a href="{{ route('mentor.logbooks.intern', $intern->id) }}" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-rotate-left text-[11px]"></i>
+                                <span>Reset Filter</span>
+                            </a>
+                        </div>
+                    @endif
+                </form>
+            </div>
+
             <!-- Table of Logbooks -->
             <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-800 overflow-hidden">
                 <div class="overflow-x-auto">

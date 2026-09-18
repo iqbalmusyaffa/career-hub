@@ -149,8 +149,8 @@
 <body>
 
 @php
-    $verificationUrl = route('candidate.certificates.show', $certificate);
-    $qrCodeBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(70)->generate($verificationUrl));
+    $verificationUrl = route('certificates.verify.public', ['code' => $certificate->certificate_number]);
+    $qrCodeBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(70)->generate($verificationUrl));
 @endphp
 
     <div class="cert-border">
@@ -203,7 +203,7 @@
         </div>
 
         <div class="footer-qr">
-            <img src="data:image/png;base64,{{ $qrCodeBase64 }}">
+            <img src="data:image/svg+xml;base64,{{ $qrCodeBase64 }}">
             <div style="font-size: 5.5pt; color: #64748b; font-weight: bold; margin-top: 2px;">VERIFIKASI RESMI</div>
         </div>
 

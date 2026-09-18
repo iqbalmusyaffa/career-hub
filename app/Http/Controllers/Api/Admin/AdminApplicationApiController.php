@@ -405,7 +405,7 @@ class AdminApplicationApiController extends Controller
             ]
         );
 
-        $application->update(['status' => 'hired']);
+        $application->update(['status' => \App\Enums\ApplicationStatus::ACCEPTED]);
 
         return $this->successResponse($offer, 'Surat Penawaran Kerja (Offer Letter) berhasil diterbitkan!', 201);
     }

@@ -244,7 +244,16 @@ class ApplicationAgreementController extends Controller
     public function download($agreementId)
     {
         $realId = \App\Helpers\IdHasher::decode($agreementId) ?? $agreementId;
-        $agreement = ApplicationAgreement::findOrFail($realId);
+        $agreement = ApplicationAgreement::with(['application.job', 'user'])->findOrFail($realId);
+
+        if (Auth::check()) {
+            $user = Auth::user();
+            $isCandidate = $agreement->user_id === $user->id;
+            $isStaff = $user->hasAnyRole(['HR', 'Super Admin', 'Company Owner', 'Admin']) || ($user->company_id && $agreement->application && $agreement->application->job && $agreement->application->job->company_id === $user->company_id);
+            if (!$isCandidate && !$isStaff) {
+                abort(403, 'Anda tidak memiliki otorisasi untuk mengunduh dokumen perjanjian ini.');
+            }
+        }
 
         if ($agreement->signed_pdf_path && Storage::disk('public')->exists($agreement->signed_pdf_path)) {
             $fullPath = Storage::disk('public')->path($agreement->signed_pdf_path);

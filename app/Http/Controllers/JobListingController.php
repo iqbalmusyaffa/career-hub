@@ -132,9 +132,21 @@ class JobListingController extends Controller
         
         $hasApplied = false;
         $testResult = null;
+        $isAlreadyEnrolled = false;
+        $internshipBlockReason = null;
+
         if (auth()->check()) {
-            $hasApplied = \App\Models\Application::where('user_id', auth()->id())->where('job_id', $job->id)->exists();
-            $testResult = \App\Models\CandidateTestResult::where('user_id', auth()->id())->where('job_id', $job->id)->first();
+            $user = auth()->user();
+            $hasApplied = \App\Models\Application::where('user_id', $user->id)->where('job_id', $job->id)->exists();
+            $testResult = \App\Models\CandidateTestResult::where('user_id', $user->id)->where('job_id', $job->id)->first();
+
+            // Pembatasan magang berlaku jika lowongan yang sedang dilihat adalah posisi MAGANG (Internship)
+            if ($user->hasRole('Candidate') && $job->isInternship()) {
+                $internshipBlockReason = $user->getInternshipBlockReason();
+                if ($internshipBlockReason) {
+                    $isAlreadyEnrolled = true;
+                }
+            }
         }
 
         $compName = $job->company_name ?: 'PT TechNova Asia Digital';
@@ -142,7 +154,7 @@ class JobListingController extends Controller
 
         $umk = \App\Models\UmkReference::findByLocation($job->location);
 
-        return view('jobs.show', compact('job', 'hasApplied', 'testResult', 'companyJobsCount', 'compName', 'umk'));
+        return view('jobs.show', compact('job', 'hasApplied', 'testResult', 'companyJobsCount', 'compName', 'umk', 'isAlreadyEnrolled', 'internshipBlockReason'));
     }
 
     public function apply(Request $request, $id)

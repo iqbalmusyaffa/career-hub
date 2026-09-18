@@ -69,8 +69,8 @@ class OfferLetterController extends Controller
         $offerLetter->pdf_path = $pdfFilePath;
         $offerLetter->save();
 
-        // Automatically update application status to Hired
-        $application->status = \App\Enums\ApplicationStatus::HIRED;
+        // Automatically update application status to Accepted (Hired)
+        $application->status = \App\Enums\ApplicationStatus::ACCEPTED;
         $application->save();
 
         // Send In-App Bell Notification to Candidate

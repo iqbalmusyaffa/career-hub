@@ -76,7 +76,67 @@ Route::get('/dashboard', function () {
         return in_array($st, ['accepted', 'hired', 'offered', 'interview_hr', 'interview_user', 'interview', 'test', 'rejected']);
     });
 
-    return view('dashboard', compact('totalApplications', 'processingApplications', 'acceptedApplications', 'rejectedApplications', 'recentApplications', 'statusPopupApp'));
+    // Internship detection & metrics
+    $internshipPeriod = $user->internshipPeriod;
+    $activeInternshipApp = $applications->first(function($app) {
+        $st = is_object($app->status) ? $app->status->value : (string)$app->status;
+        $workType = strtolower($app->job->work_type ?? '');
+        return in_array($st, ['accepted', 'hired']) && ($workType === 'internship' || $workType === 'magang');
+    });
+
+    $isIntern = (bool) ($internshipPeriod || $activeInternshipApp);
+    
+    $internMetrics = null;
+    if ($isIntern) {
+        $targetHours = $internshipPeriod ? $internshipPeriod->target_hours : 400;
+        $totalHoursCompleted = (int) \App\Models\InternshipLogbook::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->sum('work_hours');
+        $totalDaysPresent = \App\Models\InternshipLogbook::where('user_id', $user->id)
+            ->whereIn('attendance_type', ['Hadir', 'present', 'wfo', 'wfh'])
+            ->count();
+        $approvedLogbooks = \App\Models\InternshipLogbook::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->count();
+        $pendingLogbooks = \App\Models\InternshipLogbook::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->count();
+        $todayLogbook = \App\Models\InternshipLogbook::where('user_id', $user->id)
+            ->whereDate('date', today())
+            ->first();
+        $recentLogbooks = \App\Models\InternshipLogbook::where('user_id', $user->id)
+            ->latest('date')
+            ->take(5)
+            ->get();
+        $transcript = \App\Models\InternshipTranscript::where('user_id', $user->id)->latest()->first();
+        $certificate = \App\Models\InternshipCertificate::where('user_id', $user->id)->latest()->first();
+
+        $internMetrics = [
+            'targetHours' => $targetHours,
+            'completedHours' => $totalHoursCompleted,
+            'progressPercentage' => $targetHours > 0 ? min(100, round(($totalHoursCompleted / $targetHours) * 100)) : 0,
+            'totalDaysPresent' => $totalDaysPresent,
+            'approvedLogbooks' => $approvedLogbooks,
+            'pendingLogbooks' => $pendingLogbooks,
+            'todayLogbook' => $todayLogbook,
+            'recentLogbooks' => $recentLogbooks,
+            'transcript' => $transcript,
+            'certificate' => $certificate,
+            'period' => $internshipPeriod,
+            'job' => $activeInternshipApp ? $activeInternshipApp->job : null,
+        ];
+    }
+
+    return view('dashboard', compact(
+        'totalApplications', 
+        'processingApplications', 
+        'acceptedApplications', 
+        'rejectedApplications', 
+        'recentApplications', 
+        'statusPopupApp',
+        'isIntern',
+        'internMetrics'
+    ));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 use App\Http\Controllers\CandidateProfileController;
@@ -91,6 +151,8 @@ Route::view('/faq', 'pages.faq')->name('pages.faq');
 Route::view('/panduan', 'pages.guide')->name('pages.guide');
 Route::view('/panduan/pelamar', 'pages.guide-candidate')->name('pages.guide.candidate');
 Route::view('/panduan/penyelenggara', 'pages.guide-employer')->name('pages.guide.employer');
+Route::view('/panduan/mentor', 'pages.guide-mentor')->name('pages.guide.mentor');
+Route::view('/panduan/aturan-magang', 'pages.guide-rules')->name('pages.guide.rules');
 Route::view('/privacy-policy', 'pages.privacy')->name('pages.privacy');
 Route::view('/terms-of-service', 'pages.terms')->name('pages.terms');
 
@@ -159,16 +221,29 @@ Route::middleware('auth')->group(function () {
 
     // Candidate Internship Presensi & Daily Logbook Routes (Gambar 1 & 2)
     Route::get('/candidate/internship/logbook', [\App\Http\Controllers\CandidateLogbookController::class, 'index'])->name('candidate.logbook.index');
+    Route::get('/candidate/internship/sync', [\App\Http\Controllers\CandidateLogbookController::class, 'syncStatus'])->name('candidate.logbook.sync');
+    Route::get('/candidate/internship/progress', [\App\Http\Controllers\CandidateLogbookController::class, 'progress'])->name('candidate.logbook.progress');
+    Route::post('/candidate/internship/claim-certificate', [\App\Http\Controllers\CandidateLogbookController::class, 'claimCertificate'])->name('candidate.logbook.claim-certificate');
     Route::get('/candidate/internship/logbook/{date}', [\App\Http\Controllers\CandidateLogbookController::class, 'show'])->name('candidate.logbook.show');
     Route::post('/candidate/internship/logbook', [\App\Http\Controllers\CandidateLogbookController::class, 'store'])->name('candidate.logbook.store');
     Route::get('/candidate/internship/evaluation', [\App\Http\Controllers\CandidateLogbookController::class, 'evaluation'])->name('candidate.logbook.evaluation');
+    Route::post('/candidate/internship/survey', [\App\Http\Controllers\CandidateLogbookController::class, 'submitSurvey'])->name('candidate.logbook.survey.store');
     Route::get('/candidate/internship/unlock-requests/{id}/pdf', [\App\Http\Controllers\CandidateLogbookController::class, 'downloadUnlockPdf'])->name('candidate.unlock-requests.pdf');
+    Route::post('/candidate/internship/bank-account', [\App\Http\Controllers\CandidateLogbookController::class, 'saveBankAccount'])->name('candidate.internship.bank-account.store');
+    Route::get('/candidate/internship/stipends/{id}/slip', [\App\Http\Controllers\CandidateLogbookController::class, 'downloadStipendSlip'])->name('candidate.internship.stipends.slip');
+
+    // Candidate Self-Resignation Routes
+    Route::get('/candidate/internship/resignations', [\App\Http\Controllers\CandidateResignationController::class, 'index'])->name('candidate.resignations.index');
+    Route::post('/candidate/internship/resignations', [\App\Http\Controllers\CandidateResignationController::class, 'store'])->name('candidate.resignations.store');
+    Route::get('/candidate/internship/resignations/{id}/download', [\App\Http\Controllers\CandidateResignationController::class, 'downloadPdf'])->name('candidate.resignations.download');
+    Route::post('/candidate/internship/resignations/{id}/cancel', [\App\Http\Controllers\CandidateResignationController::class, 'cancel'])->name('candidate.resignations.cancel');
 
     // Dedicated Mentor Role Workspace, ACC Absensi, & Final Performance Rating Routes
     Route::get('/mentor/dashboard', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'dashboard'])->name('mentor.dashboard');
     Route::get('/mentor/logbooks', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'index'])->name('mentor.logbooks.index');
     Route::post('/mentor/logbooks/batch', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'storeBatch'])->name('mentor.logbooks.batch.store');
     Route::get('/mentor/logbooks/intern/{internId}', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'internLogbooks'])->name('mentor.logbooks.intern');
+    Route::post('/mentor/interns/{internId}/materials/{materialId}/progress', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'updateMaterialProgress'])->name('mentor.interns.materials.progress');
     Route::get('/mentor/logbooks/{id}', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'show'])->name('mentor.logbooks.show');
     Route::post('/mentor/logbooks/{id}/approve', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'approve'])->name('mentor.logbooks.approve');
     Route::post('/mentor/logbooks/{id}/reject', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'reject'])->name('mentor.logbooks.reject');
@@ -181,12 +256,28 @@ Route::middleware('auth')->group(function () {
     Route::post('/mentor/unlock-requests', [\App\Http\Controllers\Mentor\MentorUnlockRequestController::class, 'store'])->name('mentor.unlock-requests.store');
     Route::get('/mentor/unlock-requests/{id}/pdf', [\App\Http\Controllers\Mentor\MentorUnlockRequestController::class, 'downloadPdf'])->name('mentor.unlock-requests.pdf');
 
+    // FITUR: Pengajuan & Rekomendasi Uang Saku Mentee oleh Mentor
+    Route::get('/mentor/stipends', [\App\Http\Controllers\Mentor\MentorStipendController::class, 'index'])->name('mentor.stipends.index');
+    Route::get('/mentor/stipends/{id}/slip', [\App\Http\Controllers\Mentor\MentorStipendController::class, 'downloadStipendSlip'])->name('mentor.stipends.slip');
+    Route::post('/mentor/stipends/{id}/submit', [\App\Http\Controllers\Mentor\MentorStipendController::class, 'submitRecommendation'])->name('mentor.stipends.submit');
+    Route::post('/mentor/stipends/bulk-submit', [\App\Http\Controllers\Mentor\MentorStipendController::class, 'bulkSubmitRecommendation'])->name('mentor.stipends.bulk-submit');
+    Route::post('/mentor/stipends/{id}/send-reminder', [\App\Http\Controllers\Mentor\MentorStipendController::class, 'sendBankReminder'])->name('mentor.stipends.send-reminder');
+
     // HR & Mentor Settings for Internship Periods, Government Holidays, & Custom Company Holidays
     Route::get('/mentor/settings', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'index'])->name('mentor.settings.index');
+    Route::post('/mentor/settings/holidays/sync', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'syncGovernmentHolidays'])->name('mentor.settings.holidays.sync');
     Route::post('/mentor/settings/holidays/{id}/override', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'toggleOverride'])->name('mentor.settings.holidays.override');
     Route::post('/mentor/settings/holidays/company', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'storeCompanyHoliday'])->name('mentor.settings.holidays.company.store');
     Route::delete('/mentor/settings/holidays/company/{id}', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'deleteCompanyHoliday'])->name('mentor.settings.holidays.company.delete');
     Route::post('/mentor/settings/periods', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'storePeriod'])->name('mentor.settings.periods.store');
+    Route::delete('/mentor/settings/periods/{id}', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'deletePeriod'])->name('mentor.settings.periods.delete');
+    Route::post('/mentor/settings/master-batches', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'storeMasterBatch'])->name('mentor.settings.master-batches.store');
+    Route::delete('/mentor/settings/master-batches/{id}', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'deleteMasterBatch'])->name('mentor.settings.master-batches.delete');
+    Route::post('/mentor/batches/bulk-certificates', [\App\Http\Controllers\Mentor\MentorSettingsController::class, 'bulkGenerateCertificates'])->name('mentor.batches.bulk-certificates');
+
+    // Mentor & HR Internship Curriculum & Learning Materials Management
+    Route::resource('/mentor/curriculums', \App\Http\Controllers\Mentor\MentorCurriculumController::class)->names('mentor.curriculums');
+
     Route::get('/candidate/terminations/{termination}', [\App\Http\Controllers\EmployeeTerminationController::class, 'show'])->name('candidate.terminations.show');
     Route::post('/candidate/terminations/{termination}/send-otp', [\App\Http\Controllers\EmployeeTerminationController::class, 'sendOtp'])->name('candidate.terminations.send-otp');
     Route::post('/candidate/terminations/{termination}/sign', [\App\Http\Controllers\EmployeeTerminationController::class, 'sign'])->name('candidate.terminations.sign');
@@ -200,10 +291,13 @@ Route::middleware('auth')->group(function () {
     // Salary Benchmark
     Route::get('/salary-benchmark', [\App\Http\Controllers\SalaryBenchmarkController::class, 'index'])->name('salary-benchmark.index');
 
-    // In-App Bell Notifications API
+    // In-App Bell Notifications & Full Notification Center
     Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/all', [\App\Http\Controllers\NotificationController::class, 'all'])->name('notifications.all');
     Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::delete('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::delete('/notifications/clear/all-read', [\App\Http\Controllers\NotificationController::class, 'clearAllRead'])->name('notifications.clear-read');
 
     // PDF CV Alias Routes
     Route::get('/applications/{application}/cv/ats', function(\App\Models\Application $application) {
@@ -219,6 +313,9 @@ Route::middleware('auth')->group(function () {
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.cv_creative', compact('user', 'profile'))->setPaper('a4', 'portrait');
         return $pdf->download('CV_Creative_' . \Illuminate\Support\Str::slug($user->name) . '.pdf');
     })->name('applications.cv.creative');
+
+    // Super Admin Impersonation Exit (accessible by all authenticated users in simulation session)
+    Route::post('/admin/impersonate/leave', [\App\Http\Controllers\Admin\UserController::class, 'leaveImpersonation'])->name('admin.impersonate.leave');
 });
 
 Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin')->name('admin.')->group(function () {
@@ -253,9 +350,6 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
     })->name('applications.cv.creative');
 
     Route::post('/applications/{application}/verify-onboarding', [\App\Http\Controllers\CandidateOnboardingController::class, 'verifyByHr'])->name('applications.verify-onboarding');
-
-    // Super Admin Impersonation Exit
-    Route::post('/impersonate/leave', [\App\Http\Controllers\Admin\UserController::class, 'leaveImpersonation'])->name('admin.impersonate.leave');
 
     // HR Digital Agreement Builder routes
     Route::get('/applications/{application}/agreements/create', [\App\Http\Controllers\ApplicationAgreementController::class, 'create'])->name('applications.agreements.create');
@@ -343,6 +437,14 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
     // Dynamic System Flow & Auto-Generated ERD Visualizer
     Route::get('/system-flow', [\App\Http\Controllers\Admin\SystemFlowController::class, 'index'])->name('system-flow.index');
     Route::get('/system-flow-alias', [\App\Http\Controllers\Admin\SystemFlowController::class, 'index'])->name('system-flow');
+
+    // FITUR: Rekapitulasi & Payroll Uang Saku Magang (Stipends - HR & Super Admin)
+    Route::get('/internship-stipends', [\App\Http\Controllers\Admin\InternshipStipendController::class, 'index'])->name('internship-stipends.index');
+    Route::get('/internship-stipends/{id}/slip', [\App\Http\Controllers\Admin\InternshipStipendController::class, 'downloadStipendSlip'])->name('internship-stipends.slip');
+    Route::post('/internship-stipends/{id}/status', [\App\Http\Controllers\Admin\InternshipStipendController::class, 'updateStatus'])->name('internship-stipends.update-status');
+    Route::post('/internship-stipends/{id}/send-reminder', [\App\Http\Controllers\Admin\InternshipStipendController::class, 'sendBankReminder'])->name('internship-stipends.send-reminder');
+    Route::post('/internship-stipends/bulk-transfer', [\App\Http\Controllers\Admin\InternshipStipendController::class, 'bulkTransfer'])->name('internship-stipends.bulk-transfer');
+    Route::get('/internship-stipends/export/excel', [\App\Http\Controllers\Admin\InternshipStipendController::class, 'exportExcel'])->name('internship-stipends.export-excel');
 
     // Super Admin Exclusive Control & Moderation
     Route::middleware('role:Super Admin')->group(function () {
@@ -440,8 +542,13 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
     })->name('applications.cv.creative');
 });
 
-// Standalone Public Certificate Verification Route (for guests / universal scan)
-Route::get('/verify-certificate/{code?}', [\App\Http\Controllers\PublicCertificateVerificationController::class, 'verify'])->name('certificates.verify.public');
+// Standalone Public Certificate & Resignation Verification Route (for guests / universal scan)
+Route::get('/verify-certificate/{code?}', [\App\Http\Controllers\PublicCertificateVerificationController::class, 'verify'])
+    ->where('code', '.*')
+    ->name('certificates.verify.public');
+
+Route::get('/verify-resignation/{id}', [\App\Http\Controllers\CandidateResignationController::class, 'verify'])
+    ->name('resignations.verify.public');
 
 Route::middleware('guest')->group(function () {
     Route::get('/auth/google', [\App\Http\Controllers\Auth\SocialiteController::class, 'redirect'])->name('google.login');

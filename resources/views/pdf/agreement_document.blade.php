@@ -170,7 +170,7 @@
 
 @php
     $verificationUrl = route('candidate.agreements.show', $agreement);
-    $qrCodeBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(75)->generate($verificationUrl));
+    $qrCodeBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(75)->generate($verificationUrl));
 @endphp
 
     <div class="top-bar"></div>
@@ -183,7 +183,7 @@
                     <div class="doc-badge">Nomor Perjanjian: {{ $agreement->contract_number }}</div>
                 </td>
                 <td style="width: 80px; text-align: right; vertical-align: middle;">
-                    <img src="data:image/png;base64,{{ $qrCodeBase64 }}" style="width: 65px; height: 65px; border: 1px solid #cbd5e1; padding: 2px; background: #fff; border-radius: 6px;">
+                    <img src="data:image/svg+xml;base64,{{ $qrCodeBase64 }}" style="width: 65px; height: 65px; border: 1px solid #cbd5e1; padding: 2px; background: #fff; border-radius: 6px;">
                     <div style="font-size: 6pt; color: #475569; font-weight: bold; text-align: center; margin-top: 2px; letter-spacing: 0.3px;">SCAN UNTUK VERIFIKASI</div>
                 </td>
             </tr>

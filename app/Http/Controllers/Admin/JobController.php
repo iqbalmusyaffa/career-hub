@@ -32,11 +32,8 @@ class JobController extends Controller
             }
         }
 
-        $availableBatches = \App\Models\InternshipPeriod::whereNotNull('period_name')
-            ->pluck('period_name')
-            ->merge(\App\Models\Job::whereNotNull('batch')->where('batch', '!=', '')->pluck('batch'))
-            ->unique()
-            ->values();
+        $companyId = $companyProfile ? $companyProfile->id : null;
+        $availableBatches = \App\Models\InternshipBatch::getActiveBatches($companyId);
 
         return view('admin.jobs.index', compact('jobs', 'companyProfile', 'availableBatches'));
     }
@@ -55,11 +52,8 @@ class JobController extends Controller
             }
         }
 
-        $availableBatches = \App\Models\InternshipPeriod::whereNotNull('period_name')
-            ->pluck('period_name')
-            ->merge(\App\Models\Job::whereNotNull('batch')->where('batch', '!=', '')->pluck('batch'))
-            ->unique()
-            ->values();
+        $companyId = $companyProfile ? $companyProfile->id : null;
+        $availableBatches = \App\Models\InternshipBatch::getActiveBatches($companyId);
 
         return view('admin.jobs.create', compact('companyProfile', 'availableBatches'));
     }
@@ -106,6 +100,11 @@ class JobController extends Controller
             }
         }
 
+        if (!empty($data['batch'])) {
+            $companyId = $companyProfile ? $companyProfile->id : null;
+            \App\Models\InternshipBatch::findOrCreateByName($data['batch'], $companyId);
+        }
+
         $job = $this->jobService->createJob($data);
         AuditLog::record('job_created', "Mempublikasikan lowongan kerja baru: {$request->title} untuk perusahaan {$data['company_name']}");
 
@@ -127,11 +126,8 @@ class JobController extends Controller
             }
         }
 
-        $availableBatches = \App\Models\InternshipPeriod::whereNotNull('period_name')
-            ->pluck('period_name')
-            ->merge(\App\Models\Job::whereNotNull('batch')->where('batch', '!=', '')->pluck('batch'))
-            ->unique()
-            ->values();
+        $companyId = $companyProfile ? $companyProfile->id : null;
+        $availableBatches = \App\Models\InternshipBatch::getActiveBatches($companyId);
 
         return view('admin.jobs.edit', compact('job', 'companyProfile', 'availableBatches'));
     }
@@ -142,11 +138,17 @@ class JobController extends Controller
         $user = auth()->user();
 
         // Kunci nama perusahaan ke profil HR/Owner login jika bukan Super Admin
+        $companyProfile = null;
         if (!$user->hasRole('Super Admin')) {
             $companyProfile = $user->currentCompanyProfile();
             if ($companyProfile) {
                 $data['company_name'] = $companyProfile->company_name;
             }
+        }
+
+        if (!empty($data['batch'])) {
+            $companyId = $companyProfile ? $companyProfile->id : null;
+            \App\Models\InternshipBatch::findOrCreateByName($data['batch'], $companyId);
         }
 
         $this->jobService->updateJob($id, $data);

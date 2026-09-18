@@ -62,7 +62,10 @@ class MentorEvaluationController extends Controller
             ]
         );
 
+        // Auto-generate & synchronize official digital Certificate and Academic Transcript with QR code
+        \App\Services\CertificateGenerationService::generateOrUpdateForIntern($evaluation->intern, $evaluation);
+
         return redirect()->route('mentor.dashboard')
-            ->with('success', 'Evaluasi Kinerja Akhir milik ' . $evaluation->intern->name . ' berhasil disimpan dengan Skor ' . $finalScore . ' (Grade ' . $finalGrade . ').');
+            ->with('success', 'Evaluasi Kinerja Akhir milik ' . $evaluation->intern->name . ' berhasil disimpan dan E-Sertifikat serta Transkrip Nilai resmi telah otomatis diterbitkan!');
     }
 }

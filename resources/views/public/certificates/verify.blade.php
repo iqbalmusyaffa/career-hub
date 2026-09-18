@@ -62,8 +62,8 @@
 
             <!-- Verification Result Box -->
             @if($searched)
-                @if($certificate)
-                    @if($certificate->is_revoked)
+                @if($certificate || $transcript)
+                    @if($certificate && $certificate->is_revoked)
                         <!-- REVOKED CERTIFICATE BANNER -->
                         <div class="bg-gradient-to-br from-red-950/80 to-slate-900 border-2 border-red-500 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl animate-shake">
                             <div class="flex items-center gap-4 border-b border-red-800 pb-5">
@@ -82,60 +82,189 @@
                             <div class="p-4 bg-red-900/30 rounded-2xl border border-red-800/80 space-y-1 text-xs">
                                 <span class="font-bold text-red-300 block">Alasan Pencabutan Resmi:</span>
                                 <p class="text-red-100 font-medium">"{{ $certificate->revocation_reason }}"</p>
-                                <span class="text-3xs text-red-400 block pt-1">Dicabut pada: {{ $certificate->revoked_at->isoFormat('D MMMM YYYY') }}</span>
+                                <span class="text-3xs text-red-400 block pt-1">Dicabut pada: {{ $certificate->revoked_at ? $certificate->revoked_at->isoFormat('D MMMM YYYY') : '-' }}</span>
                             </div>
                         </div>
                     @else
-                        <!-- VALID CERTIFICATE CARD -->
-                        <div class="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 border-2 border-emerald-500 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
+                        <!-- VALID CREDENTIALS (CERTIFICATE + TRANSCRIPT) -->
+                        <div class="space-y-6" x-data="{ activeTab: 'certificate' }">
                             
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl font-black shrink-0 shadow-lg shadow-emerald-500/30">
-                                        ✔️
-                                    </div>
-                                    <div>
-                                        <span class="px-2.5 py-0.5 rounded-full text-3xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                                            TERVERIFIKASI ASLI & SAH (VALID)
+                            <!-- Navigation Tabs if both exist -->
+                            @if($certificate && $transcript)
+                                <div class="flex items-center justify-center gap-2 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800 max-w-md mx-auto">
+                                    <button type="button" @click="activeTab = 'certificate'" :class="activeTab === 'certificate' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'" class="flex-1 py-2 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-award"></i>
+                                        <span>E-Sertifikat</span>
+                                    </button>
+                                    <button type="button" @click="activeTab = 'transcript'" :class="activeTab === 'transcript' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'" class="flex-1 py-2 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-file-waveform"></i>
+                                        <span>Transkrip Nilai</span>
+                                    </button>
+                                </div>
+                            @endif
+
+                            <!-- 1. CERTIFICATE VIEW -->
+                            @if($certificate)
+                                <div x-show="activeTab === 'certificate'" class="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 border-2 border-emerald-500 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl font-black shrink-0 shadow-lg shadow-emerald-500/30">
+                                                ✔️
+                                            </div>
+                                            <div>
+                                                <span class="px-2.5 py-0.5 rounded-full text-3xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                                    TERVERIFIKASI ASLI & SAH (VALID)
+                                                </span>
+                                                <h3 class="text-xl font-black text-white mt-1">{{ $certificate->participant_name }}</h3>
+                                                <p class="text-xs text-slate-400 font-mono">No. Seri: <span class="text-emerald-400 font-bold">{{ $certificate->certificate_number }}</span></p>
+                                            </div>
+                                        </div>
+
+                                        <span class="px-4 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-2xl text-xs font-black uppercase tracking-wider text-center">
+                                            Grade: {{ $certificate->performance_grade ?? 'A' }}
                                         </span>
-                                        <h3 class="text-xl font-black text-white mt-1">{{ $certificate->participant_name }}</h3>
-                                        <p class="text-xs text-slate-400 font-mono">No. Seri: <span class="text-emerald-400 font-bold">{{ $certificate->certificate_number }}</span></p>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                                        <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
+                                            <span class="text-3xs text-slate-500 uppercase font-black">Perusahaan Penyelenggara</span>
+                                            <div class="text-sm font-bold text-white">{{ $certificate->application?->job?->company_name ?? 'PT TalentFlow Indonesia' }}</div>
+                                        </div>
+
+                                        <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
+                                            <span class="text-3xs text-slate-500 uppercase font-black">Posisi & Peran Magang</span>
+                                            <div class="text-sm font-bold text-white">{{ $certificate->job_title }}</div>
+                                        </div>
+
+                                        <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
+                                            <span class="text-3xs text-slate-500 uppercase font-black">Institusi / Universitas</span>
+                                            <div class="text-sm font-bold text-white">{{ $certificate->institution_name ?? 'Universitas / Kampus Terdaftar' }}</div>
+                                        </div>
+
+                                        <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
+                                            <span class="text-3xs text-slate-500 uppercase font-black">Periode Pelaksanaan</span>
+                                            <div class="text-sm font-bold text-white">{{ $certificate->start_date ? $certificate->start_date->format('d M Y') : '-' }} s/d {{ $certificate->end_date ? $certificate->end_date->format('d M Y') : '-' }}</div>
+                                        </div>
+
+                                        <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
+                                            <span class="text-3xs text-slate-500 uppercase font-black">Mentor Pembimbing</span>
+                                            <div class="text-sm font-bold text-white">{{ $certificate->mentor_name ?? 'Mentor Magang' }}</div>
+                                            @if($certificate->mentor_phone || $certificate->mentor_email)
+                                                <div class="text-3xs text-slate-400 font-mono">{{ $certificate->mentor_phone }} {{ $certificate->mentor_email ? '• ' . $certificate->mentor_email : '' }}</div>
+                                            @endif
+                                        </div>
+
+                                        <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
+                                            <span class="text-3xs text-slate-500 uppercase font-black">Tanggal Penerbitan Resmi</span>
+                                            <div class="text-sm font-bold text-white">{{ $certificate->issued_at ? $certificate->issued_at->format('d M Y') : '-' }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                                        <div class="flex items-center gap-2.5 text-blue-300">
+                                            <i class="fa-solid fa-award text-base shrink-0"></i>
+                                            <span>Tervalidasi secara kriptografis & terdaftar dalam database resmi TalentFlow.</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" onclick="navigator.clipboard.writeText(window.location.href); alert('Tautan verifikasi berhasil disalin!');" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-3xs font-bold transition border border-slate-700 flex items-center gap-1.5">
+                                                <i class="fa-regular fa-copy"></i>
+                                                <span>Salin Link</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
+                            @endif
 
-                                <span class="px-4 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-2xl text-xs font-black uppercase tracking-wider text-center">
-                                    Grade: {{ $certificate->performance_grade ?? 'A' }}
-                                </span>
-                            </div>
+                            <!-- 2. TRANSCRIPT VIEW -->
+                            @if($transcript)
+                                <div x-show="activeTab === 'transcript'" class="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 border-2 border-blue-500 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-2xl font-black shrink-0 shadow-lg shadow-blue-600/30">
+                                                📊
+                                            </div>
+                                            <div>
+                                                <span class="px-2.5 py-0.5 rounded-full text-3xs font-black uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                                                    TRANSKRIP AKADEMIK MAGANG SAH
+                                                </span>
+                                                <h3 class="text-xl font-black text-white mt-1">{{ $transcript->participant_name }}</h3>
+                                                <p class="text-xs text-slate-400 font-mono">No. Transkrip: <span class="text-blue-400 font-bold">{{ $transcript->transcript_number }}</span></p>
+                                            </div>
+                                        </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                                <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                                    <span class="text-3xs text-slate-500 uppercase font-black">Posisi & Peran Magang</span>
-                                    <div class="text-sm font-bold text-white">{{ $certificate->job_title }}</div>
+                                        <div class="text-center sm:text-right bg-amber-500/10 border border-amber-500/30 p-3 rounded-2xl">
+                                            <span class="text-3xs font-bold text-amber-400 uppercase tracking-widest block">Skor Rata-Rata</span>
+                                            <span class="text-2xl font-black text-amber-300">{{ number_format($transcript->final_score, 1) }}</span>
+                                            <span class="text-3xs text-amber-400 block font-bold">Grade: {{ $transcript->grade_letter ?? 'A' }}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- 5 Competency Criteria Table / Bars -->
+                                    <div class="space-y-3">
+                                        <span class="text-xs font-black text-slate-300 uppercase tracking-wider block">Lembar Rincian Evaluasi 5 Kriteria Kompetensi:</span>
+                                        
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                            <div class="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
+                                                <div class="flex justify-between font-bold">
+                                                    <span class="text-slate-300">1. Kedisiplinan & Presensi</span>
+                                                    <span class="text-emerald-400">{{ number_format($transcript->score_discipline, 1) }} / 100</span>
+                                                </div>
+                                                <div class="w-full bg-slate-800 rounded-full h-2">
+                                                    <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $transcript->score_discipline }}%"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
+                                                <div class="flex justify-between font-bold">
+                                                    <span class="text-slate-300">2. Keahlian Teknis (Technical)</span>
+                                                    <span class="text-emerald-400">{{ number_format($transcript->score_technical, 1) }} / 100</span>
+                                                </div>
+                                                <div class="w-full bg-slate-800 rounded-full h-2">
+                                                    <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $transcript->score_technical }}%"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
+                                                <div class="flex justify-between font-bold">
+                                                    <span class="text-slate-300">3. Komunikasi & Kerjasama</span>
+                                                    <span class="text-emerald-400">{{ number_format($transcript->score_communication, 1) }} / 100</span>
+                                                </div>
+                                                <div class="w-full bg-slate-800 rounded-full h-2">
+                                                    <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $transcript->score_communication }}%"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
+                                                <div class="flex justify-between font-bold">
+                                                    <span class="text-slate-300">4. Inisiatif & Problem Solving</span>
+                                                    <span class="text-emerald-400">{{ number_format($transcript->score_problem_solving, 1) }} / 100</span>
+                                                </div>
+                                                <div class="w-full bg-slate-800 rounded-full h-2">
+                                                    <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $transcript->score_problem_solving }}%"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 sm:col-span-2">
+                                                <div class="flex justify-between font-bold">
+                                                    <span class="text-slate-300">5. Etika & Profesionalisme</span>
+                                                    <span class="text-emerald-400">{{ number_format($transcript->score_ethics, 1) }} / 100</span>
+                                                </div>
+                                                <div class="w-full bg-slate-800 rounded-full h-2">
+                                                    <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ $transcript->score_ethics }}%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @if($transcript->mentor_notes)
+                                        <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-1 text-xs">
+                                            <span class="text-3xs text-slate-500 uppercase font-black">Catatan Evaluasi & Rekomendasi Mentor</span>
+                                            <p class="text-slate-200 italic font-medium leading-relaxed">"{{ $transcript->mentor_notes }}"</p>
+                                        </div>
+                                    @endif
+
                                 </div>
-
-                                <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                                    <span class="text-3xs text-slate-500 uppercase font-black">Institusi / Universitas</span>
-                                    <div class="text-sm font-bold text-white">{{ $certificate->institution_name ?? 'Universitas / Kampus Terdaftar' }}</div>
-                                </div>
-
-                                <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                                    <span class="text-3xs text-slate-500 uppercase font-black">Periode Pelaksanaan</span>
-                                    <div class="text-sm font-bold text-white">{{ $certificate->start_date->format('d M Y') }} s/d {{ $certificate->end_date->format('d M Y') }}</div>
-                                </div>
-
-                                <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                                    <span class="text-3xs text-slate-500 uppercase font-black">Tanggal Penerbitan Resmi</span>
-                                    <div class="text-sm font-bold text-white">{{ $certificate->issued_at->format('d M Y') }}</div>
-                                </div>
-                            </div>
-
-                            <div class="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/30 flex items-center justify-between text-xs">
-                                <div class="flex items-center gap-2.5 text-blue-300">
-                                    <i class="fa-solid fa-award text-base"></i>
-                                    <span>Telah divalidasi oleh Tim Penyelenggara & Mentor Perusahaan.</span>
-                                </div>
-                            </div>
+                            @endif
 
                         </div>
                     @endif
@@ -143,9 +272,9 @@
                     <!-- NOT FOUND BANNER -->
                     <div class="p-8 bg-slate-900 border border-slate-800 rounded-3xl text-center space-y-3">
                         <div class="text-4xl">🔍</div>
-                        <h3 class="text-lg font-black text-white">Sertifikat Tidak Ditemukan</h3>
+                        <h3 class="text-lg font-black text-white">Dokumen Kredensial Tidak Ditemukan</h3>
                         <p class="text-xs text-slate-400 max-w-md mx-auto">
-                            Nomor seri <span class="font-mono text-amber-400 font-bold">{{ $searchCode }}</span> tidak terdaftar dalam database sertifikat resmi TalentFlow. Pastikan nomor yang dimasukkan sudah benar.
+                            Nomor seri <span class="font-mono text-amber-400 font-bold">{{ $searchCode }}</span> tidak terdaftar dalam database sertifikat maupun transkrip nilai resmi TalentFlow. Pastikan nomor yang dimasukkan sudah benar.
                         </p>
                     </div>
                 @endif

@@ -146,19 +146,25 @@
                         unreadCount: 0,
                         notifications: [],
                         fetchNotifications() {
-                            fetch('{{ route('notifications.index') }}')
+                            fetch('{{ route('notifications.index') }}', {
+                                headers: {
+                                    'Accept': 'application/json'
+                                }
+                            })
                                 .then(res => res.json())
                                 .then(data => {
-                                    this.notifications = data.notifications;
-                                    this.unreadCount = data.unread_count;
-                                });
+                                    this.notifications = data.notifications || [];
+                                    this.unreadCount = data.unread_count || 0;
+                                })
+                                .catch(err => console.error('Notif fetch error:', err));
                         },
                         markAsRead(id, link) {
                             fetch('/notifications/' + id + '/read', {
                                 method: 'POST',
                                 headers: {
                                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                    'Content-Type': 'application/json'
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
                                 }
                             }).then(() => {
                                 this.fetchNotifications();
@@ -172,7 +178,8 @@
                                 method: 'POST',
                                 headers: {
                                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                    'Content-Type': 'application/json'
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
                                 }
                             }).then(() => this.fetchNotifications());
                         }
@@ -211,9 +218,14 @@
                                                 'fa-info-circle': notif.type === 'info',
                                                 'fa-circle-check': notif.type === 'success',
                                                 'fa-triangle-exclamation': notif.type === 'warning'
-                                            }"></i>
+                                             }"></i>
                                         </div>
                                         <div class="flex-1 min-w-0">
+                                            <template x-if="notif.recipient_name">
+                                                <div class="mb-0.5">
+                                                    <span class="inline-block px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-[9px] font-bold" x-text="'👤 ' + notif.recipient_name + ' (' + notif.recipient_role + ')'"></span>
+                                                </div>
+                                            </template>
                                             <div class="flex justify-between items-center">
                                                 <h4 class="font-semibold text-xs text-slate-900 dark:text-white truncate" x-text="notif.title"></h4>
                                                 <span class="text-[10px] text-slate-400 shrink-0 ml-2" x-text="notif.created_at_human"></span>
@@ -228,6 +240,14 @@
                                         Belum ada notifikasi baru.
                                     </div>
                                 </template>
+                            </div>
+
+                            <!-- Footer: Lihat Selengkapnya -->
+                            <div class="p-2.5 bg-slate-50 dark:bg-slate-800/90 border-t border-slate-100 dark:border-slate-700 text-center">
+                                <a href="{{ route('notifications.all') }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition">
+                                    <span>Lihat Selengkapnya</span>
+                                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                </a>
                             </div>
                         </div>
                     </div>

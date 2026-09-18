@@ -136,6 +136,24 @@ class CandidateOnboardingController extends Controller
             }
         }
 
+        // Check KTP Name Match & Notify Candidate if Different
+        $user = Auth::user();
+        if ($onboarding->bank_account_holder && $user->name) {
+            $cleanHolder = strtolower(preg_replace('/[^a-z0-9]/', '', $onboarding->bank_account_holder));
+            $cleanName = strtolower(preg_replace('/[^a-z0-9]/', '', $user->name));
+            $isKtpMatched = str_contains($cleanHolder, $cleanName) || str_contains($cleanName, $cleanHolder) || levenshtein($cleanHolder, $cleanName) <= 3;
+
+            if (!$isKtpMatched) {
+                \App\Models\UserNotification::send(
+                    $user->id,
+                    '⚠️ Peringatan: Nama Rekening Berbeda dengan KTP',
+                    "Nama pemilik rekening bank yang Anda masukkan ({$onboarding->bank_account_holder}) berbeda dengan nama KTP akun Anda ({$user->name}). Pastikan foto buku tabungan/surat kuasa telah diunggah dengan jelas agar pencairan uang saku tidak tertunda.",
+                    route('candidate.onboarding.create', $application),
+                    'warning'
+                );
+            }
+        }
+
         AuditLog::record('onboarding_submitted', "Kandidat " . Auth::user()->name . " mengunggah berkas data onboarding untuk posisi " . $application->job->title);
 
         return redirect()->route('dashboard')->with('success', '🎉 Berhasil! Data onboarding & rekening insentif Anda telah tersimpan dan terkirim ke Tim HR.');

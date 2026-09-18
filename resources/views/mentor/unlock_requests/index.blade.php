@@ -37,12 +37,32 @@
 
             <!-- Table of Mentor's Requests -->
             <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+                <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-900/50">
+                    <div class="text-xs font-bold text-slate-800 dark:text-slate-200">
+                        Riwayat Tiket Pengajuan Buka Kunci
+                    </div>
+                    <form method="GET" action="{{ route('mentor.unlock-requests.index') }}" class="flex items-center gap-2">
+                        <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">Filter Batch:</label>
+                        <select name="batch" onchange="this.form.submit()" class="text-xs font-semibold rounded-xl border-slate-200 dark:border-slate-750 dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:ring-blue-500 focus:border-blue-500 py-1.5 px-3">
+                            <option value="">Semua Batch Magang</option>
+                            @foreach($batches as $batchName)
+                                <option value="{{ $batchName }}" {{ ($selectedBatch ?? '') === $batchName ? 'selected' : '' }}>{{ $batchName }}</option>
+                            @endforeach
+                        </select>
+                        @if(!empty($selectedBatch))
+                            <a href="{{ route('mentor.unlock-requests.index') }}" class="px-2.5 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-800 rounded-xl transition">
+                                Reset
+                            </a>
+                        @endif
+                    </form>
+                </div>
+
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
                             <tr class="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-semibold uppercase text-[11px] tracking-wider">
                                 <th class="py-3.5 px-6">Tanggal Terkunci</th>
-                                <th class="py-3.5 px-6">Peserta Magang</th>
+                                <th class="py-3.5 px-6">Peserta Magang & Batch</th>
                                 <th class="py-3.5 px-6">Kategori Kendala</th>
                                 <th class="py-3.5 px-6">Status Keputusan</th>
                                 <th class="py-3.5 px-6">Catatan Admin</th>
@@ -59,7 +79,13 @@
                                     <span class="text-[11px] text-slate-400 font-mono">#ULK-{{ str_pad($req->id, 4, '0', STR_PAD_LEFT) }}</span>
                                 </td>
                                 <td class="py-4 px-6 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
-                                    {{ $req->intern->name }}
+                                    <div class="font-bold text-slate-900 dark:text-white">{{ $req->intern->name }}</div>
+                                    <div class="text-[10px] text-slate-400">{{ $req->intern->email }}</div>
+                                    <div class="mt-0.5">
+                                        <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60">
+                                            {{ $req->intern->internshipPeriod?->period_name ?? $req->intern->applications->first()?->job?->batch ?? 'Batch 1 - 2026' }}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="py-4 px-6 whitespace-nowrap">
                                     @if($req->category === 'medical_emergency')

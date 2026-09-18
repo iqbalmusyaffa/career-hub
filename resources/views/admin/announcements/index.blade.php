@@ -196,10 +196,12 @@
                                     </label>
                                     <select name="target_role" x-model="targetRole" required 
                                         class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs focus:ring-1 focus:ring-blue-600 focus:border-blue-600 text-slate-900 dark:text-slate-100 py-2.5 px-3">
-                                        <option value="all">🌐 Seluruh Pengguna (All Users)</option>
+                                        <option value="all">🌐 Seluruh Pengguna (Global Platform Update)</option>
+                                        <option value="intern">🎓 Khusus Peserta Magang (Internship)</option>
+                                        <option value="candidate">👨‍💼 Khusus Pencari Kerja (Job Seekers)</option>
                                         <option value="company_owner">🏢 Pimpinan Perusahaan (Company Owner)</option>
                                         <option value="hr">💼 Tim HR & Recruiter</option>
-                                        <option value="candidate">👨‍🎓 Pencari Kerja (Candidates)</option>
+                                        <option value="mentor">🧑‍🏫 Pembimbing / Mentor Magang</option>
                                     </select>
                                 </div>
 

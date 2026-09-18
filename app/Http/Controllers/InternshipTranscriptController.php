@@ -143,7 +143,7 @@ class InternshipTranscriptController extends Controller
         $realId = \App\Helpers\IdHasher::decode($transcriptId) ?? $transcriptId;
         $transcript = InternshipTranscript::with(['application.job', 'user'])->findOrFail($realId);
 
-        if ($transcript->user_id !== Auth::id() && !Auth::user()->hasAnyRole(['HR', 'Super Admin', 'Company Owner'])) {
+        if ($transcript->user_id !== Auth::id() && !Auth::user()->hasAnyRole(['HR', 'Super Admin', 'Company Owner', 'Mentor'])) {
             abort(403, 'Anda tidak memiliki otorisasi melihat transkrip nilai ini.');
         }
 

@@ -1,44 +1,106 @@
 <x-app-layout>
+    <x-slot name="header">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <div>
+                <h2 class="font-bold text-xl sm:text-2xl text-slate-900 dark:text-white tracking-tight">
+                    ACC Presensi Magang
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-normal">
+                    Pilih nama peserta magang untuk meninjau dan menyetujui (ACC) riwayat laporan harian & presensi.
+                </p>
+            </div>
+            <div class="flex items-center gap-2 self-start sm:self-auto">
+                <button type="button" 
+                        onclick="window.dispatchEvent(new CustomEvent('open-batch-modal', { detail: { id: '', name: '', period: '', start: '', end: '', hours: 400 } }))" 
+                        class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>Atur Batch Baru</span>
+                </button>
+                <a href="{{ route('mentor.dashboard') }}" class="px-4 py-2 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 shadow-xs transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-left text-xs text-slate-400"></i>
+                    <span>Kembali ke Dasbor</span>
+                </a>
+            </div>
+        </div>
+    </x-slot>
+
     <div x-data="{ 
         showBatchModal: false, 
-        selectedUserId: '', 
-        selectedUserName: '', 
+        selectedUserIds: [], 
+        selectedMasterBatchId: '',
         periodName: '', 
         startDate: '', 
         endDate: '', 
         targetHours: 400,
+        searchQuery: '',
+        tabFilter: 'all',
+        masterBatches: {{ Js::from(($masterBatches ?? collect())->map(fn($b) => [
+            'id' => $b->id,
+            'batch_name' => $b->batch_name,
+            'start_date' => $b->start_date?->format('Y-m-d'),
+            'end_date' => $b->end_date?->format('Y-m-d'),
+            'target_hours' => $b->target_hours
+        ])) }},
+        onMasterBatchChange(batchId) {
+            const found = this.masterBatches.find(b => b.id == batchId);
+            if (found) {
+                this.periodName = found.batch_name;
+                if (found.start_date) this.startDate = found.start_date;
+                if (found.end_date) this.endDate = found.end_date;
+                if (found.target_hours) this.targetHours = found.target_hours;
+            }
+        },
+        internsList: {{ Js::from($allInterns->map(fn($i) => [
+            'id' => $i->id,
+            'name' => $i->name,
+            'email' => $i->email,
+            'current_batch' => $i->internshipPeriod?->period_name ?? null
+        ])) }},
+        get unassignedCount() {
+            return this.internsList.filter(i => !i.current_batch).length;
+        },
+        get assignedCount() {
+            return this.internsList.filter(i => !!i.current_batch).length;
+        },
+        get filteredInterns() {
+            let list = this.internsList;
+            if (this.tabFilter === 'unassigned') {
+                list = list.filter(i => !i.current_batch);
+            } else if (this.tabFilter === 'assigned') {
+                list = list.filter(i => !!i.current_batch);
+            }
+            if (!this.searchQuery) return list;
+            const q = this.searchQuery.toLowerCase();
+            return list.filter(i => i.name.toLowerCase().includes(q) || i.email.toLowerCase().includes(q));
+        },
+        selectAll() {
+            this.selectedUserIds = this.filteredInterns.map(i => i.id);
+        },
+        deselectAll() {
+            this.selectedUserIds = [];
+        },
+        toggleIntern(id) {
+            if (this.selectedUserIds.includes(id)) {
+                this.selectedUserIds = this.selectedUserIds.filter(item => item !== id);
+            } else {
+                this.selectedUserIds.push(id);
+            }
+        },
         openBatchModal(id = '', name = '', period = '', start = '', end = '', hours = 400) {
-            this.selectedUserId = id;
-            this.selectedUserName = name;
+            if (id) {
+                this.selectedUserIds = [parseInt(id)];
+            } else {
+                this.selectedUserIds = [];
+            }
             this.periodName = period || 'Batch 1 - 2026';
             this.startDate = start || '2026-08-10';
             this.endDate = end || '2026-09-09';
             this.targetHours = hours || 400;
+            this.searchQuery = '';
             this.showBatchModal = true;
         }
-    }">
-        <x-slot name="header">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
-                <div>
-                    <h2 class="font-bold text-xl sm:text-2xl text-slate-900 dark:text-white tracking-tight">
-                        ACC Presensi Magang
-                    </h2>
-                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-normal">
-                        Pilih nama peserta magang untuk meninjau dan menyetujui (ACC) riwayat laporan harian & presensi.
-                    </p>
-                </div>
-                <div class="flex items-center gap-2 self-start sm:self-auto">
-                    <button type="button" @click="openBatchModal()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-plus text-xs"></i>
-                        <span>Atur Batch Baru</span>
-                    </button>
-                    <a href="{{ route('mentor.dashboard') }}" class="px-4 py-2 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 shadow-xs transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-arrow-left text-xs text-slate-400"></i>
-                        <span>Kembali ke Dasbor</span>
-                    </a>
-                </div>
-            </div>
-        </x-slot>
+    }" 
+    @open-batch-modal.window="openBatchModal($event.detail?.id || '', $event.detail?.name || '', $event.detail?.period || '', $event.detail?.start || '', $event.detail?.end || '', $event.detail?.hours || 400)">
 
         <div class="py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
@@ -192,18 +254,18 @@
             </div>
         </div>
 
-        <!-- Modal Set / Edit Batch -->
+        <!-- Modal Set / Edit Batch (Supports Bulk & Multi-Select) -->
         <div x-show="showBatchModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity">
-            <div @click.away="showBatchModal = false" class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 max-w-md w-full p-6 space-y-5">
+            <div @click.away="showBatchModal = false" class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 max-w-lg w-full p-6 space-y-5">
                 
                 <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                     <div class="flex items-center gap-2.5">
                         <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs font-bold">
-                            <i class="fa-solid fa-layer-group"></i>
+                            <i class="fa-solid fa-users-gear"></i>
                         </div>
                         <div>
-                            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Pengaturan Batch / Periode Magang</h3>
-                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Tentukan periode aktif dan target jam kerja</p>
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Pengaturan Batch & Periode Magang</h3>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Pilih satu atau banyak peserta sekaligus untuk diterapkan ke batch ini</p>
                         </div>
                     </div>
                     <button type="button" @click="showBatchModal = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
@@ -214,21 +276,113 @@
                 <form method="POST" action="{{ route('mentor.logbooks.batch.store') }}" class="space-y-4">
                     @csrf
                     
-                    <!-- Pilih Peserta Magang -->
+                    <!-- Pilih Peserta Magang (Bulk Multi-Select with Search) -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Peserta Magang</label>
-                        <select name="user_id" x-model="selectedUserId" required class="w-full text-xs font-semibold rounded-xl border-slate-200 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-slate-100 py-2.5 px-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
-                            <option value="">-- Pilih Peserta Magang --</option>
-                            @foreach($interns as $internOption)
-                                <option value="{{ $internOption->id }}">{{ $internOption->name }} ({{ $internOption->email }})</option>
-                            @endforeach
+                        <div class="flex items-center justify-between mb-1.5">
+                            <div class="flex items-center gap-2">
+                                <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pilih Peserta Magang</label>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" 
+                                      :class="selectedUserIds.length > 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-900' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'"
+                                      x-text="selectedUserIds.length + ' dari ' + internsList.length + ' dipilih'"></span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-[11px]">
+                                <button type="button" @click="selectAll()" class="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 cursor-pointer">
+                                    Pilih Semua
+                                </button>
+                                <span class="text-slate-300 dark:text-slate-700">&bull;</span>
+                                <button type="button" @click="deselectAll()" class="font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 cursor-pointer">
+                                    Batal Pilih
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Tabs Filter -->
+                        <div class="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-950/80 rounded-xl mb-2 border border-slate-200/80 dark:border-slate-800 text-[11px]">
+                            <button type="button" @click="tabFilter = 'all'" 
+                                    :class="tabFilter === 'all' ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
+                                    class="flex-1 py-1 rounded-lg transition text-center cursor-pointer">
+                                Semua (<span x-text="internsList.length"></span>)
+                            </button>
+                            <button type="button" @click="tabFilter = 'unassigned'" 
+                                    :class="tabFilter === 'unassigned' ? 'bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
+                                    class="flex-1 py-1 rounded-lg transition text-center cursor-pointer">
+                                Belum Ada Batch (<span x-text="unassignedCount"></span>)
+                            </button>
+                            <button type="button" @click="tabFilter = 'assigned'" 
+                                    :class="tabFilter === 'assigned' ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
+                                    class="flex-1 py-1 rounded-lg transition text-center cursor-pointer">
+                                Sudah Ada Batch (<span x-text="assignedCount"></span>)
+                            </button>
+                        </div>
+
+                        <!-- Search input -->
+                        <div class="relative mb-2">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-400"></i>
+                            <input type="text" x-model="searchQuery" placeholder="Cari nama atau email peserta..." class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border-slate-200 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                        </div>
+
+                        <!-- Scrollable Checkbox List -->
+                        <div class="max-h-48 overflow-y-auto space-y-1.5 border border-slate-200/80 dark:border-slate-800 rounded-xl p-2 bg-slate-50/50 dark:bg-slate-950/40">
+                            <template x-for="intern in filteredInterns" :key="intern.id">
+                                <label class="flex items-center justify-between p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800/80 cursor-pointer transition border"
+                                       :class="selectedUserIds.includes(intern.id) ? 'bg-white dark:bg-slate-800/90 border-blue-300 dark:border-blue-800 shadow-2xs' : 'border-transparent'">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <input type="checkbox" 
+                                               name="user_ids[]" 
+                                               :value="intern.id" 
+                                               x-model="selectedUserIds" 
+                                               class="rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700 dark:bg-slate-900">
+                                        <div class="min-w-0">
+                                            <div class="text-xs font-bold text-slate-900 dark:text-white truncate" x-text="intern.name"></div>
+                                            <div class="text-[10px] text-slate-400 dark:text-slate-500 truncate" x-text="intern.email"></div>
+                                        </div>
+                                    </div>
+                                    <div class="shrink-0 ml-2">
+                                        <template x-if="intern.current_batch">
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-900" x-text="intern.current_batch"></span>
+                                        </template>
+                                        <template x-if="!intern.current_batch">
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-400">Belum ada batch</span>
+                                        </template>
+                                    </div>
+                                </label>
+                            </template>
+                            <div x-show="filteredInterns.length === 0" class="p-4 text-center text-xs text-slate-400">
+                                Tidak ada peserta yang cocok dengan kata kunci pencarian.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pilih dari Master Batch atau Input Manual -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-semibold text-purple-700 dark:text-purple-300">
+                            Pilih dari Master Batch Terpusat
+                        </label>
+                        <select x-model="selectedMasterBatchId" 
+                                @change="onMasterBatchChange($event.target.value)"
+                                class="w-full text-xs font-semibold rounded-xl border-purple-200 dark:border-purple-800/60 bg-purple-50/50 dark:bg-purple-950/30 text-purple-900 dark:text-purple-200 py-2.5 px-3 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500">
+                            <option value="">-- Pilih Batch Master (Otomatis Isi Tanggal & Jam) --</option>
+                            <template x-for="mb in masterBatches" :key="mb.id">
+                                <option :value="mb.id" x-text="mb.batch_name + (mb.target_hours ? ' (' + mb.target_hours + ' Jam)' : '')"></option>
+                            </template>
                         </select>
                     </div>
 
                     <!-- Nama Batch -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Batch / Periode</label>
-                        <input type="text" name="period_name" x-model="periodName" required placeholder="Contoh: Batch 1 - 2026, Semester Genap..." class="w-full text-xs rounded-xl border-slate-200 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-slate-100 py-2.5 px-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-semibold placeholder:text-slate-400">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Batch / Periode <span class="text-rose-500">*</span></label>
+                        <input type="text" 
+                               name="period_name" 
+                               x-model="periodName" 
+                               list="logbook_master_batches_datalist"
+                               required 
+                               placeholder="Contoh: Batch 1 - 2026, Semester Genap..." 
+                               class="w-full text-xs rounded-xl border-slate-200 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-slate-100 py-2.5 px-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-semibold placeholder:text-slate-400">
+                        <datalist id="logbook_master_batches_datalist">
+                            <template x-for="mb in masterBatches" :key="'dl-'+mb.id">
+                                <option :value="mb.batch_name"></option>
+                            </template>
+                        </datalist>
                     </div>
 
                     <!-- Tanggal Mulai & Tanggal Selesai -->
@@ -249,13 +403,24 @@
                         <input type="number" name="target_hours" x-model="targetHours" required min="1" class="w-full text-xs rounded-xl border-slate-200 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-slate-100 py-2.5 px-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-semibold">
                     </div>
 
-                    <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
-                        <button type="button" @click="showBatchModal = false" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition">
-                            Batal
-                        </button>
-                        <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition">
-                            Simpan Pengaturan Batch
-                        </button>
+                    <div class="pt-2 flex items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800">
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400" x-show="selectedUserIds.length === 0">
+                            Pilih minimal 1 peserta magang
+                        </span>
+                        <span class="text-[11px] text-blue-600 dark:text-blue-400 font-semibold" x-show="selectedUserIds.length > 0" x-text="selectedUserIds.length + ' peserta akan di-update'"></span>
+
+                        <div class="flex items-center gap-2">
+                            <button type="button" @click="showBatchModal = false" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer">
+                                Batal
+                            </button>
+                            <button type="submit" 
+                                    :disabled="selectedUserIds.length === 0" 
+                                    :class="selectedUserIds.length === 0 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"
+                                    class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-floppy-disk text-xs"></i>
+                                <span x-text="selectedUserIds.length > 0 ? 'Simpan Batch (' + selectedUserIds.length + ' Peserta)' : 'Simpan Pengaturan Batch'"></span>
+                            </button>
+                        </div>
                     </div>
                 </form>
 

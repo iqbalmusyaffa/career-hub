@@ -588,19 +588,29 @@
                             @if($application->agreements && $application->agreements->count() > 0)
                                 <div class="space-y-2 text-xs">
                                     @foreach($application->agreements as $ag)
-                                        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between gap-2">
+                                        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between gap-3">
                                             <div class="truncate">
-                                                <span class="font-bold text-slate-900 block truncate">{{ $ag->title }}</span>
-                                                <span class="text-3xs text-slate-500 font-semibold">No: {{ $ag->contract_number }}</span>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="font-bold text-slate-900 block truncate">{{ $ag->title }}</span>
+                                                    @if($ag->status === 'signed')
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                                            <i class="fa-solid fa-circle-check"></i> Sudah TTD
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                                                            <i class="fa-solid fa-clock"></i> Menunggu TTD
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <span class="text-3xs text-slate-500 font-semibold block mt-0.5">No: {{ $ag->contract_number }}</span>
                                             </div>
-                                            <div class="shrink-0 flex items-center gap-1">
-                                                @if($ag->status === 'signed')
-                                                    <a href="{{ route('agreements.download', $ag) }}" target="_blank" class="p-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-3xs font-bold transition">
-                                                        <i class="fa-solid fa-file-pdf"></i> PDF
-                                                    </a>
-                                                @else
-                                                    <a href="{{ route('candidate.agreements.show', $ag) }}" class="p-1.5 bg-slate-800 text-white rounded-lg text-3xs font-bold">Buka</a>
-                                                @endif
+                                            <div class="shrink-0 flex items-center gap-1.5">
+                                                <a href="{{ route('candidate.agreements.show', $ag) }}" target="_blank" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-3xs font-bold transition flex items-center gap-1">
+                                                    <i class="fa-solid fa-eye"></i> Buka
+                                                </a>
+                                                <a href="{{ route('agreements.download', $ag) }}" target="_blank" class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-3xs font-bold transition flex items-center gap-1" title="Unduh Dokumen PDF Perjanjian">
+                                                    <i class="fa-solid fa-file-pdf"></i> Unduh PDF
+                                                </a>
                                             </div>
                                         </div>
                                     @endforeach
