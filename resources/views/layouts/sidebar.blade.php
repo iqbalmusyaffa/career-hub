@@ -361,6 +361,11 @@
                             <span>Edit Profil & CV</span>
                         </a>
 
+                        <a href="{{ route('profile.role-request.show') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('profile.role-request.*') ? 'bg-amber-600 text-white shadow-xs' : 'text-amber-400 hover:bg-slate-800 hover:text-amber-300' }}">
+                            <i class="fa-solid fa-building-circle-check text-xs w-4 text-center"></i>
+                            <span>Ajukan Akun Perusahaan / HR</span>
+                        </a>
+
                         <a href="{{ route('pages.guide.candidate') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('pages.guide.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <i class="fa-solid fa-book-open text-xs w-4 text-center text-blue-400"></i>
                             <span>Panduan Pengguna</span>
@@ -402,6 +407,10 @@
                             <a href="{{ route('profile.candidate.details.edit') }}" class="flex items-center gap-2.5 px-3.5 py-1.5 text-xs text-slate-200 hover:bg-slate-700 hover:text-white transition">
                                 <i class="fa-solid fa-id-card text-slate-400 w-4 text-center"></i>
                                 <span>Profil & CV</span>
+                            </a>
+                            <a href="{{ route('profile.role-request.show') }}" class="flex items-center gap-2.5 px-3.5 py-1.5 text-xs text-amber-400 hover:bg-slate-700 hover:text-amber-300 transition">
+                                <i class="fa-solid fa-building-circle-check text-amber-400 w-4 text-center"></i>
+                                <span>Ajukan Perusahaan / HR</span>
                             </a>
                         @endif
 
@@ -613,6 +622,9 @@
                         @if($user->hasRole('Candidate'))
                             <x-dropdown-link :href="route('profile.candidate.details.edit')" class="flex items-center gap-2 text-xs">
                                 <i class="fa-solid fa-id-card text-slate-400 w-4"></i> {{ __('Edit Profil & CV') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('profile.role-request.show')" class="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 font-medium">
+                                <i class="fa-solid fa-building-circle-check text-amber-500 w-4"></i> {{ __('Ajukan Perusahaan / HR') }}
                             </x-dropdown-link>
                         @endif
 

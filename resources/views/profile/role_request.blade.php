@@ -5,54 +5,54 @@
         </h2>
     </x-slot>
 
-    <div class="py-10 bg-slate-50/50 min-h-screen">
+    <div class="py-10 bg-slate-50/50 dark:bg-slate-900 min-h-screen">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
             @if(session('success'))
-                <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 font-bold text-sm flex items-center gap-3">
-                    <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>
+                <div class="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl text-emerald-800 dark:text-emerald-300 font-bold text-sm flex items-center gap-3">
+                    <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 text-lg"></i>
                     {{ session('success') }}
                 </div>
             @endif
 
             <!-- Info Banner -->
-            <div class="bg-slate-900 border border-slate-800 text-white rounded-2xl p-6 sm:p-8 shadow-2xs">
+            <div class="bg-slate-900 dark:bg-slate-950 border border-slate-800 text-white rounded-2xl p-6 sm:p-8 shadow-2xs">
                 <div class="flex items-center gap-3 mb-2">
-                    <span class="px-3 py-1 bg-white/10 text-slate-200 text-3xs font-bold rounded-lg uppercase border border-white/10">Pendaftaran Perusahaan</span>
+                    <span class="px-3 py-1 bg-white/10 text-slate-200 text-3xs font-bold rounded-lg uppercase border border-white/10">Pendaftaran Perusahaan & HR</span>
                 </div>
                 <h3 class="text-xl font-bold">Ingin Membuka Lowongan & Rekrut Talenta Terbaik?</h3>
                 <p class="text-xs text-slate-300 mt-2 leading-relaxed">
-                    Daftarkan perusahaan Anda ke dalam platform. Tim Super Admin akan memverifikasi dokumen legalitas NIB / SIUP Anda untuk memberikan status <strong>Verified Company</strong>.
+                    Daftarkan perusahaan Anda atau ajukan status staf HR ke dalam platform. Tim Super Admin akan memverifikasi dokumen legalitas resmi untuk memberikan status <strong>Verified Company</strong>.
                 </p>
             </div>
 
             <!-- Existing Requests Status Card -->
             @if($requests->count() > 0)
-                <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-2xs border border-slate-200 space-y-4">
-                    <h4 class="font-bold text-base text-slate-900 flex items-center gap-2">
-                        <i class="fa-solid fa-clock-rotate-left text-slate-700"></i> Riwayat Pengajuan Anda
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xs border border-slate-200 dark:border-slate-700 space-y-4">
+                    <h4 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-slate-700 dark:text-slate-300"></i> Riwayat Pengajuan Anda
                     </h4>
 
                     <div class="space-y-3">
                         @foreach($requests as $r)
-                            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex items-center justify-between flex-wrap gap-3">
+                            <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between flex-wrap gap-3">
                                 <div>
                                     <div class="flex items-center gap-2 mb-1">
                                         <span class="px-2.5 py-0.5 rounded-full text-3xs font-bold uppercase border {{ $r->status_badge }}">
                                             {{ ucfirst($r->status) }}
                                         </span>
-                                        <span class="text-xs font-bold text-slate-900">{{ $r->company_name }}</span>
+                                        <span class="text-xs font-bold text-slate-900 dark:text-white">{{ $r->company_name }}</span>
                                     </div>
-                                    <span class="text-2xs text-slate-500 font-medium">Diajukan pada {{ $r->created_at->format('d M Y, H:i') }} WIB</span>
+                                    <span class="text-2xs text-slate-500 dark:text-slate-400 font-medium">Diajukan pada {{ $r->created_at->format('d M Y, H:i') }} WIB</span>
                                     @if($r->admin_notes)
-                                        <div class="mt-2 p-2.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-700">
+                                        <div class="mt-2 p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300">
                                             <strong>Catatan Admin:</strong> {{ $r->admin_notes }}
                                         </div>
                                     @endif
                                 </div>
 
                                 @if($r->legal_doc_path)
-                                    <a href="{{ Storage::url($r->legal_doc_path) }}" target="_blank" class="px-3 py-1.5 bg-slate-100 text-slate-800 hover:bg-slate-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-300">
+                                    <a href="{{ Storage::url($r->legal_doc_path) }}" target="_blank" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-300 dark:border-slate-600">
                                         <i class="fa-solid fa-file-pdf text-rose-600"></i> Lihat Dokumen Legal
                                     </a>
                                 @endif
@@ -63,9 +63,9 @@
             @endif
 
             <!-- Application Form -->
-            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-2xs border border-slate-200 space-y-6">
-                <h4 class="font-bold text-lg text-slate-900 flex items-center gap-2 border-b border-slate-200 pb-4">
-                    <i class="fa-solid fa-file-signature text-slate-700"></i> Formulir Pengajuan Akun Perusahaan
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xs border border-slate-200 dark:border-slate-700 space-y-6">
+                <h4 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-4">
+                    <i class="fa-solid fa-file-signature text-slate-700 dark:text-slate-300"></i> Formulir Pengajuan Akun Perusahaan / HR
                 </h4>
 
                 <form action="{{ route('profile.role-request.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5" x-data="{ requestedRole: '{{ old('requested_role', 'Company Owner') }}' }">

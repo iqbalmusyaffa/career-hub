@@ -85,10 +85,11 @@
             .dark body { background-color: #0b1120 !important; color: #f1f5f9 !important; }
             .dark .bg-white:not([data-theme="light"]):not(.keep-white) { background-color: #1e293b !important; color: #f8fafc !important; }
             .dark .bg-slate-50:not([data-theme="light"]):not(.keep-light),
-            .dark .bg-slate-50\/60, .dark .bg-slate-50\/70, .dark .bg-slate-50\/80,
-            .dark .bg-gray-50, .dark .bg-gray-50\/50, .dark .bg-gray-50\/60, .dark .bg-gray-50\/70, .dark .bg-gray-50\/80,
-            .dark .bg-zinc-50, .dark .bg-neutral-50 { background-color: #0b1120 !important; }
+            .dark .bg-slate-50\/40, .dark .bg-slate-50\/50, .dark .bg-slate-50\/60, .dark .bg-slate-50\/70, .dark .bg-slate-50\/80, .dark .bg-slate-50\/90,
+            .dark .bg-gray-50, .dark .bg-gray-50\/40, .dark .bg-gray-50\/50, .dark .bg-gray-50\/60, .dark .bg-gray-50\/70, .dark .bg-gray-50\/80, .dark .bg-gray-50\/90,
+            .dark .bg-zinc-50, .dark .bg-neutral-50 { background-color: #0f172a !important; }
             .dark .bg-slate-100:not([data-theme="light"]),
+            .dark .bg-slate-100\/40, .dark .bg-slate-100\/50, .dark .bg-slate-100\/60, .dark .bg-slate-100\/70, .dark .bg-slate-100\/80, .dark .bg-slate-100\/90,
             .dark .bg-gray-100, .dark .bg-zinc-100 { background-color: #1e293b !important; }
             .dark .bg-slate-200, .dark .bg-gray-200, .dark .bg-zinc-200 { background-color: #334155 !important; }
             
@@ -114,6 +115,15 @@
                 background-color: #0f172a !important;
                 color: #f8fafc !important;
                 border-color: #334155 !important;
+            }
+            .dark input[type="radio"], .dark input[type="checkbox"] {
+                background-color: #1e293b !important;
+                border-color: #475569 !important;
+                color: #2563eb !important;
+            }
+            .dark input[type="radio"]:checked, .dark input[type="checkbox"]:checked {
+                background-color: #2563eb !important;
+                border-color: #3b82f6 !important;
             }
             .dark input[type="file"] {
                 color: #94a3b8 !important;

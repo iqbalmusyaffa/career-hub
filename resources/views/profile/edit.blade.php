@@ -58,6 +58,24 @@
                 @endif
             </div>
 
+            @if(auth()->user()->hasRole('Candidate'))
+                <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center text-base shrink-0">
+                            <i class="fa-solid fa-building-circle-check"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Ingin Mendaftarkan Perusahaan atau Menjadi HR?</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ajukan verifikasi akun Perusahaan / HR untuk mulai memasang lowongan kerja dan mengelola rekrutmen.</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('profile.role-request.show') }}" class="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs transition shadow-xs">
+                        <span>Ajukan Sekarang</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+            @endif
+
             <!-- Card 1: Informasi Akun -->
             <div class="bg-white dark:bg-slate-800 p-6 sm:p-7 rounded-2xl shadow-2xs border border-slate-200/80 dark:border-slate-700/80">
                 @include('profile.partials.update-profile-information-form')

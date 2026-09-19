@@ -571,22 +571,34 @@
                             </p>
                         </div>
 
+                        @php
+                            $candidateProfile = auth()->user()->candidateProfile;
+                            $completionPercentage = $candidateProfile ? $candidateProfile->completion_percentage : 0;
+                        @endphp
                         <div class="bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shrink-0 space-y-2 w-full md:w-64">
                             <div class="flex justify-between items-center text-xs font-semibold">
                                 <span class="text-slate-700 dark:text-slate-300">Kelengkapan Profil</span>
                                 <span class="text-blue-600 dark:text-blue-400 font-bold">
-                                    {{ auth()->user()->candidateProfile && auth()->user()->candidateProfile->cv_path ? '100%' : '60%' }}
+                                    {{ $completionPercentage }}%
                                 </span>
                             </div>
                             <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                                <div class="bg-blue-600 dark:bg-blue-500 h-1.5 rounded-full transition-all duration-500" style="width: {{ auth()->user()->candidateProfile && auth()->user()->candidateProfile->cv_path ? '100%' : '60%' }}"></div>
+                                <div class="bg-blue-600 dark:bg-blue-500 h-1.5 rounded-full transition-all duration-500" style="width: {{ $completionPercentage }}%"></div>
                             </div>
                             <div class="flex items-center justify-between text-[11px]">
                                 <span class="text-slate-500 dark:text-slate-400">
-                                    {{ auth()->user()->candidateProfile && auth()->user()->candidateProfile->cv_path ? 'Profil & CV Lengkap' : 'CV Belum Diunggah' }}
+                                    @if($completionPercentage === 100)
+                                        Profil & CV Lengkap
+                                    @elseif(!$candidateProfile || !$candidateProfile->cv_path)
+                                        CV Belum Diunggah
+                                    @else
+                                        {{ $completionPercentage }}% Terisi
+                                    @endif
                                 </span>
-                                @if(!auth()->user()->candidateProfile || !auth()->user()->candidateProfile->cv_path)
-                                    <a href="{{ route('profile.candidate.details.edit') }}" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline">Upload CV &rarr;</a>
+                                @if($completionPercentage < 100)
+                                    <a href="{{ route('profile.candidate.details.edit') }}" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+                                        {{ (!$candidateProfile || !$candidateProfile->cv_path) ? 'Upload CV →' : 'Lengkapi Profil →' }}
+                                    </a>
                                 @endif
                             </div>
                         </div>
