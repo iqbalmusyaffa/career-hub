@@ -515,10 +515,10 @@
                     <!-- DOCUMENT BUILDER CARDS GRID (2 Cols) -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <!-- Internship Certificate Card -->
-                        <div class="bg-white rounded-3xl p-5 shadow-2xs border border-slate-200/80 space-y-3">
-                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                                <h4 class="font-extrabold text-xs text-slate-900 uppercase flex items-center gap-2">
-                                    <i class="fa-solid fa-graduation-cap text-amber-600"></i> Sertifikat Kelulusan Magang
+                        <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-2xs border border-slate-200/80 dark:border-slate-700 space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                                <h4 class="font-extrabold text-xs text-slate-900 dark:text-white uppercase flex items-center gap-2">
+                                    <i class="fa-solid fa-graduation-cap text-amber-600 dark:text-amber-400"></i> Sertifikat Kelulusan Magang
                                 </h4>
                                 <a href="{{ route('admin.applications.certificates.create', $application) }}" class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold text-3xs rounded-lg transition border border-amber-600">
                                     + Terbitkan
@@ -528,10 +528,10 @@
                             @if($application->certificates && $application->certificates->count() > 0)
                                 <div class="space-y-2 text-xs">
                                     @foreach($application->certificates as $cert)
-                                        <div class="p-3 bg-amber-50/60 rounded-2xl border border-amber-200/80 flex items-center justify-between gap-2">
+                                        <div class="p-3 bg-amber-50/60 dark:bg-amber-950/40 rounded-2xl border border-amber-200/80 dark:border-amber-800/60 flex items-center justify-between gap-2">
                                             <div class="truncate">
-                                                <span class="font-bold text-amber-950 block truncate">Sertifikat Kelulusan</span>
-                                                <span class="text-3xs text-amber-800 font-semibold">Predikat: {{ $cert->performance_grade }}</span>
+                                                <span class="font-bold text-amber-950 dark:text-amber-200 block truncate">Sertifikat Kelulusan</span>
+                                                <span class="text-3xs text-amber-800 dark:text-amber-400 font-semibold">Predikat: {{ $cert->performance_grade }}</span>
                                             </div>
                                             <a href="{{ route('candidate.certificates.show', $cert) }}" target="_blank" class="shrink-0 p-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-3xs font-bold transition">
                                                 <i class="fa-solid fa-file-pdf"></i> PDF
@@ -540,15 +540,15 @@
                                     @endforeach
                                 </div>
                             @else
-                                <p class="text-3xs text-slate-400">Belum ada sertifikat magang resmi yang diterbitkan.</p>
+                                <p class="text-3xs text-slate-400 dark:text-slate-500">Belum ada sertifikat magang resmi yang diterbitkan.</p>
                             @endif
                         </div>
 
                         <!-- Internship Transcript Card -->
-                        <div class="bg-white rounded-3xl p-5 shadow-2xs border border-slate-200/80 space-y-3">
-                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                                <h4 class="font-extrabold text-xs text-slate-900 uppercase flex items-center gap-2">
-                                    <i class="fa-solid fa-square-poll-vertical text-indigo-600"></i> Transkrip Evaluasi Nilai
+                        <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-2xs border border-slate-200/80 dark:border-slate-700 space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                                <h4 class="font-extrabold text-xs text-slate-900 dark:text-white uppercase flex items-center gap-2">
+                                    <i class="fa-solid fa-square-poll-vertical text-indigo-600 dark:text-indigo-400"></i> Transkrip Evaluasi Nilai
                                 </h4>
                                 <a href="{{ route('admin.applications.transcripts.create', $application) }}" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-3xs rounded-lg transition border border-indigo-600">
                                     + Terbitkan
@@ -558,10 +558,10 @@
                             @if($application->transcripts && $application->transcripts->count() > 0)
                                 <div class="space-y-2 text-xs">
                                     @foreach($application->transcripts as $trans)
-                                        <div class="p-3 bg-indigo-50/60 rounded-2xl border border-indigo-200/80 flex items-center justify-between gap-2">
+                                        <div class="p-3 bg-indigo-50/60 dark:bg-indigo-950/40 rounded-2xl border border-indigo-200/80 dark:border-indigo-800/60 flex items-center justify-between gap-2">
                                             <div class="truncate">
-                                                <span class="font-bold text-indigo-950 block truncate">Transkrip Evaluasi Nilai</span>
-                                                <span class="text-3xs text-indigo-800 font-semibold">Skor: {{ number_format($trans->final_score, 1) }}/100</span>
+                                                <span class="font-bold text-indigo-950 dark:text-indigo-200 block truncate">Transkrip Evaluasi Nilai</span>
+                                                <span class="text-3xs text-indigo-800 dark:text-indigo-400 font-semibold">Skor: {{ number_format($trans->final_score, 1) }}/100</span>
                                             </div>
                                             <a href="{{ route('candidate.transcripts.show', $trans) }}" target="_blank" class="shrink-0 p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-3xs font-bold transition">
                                                 <i class="fa-solid fa-file-pdf"></i> PDF
@@ -570,15 +570,15 @@
                                     @endforeach
                                 </div>
                             @else
-                                <p class="text-3xs text-slate-400">Belum ada transkrip nilai evaluasi magang yang diterbitkan.</p>
+                                <p class="text-3xs text-slate-400 dark:text-slate-500">Belum ada transkrip nilai evaluasi magang yang diterbitkan.</p>
                             @endif
                         </div>
 
                         <!-- Digital Agreement / Contract Card -->
-                        <div class="bg-white rounded-3xl p-5 shadow-2xs border border-slate-200/80 space-y-3">
-                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                                <h4 class="font-extrabold text-xs text-slate-900 uppercase flex items-center gap-2">
-                                    <i class="fa-solid fa-file-contract text-slate-800"></i> Perjanjian Kerja Digital
+                        <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-2xs border border-slate-200/80 dark:border-slate-700 space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                                <h4 class="font-extrabold text-xs text-slate-900 dark:text-white uppercase flex items-center gap-2">
+                                    <i class="fa-solid fa-file-contract text-slate-800 dark:text-slate-300"></i> Perjanjian Kerja Digital
                                 </h4>
                                 <a href="{{ route('admin.applications.agreements.create', $application) }}" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white font-bold text-3xs rounded-lg transition border border-slate-900">
                                     + Buat Dokumen
@@ -588,21 +588,21 @@
                             @if($application->agreements && $application->agreements->count() > 0)
                                 <div class="space-y-2 text-xs">
                                     @foreach($application->agreements as $ag)
-                                        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between gap-3">
+                                        <div class="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
                                             <div class="truncate">
                                                 <div class="flex items-center gap-2">
-                                                    <span class="font-bold text-slate-900 block truncate">{{ $ag->title }}</span>
+                                                    <span class="font-bold text-slate-900 dark:text-white block truncate">{{ $ag->title }}</span>
                                                     @if($ag->status === 'signed')
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
                                                             <i class="fa-solid fa-circle-check"></i> Sudah TTD
                                                         </span>
                                                     @else
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300">
                                                             <i class="fa-solid fa-clock"></i> Menunggu TTD
                                                         </span>
                                                     @endif
                                                 </div>
-                                                <span class="text-3xs text-slate-500 font-semibold block mt-0.5">No: {{ $ag->contract_number }}</span>
+                                                <span class="text-3xs text-slate-500 dark:text-slate-400 font-semibold block mt-0.5">No: {{ $ag->contract_number }}</span>
                                             </div>
                                             <div class="shrink-0 flex items-center gap-1.5">
                                                 <a href="{{ route('candidate.agreements.show', $ag) }}" target="_blank" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-3xs font-bold transition flex items-center gap-1">
@@ -616,15 +616,15 @@
                                     @endforeach
                                 </div>
                             @else
-                                <p class="text-3xs text-slate-400">Belum ada dokumen perjanjian kerja digital yang dibuat.</p>
+                                <p class="text-3xs text-slate-400 dark:text-slate-500">Belum ada dokumen perjanjian kerja digital yang dibuat.</p>
                             @endif
                         </div>
 
                         <!-- Employee Termination & Recommendation Document Card -->
-                        <div class="bg-white rounded-3xl p-5 shadow-2xs border border-slate-200/80 space-y-3">
-                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                                <h4 class="font-extrabold text-xs text-slate-900 uppercase flex items-center gap-2">
-                                    <i class="fa-solid fa-file-signature text-slate-800"></i> Rekomendasi / Paklaring / PHK
+                        <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-2xs border border-slate-200/80 dark:border-slate-700 space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                                <h4 class="font-extrabold text-xs text-slate-900 dark:text-white uppercase flex items-center gap-2">
+                                    <i class="fa-solid fa-file-signature text-slate-800 dark:text-slate-300"></i> Rekomendasi / Paklaring / PHK
                                 </h4>
                                 <a href="{{ route('admin.applications.terminations.create', $application) }}" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white font-bold text-3xs rounded-lg transition border border-slate-900">
                                     + Terbitkan
@@ -634,9 +634,9 @@
                             @if($application->terminations && $application->terminations->count() > 0)
                                 <div class="space-y-2 text-xs">
                                     @foreach($application->terminations as $term)
-                                        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between gap-2">
+                                        <div class="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2">
                                             <div class="truncate">
-                                                <span class="font-bold text-slate-900 block truncate">
+                                                <span class="font-bold text-slate-900 dark:text-white block truncate">
                                                     @if($term->document_type === 'recommendation_letter')
                                                         Surat Rekomendasi Kerja
                                                     @elseif($term->document_type === 'paklaring_letter')
@@ -647,7 +647,7 @@
                                                         Surat Selesai Kontrak
                                                     @endif
                                                 </span>
-                                                <span class="text-3xs text-slate-500 font-semibold">No: {{ $term->document_number }}</span>
+                                                <span class="text-3xs text-slate-500 dark:text-slate-400 font-semibold">No: {{ $term->document_number }}</span>
                                             </div>
                                             <a href="{{ route('candidate.terminations.show', $term) }}" target="_blank" class="shrink-0 p-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-3xs font-bold transition">
                                                 <i class="fa-solid fa-file-pdf"></i> PDF
@@ -656,7 +656,7 @@
                                     @endforeach
                                 </div>
                             @else
-                                <p class="text-3xs text-slate-400">Belum ada surat rekomendasi kerja atau paklaring yang diterbitkan.</p>
+                                <p class="text-3xs text-slate-400 dark:text-slate-500">Belum ada surat rekomendasi kerja atau paklaring yang diterbitkan.</p>
                             @endif
                         </div>
                     </div>
@@ -665,12 +665,12 @@
                     @php
                         $userDocuments = \App\Models\CandidateDocument::where('user_id', $application->user_id)->latest()->get();
                     @endphp
-                    <div class="bg-white rounded-3xl p-6 shadow-2xs border border-slate-200/80 space-y-4">
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <h4 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-2xs border border-slate-200/80 dark:border-slate-700 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                            <h4 class="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
                                 <i class="fa-solid fa-folder-open text-amber-500"></i> Vault Berkas & Dokumen Kandidat
                             </h4>
-                            <span class="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-3xs font-black rounded-lg uppercase">
+                            <span class="px-2.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-3xs font-black rounded-lg uppercase">
                                 {{ $userDocuments->count() }} Berkas Ter-upload
                             </span>
                         </div>
@@ -678,49 +678,57 @@
                         @if($userDocuments->count() > 0)
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 @foreach($userDocuments as $doc)
-                                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between gap-3 text-xs">
+                                    <div class="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3 text-xs">
                                         <div class="min-w-0 flex-1">
                                             <span class="px-2 py-0.5 text-3xs font-black rounded-md uppercase border {{ $doc->type_badge_color }}">
                                                 {{ $doc->type_label }}
                                             </span>
-                                            <h5 class="font-bold text-slate-900 truncate mt-1">{{ $doc->title }}</h5>
-                                            <span class="text-3xs text-slate-400 font-medium">{{ strtoupper($doc->file_extension ?? 'PDF') }} • {{ $doc->formatted_size }}</span>
+                                            <h5 class="font-bold text-slate-900 dark:text-white truncate mt-1">{{ $doc->title }}</h5>
+                                            <span class="text-3xs text-slate-400 dark:text-slate-500 font-medium">{{ strtoupper($doc->file_extension ?? 'PDF') }} • {{ $doc->formatted_size }}</span>
                                         </div>
 
-                                        <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="p-2 bg-white hover:bg-blue-50 text-blue-600 rounded-xl border border-slate-200 transition shrink-0" title="Buka Dokumen">
+                                        <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="p-2 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 rounded-xl border border-slate-200 dark:border-slate-700 transition shrink-0" title="Buka Dokumen">
                                             <i class="fa-solid fa-download"></i>
                                         </a>
                                     </div>
                                 @endforeach
                             </div>
                         @else
-                            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center text-xs text-slate-400 font-medium">
+                            <div class="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-700 text-center text-xs text-slate-400 dark:text-slate-500 font-medium">
                                 Kandidat belum mengunggah dokumen pendukung di Vault.
                             </div>
                         @endif
                     </div>
 
                     <!-- CARD 1: PENJADWALAN WAWANCARA (INTERVIEW SCHEDULER) -->
-                    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-200/80 space-y-6">
-                        <div class="border-b border-slate-100 pb-4">
-                            <h4 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
-                                <i class="fa-solid fa-calendar-days text-purple-600"></i> Penjadwalan Wawancara & Undangan Interview
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-200/80 dark:border-slate-700 space-y-6">
+                        <div class="border-b border-slate-100 dark:border-slate-700 pb-4">
+                            <h4 class="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-calendar-days text-purple-600 dark:text-purple-400"></i> Penjadwalan Wawancara & Undangan Interview
                             </h4>
-                            <p class="text-xs text-slate-500 mt-0.5">Atur tanggal, jam, tipe wawancara (Online/Offline), dan tautan Google Meet / lokasi kantor.</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Atur tanggal, jam, tipe wawancara (Online/Offline), dan tautan Google Meet / lokasi kantor.</p>
                         </div>
 
                         @if($application->interview)
-                            <div class="p-5 bg-purple-50 rounded-2xl border border-purple-200/80 space-y-2 text-xs">
-                                <div class="flex items-center justify-between border-b border-purple-200 pb-2">
-                                    <span class="font-extrabold text-purple-900 uppercase">Jadwal Wawancara Terdaftar</span>
-                                    <span class="px-2.5 py-0.5 bg-purple-600 text-white font-black text-3xs rounded-full uppercase">
+                            <div class="p-5 bg-purple-50 dark:bg-purple-950/40 rounded-2xl border border-purple-200/80 dark:border-purple-800/60 space-y-2 text-xs">
+                                <div class="flex items-center justify-between border-b border-purple-200 dark:border-purple-800/60 pb-2">
+                                    <span class="font-extrabold text-purple-900 dark:text-purple-300 uppercase">Jadwal Wawancara Terdaftar</span>
+                                    <span class="px-2.5 py-0.5 bg-purple-600 dark:bg-purple-500 text-white font-black text-3xs rounded-full uppercase shadow-2xs">
                                         {{ strtoupper($application->interview->type) }}
                                     </span>
                                 </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
-                                    <div>📅 <strong>Waktu:</strong> {{ $application->interview->scheduled_at ? $application->interview->scheduled_at->format('d M Y, H:i') : '-' }} WIB</div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1 text-slate-800 dark:text-slate-200">
+                                    <div class="flex items-center gap-1.5">
+                                        <span>📅</span>
+                                        <strong class="text-slate-900 dark:text-white font-bold">Waktu:</strong>
+                                        <span class="text-slate-700 dark:text-slate-300 font-medium">{{ $application->interview->scheduled_at ? $application->interview->scheduled_at->format('d M Y, H:i') : '-' }} WIB</span>
+                                    </div>
                                     @if($application->interview->location_or_link)
-                                        <div>🔗 <strong>Lokasi/Link:</strong> <a href="{{ $application->interview->location_or_link }}" target="_blank" class="text-blue-600 font-bold hover:underline truncate inline-block max-w-xs">{{ $application->interview->location_or_link }}</a></div>
+                                        <div class="flex items-center gap-1.5 min-w-0">
+                                            <span>🔗</span>
+                                            <strong class="text-slate-900 dark:text-white font-bold shrink-0">Lokasi/Link:</strong>
+                                            <a href="{{ $application->interview->location_or_link }}" target="_blank" class="text-blue-600 dark:text-blue-400 font-bold hover:underline truncate inline-block max-w-xs">{{ $application->interview->location_or_link }}</a>
+                                        </div>
                                     @endif
                                 </div>
                             </div>
@@ -730,36 +738,36 @@
                             @csrf
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block font-bold text-slate-700 mb-1">Tanggal & Jam Wawancara</label>
-                                    <input type="datetime-local" name="scheduled_at" required value="{{ optional($application->interview)->scheduled_at ? $application->interview->scheduled_at->format('Y-m-d\TH:i') : '' }}" class="w-full border-slate-300 rounded-xl text-xs focus:ring-blue-500 focus:border-blue-500 font-semibold">
+                                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Tanggal & Jam Wawancara</label>
+                                    <input type="datetime-local" name="scheduled_at" required value="{{ optional($application->interview)->scheduled_at ? $application->interview->scheduled_at->format('Y-m-d\TH:i') : '' }}" class="w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl text-xs focus:ring-purple-500 focus:border-purple-500 font-semibold">
                                 </div>
                                 <div>
-                                    <label class="block font-bold text-slate-700 mb-1">Tipe Wawancara</label>
-                                    <select name="type" required class="w-full border-slate-300 rounded-xl text-xs font-bold focus:ring-blue-500 focus:border-blue-500">
+                                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Tipe Wawancara</label>
+                                    <select name="type" required class="w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl text-xs font-bold focus:ring-purple-500 focus:border-purple-500">
                                         <option value="online" {{ optional($application->interview)->type == 'online' ? 'selected' : '' }}>Online (Google Meet / Zoom)</option>
                                         <option value="offline" {{ optional($application->interview)->type == 'offline' ? 'selected' : '' }}>Offline (Tatap Muka di Kantor)</option>
                                     </select>
                                 </div>
                                 <div class="sm:col-span-2">
-                                    <label class="block font-bold text-slate-700 mb-1">Lokasi Kantor / Tautan Link Google Meet</label>
-                                    <input type="text" name="location_or_link" placeholder="Contoh: https://meet.google.com/abc-defg-hij atau Ruang Rapat 2 Lantai 3" value="{{ optional($application->interview)->location_or_link }}" class="w-full border-slate-300 rounded-xl text-xs font-medium">
+                                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Lokasi Kantor / Tautan Link Google Meet</label>
+                                    <input type="text" name="location_or_link" placeholder="Contoh: https://meet.google.com/abc-defg-hij atau Ruang Rapat 2 Lantai 3" value="{{ optional($application->interview)->location_or_link }}" class="w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl text-xs font-medium">
                                 </div>
                             </div>
 
-                            <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs shadow-2xs transition flex items-center gap-1.5">
+                            <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
                                 <i class="fa-solid fa-paper-plane"></i> Simpan & Kirim Undangan Interview
                             </button>
                         </form>
                     </div>
 
                     <!-- CARD 2: OFFER LETTER BUILDER -->
-                    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-200/80 space-y-4">
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-3">
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-200/80 dark:border-slate-700 space-y-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 dark:border-slate-700 pb-4 gap-3">
                             <div>
-                                <h4 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
-                                    <i class="fa-solid fa-file-contract text-emerald-600"></i> Surat Penawaran Kerja (Offer Letter)
+                                <h4 class="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-file-contract text-emerald-600 dark:text-emerald-400"></i> Surat Penawaran Kerja (Offer Letter)
                                 </h4>
-                                <p class="text-xs text-slate-500 mt-0.5">Terbitkan penawaran kerja resmi dengan rincian gaji & tanggal mulai kerja.</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Terbitkan penawaran kerja resmi dengan rincian gaji & tanggal mulai kerja.</p>
                             </div>
 
                             <a href="{{ route('admin.applications.offer-letter.create', $application->id) }}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-2xs transition border border-emerald-600 shrink-0">
@@ -769,29 +777,29 @@
                     </div>
 
                     <!-- CARD 3: EMAIL TEMPLATE ENGINE -->
-                    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-200/80 space-y-6" x-data="emailTemplateEngine()">
-                        <div class="border-b border-slate-100 pb-4">
-                            <h4 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
-                                <i class="fa-solid fa-envelope-open-text text-indigo-600"></i> Generator Email Template Otomatis
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-200/80 dark:border-slate-700 space-y-6" x-data="emailTemplateEngine()">
+                        <div class="border-b border-slate-100 dark:border-slate-700 pb-4">
+                            <h4 class="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-envelope-open-text text-indigo-600 dark:text-indigo-400"></i> Generator Email Template Otomatis
                             </h4>
-                            <p class="text-xs text-slate-500 mt-0.5">Kirim email pemberitahuan ke pelamar dalam satu kali klik.</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kirim email pemberitahuan ke pelamar dalam satu kali klik.</p>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                            <button type="button" @click="loadTemplate('interview')" class="p-3.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold rounded-2xl border border-indigo-200 transition text-left space-y-1">
+                            <button type="button" @click="loadTemplate('interview')" class="p-3.5 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-900 dark:text-indigo-200 font-bold rounded-2xl border border-indigo-200 dark:border-indigo-800/60 transition text-left space-y-1">
                                 <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-calendar-check text-indigo-600"></i>
+                                    <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400"></i>
                                     <span>1. Template Undangan Wawancara</span>
                                 </div>
-                                <p class="text-3xs text-indigo-700 font-medium">Format email undangan wawancara resmi beserta detail jadwal & tautan.</p>
+                                <p class="text-3xs text-indigo-700 dark:text-indigo-300 font-medium">Format email undangan wawancara resmi beserta detail jadwal & tautan.</p>
                             </button>
 
-                            <button type="button" @click="loadTemplate('rejection')" class="p-3.5 bg-rose-50 hover:bg-rose-100 text-rose-900 font-bold rounded-2xl border border-rose-200 transition text-left space-y-1">
+                            <button type="button" @click="loadTemplate('rejection')" class="p-3.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-900 dark:text-rose-200 font-bold rounded-2xl border border-rose-200 dark:border-rose-800/60 transition text-left space-y-1">
                                 <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-heart-crack text-rose-600"></i>
+                                    <i class="fa-solid fa-heart-crack text-rose-600 dark:text-rose-400"></i>
                                     <span>2. Template Penolakan Halus</span>
                                 </div>
-                                <p class="text-3xs text-rose-700 font-medium">Format email apresiasi & penolakan sopan (Friendly Rejection Letter).</p>
+                                <p class="text-3xs text-rose-700 dark:text-rose-300 font-medium">Format email apresiasi & penolakan sopan (Friendly Rejection Letter).</p>
                             </button>
                         </div>
 
@@ -800,46 +808,46 @@
                             <input type="hidden" name="template_type" x-model="templateType">
 
                             <div>
-                                <label class="block font-bold text-slate-700 mb-1">Subjek Email</label>
-                                <input type="text" name="subject" x-model="subject" required class="w-full border-slate-300 rounded-xl text-xs font-bold focus:ring-indigo-500 focus:border-indigo-500">
+                                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Subjek Email</label>
+                                <input type="text" name="subject" x-model="subject" required class="w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl text-xs font-bold focus:ring-indigo-500 focus:border-indigo-500">
                             </div>
 
                             <div>
-                                <label class="block font-bold text-slate-700 mb-1">Isi Pesan Email (Body)</label>
-                                <textarea name="body" rows="6" x-model="body" required class="w-full border-slate-300 rounded-xl text-xs font-medium focus:ring-indigo-500 focus:border-indigo-500 leading-relaxed"></textarea>
+                                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Isi Pesan Email (Body)</label>
+                                <textarea name="body" rows="6" x-model="body" required class="w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl text-xs font-medium focus:ring-indigo-500 focus:border-indigo-500 leading-relaxed"></textarea>
                             </div>
 
-                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs shadow-2xs transition flex items-center gap-1.5">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
                                 <i class="fa-solid fa-paper-plane"></i> Kirim Email Template Ke Candidate
                             </button>
                         </form>
                     </div>
 
                     <!-- CARD 4: PESAN LANGSUNG / LIVE CHAT (HR ↔ KANDIDAT) -->
-                    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-200/80 space-y-6" x-data="liveChat('{{ route('applications.messages.fetch', $application->id) }}', '{{ route('applications.messages.send', $application->id) }}')">
-                        <div class="border-b border-slate-100 pb-4">
-                            <h4 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
-                                <i class="fa-solid fa-comments text-blue-600"></i> Obrolan Langsung / Live Chat (HR ↔ Kandidat)
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-200/80 dark:border-slate-700 space-y-6" x-data="liveChat('{{ route('applications.messages.fetch', $application->id) }}', '{{ route('applications.messages.send', $application->id) }}')">
+                        <div class="border-b border-slate-100 dark:border-slate-700 pb-4">
+                            <h4 class="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-comments text-blue-600 dark:text-blue-400"></i> Obrolan Langsung / Live Chat (HR ↔ Kandidat)
                             </h4>
-                            <p class="text-xs text-slate-500 mt-0.5">Komunikasi pesan teks langsung real-time dengan pelamar.</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Komunikasi pesan teks langsung real-time dengan pelamar.</p>
                         </div>
 
-                        <div class="h-64 overflow-y-auto p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3" id="chat-box">
+                        <div class="h-64 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-700 space-y-3" id="chat-box">
                             <template x-for="msg in messages" :key="msg.id">
                                 <div :class="msg.is_me ? 'text-right' : 'text-left'">
-                                    <div :class="msg.is_me ? 'bg-blue-600 text-white rounded-2xl rounded-tr-xs' : 'bg-white text-slate-800 border border-slate-200 rounded-2xl rounded-tl-xs'" class="inline-block px-4 py-2.5 max-w-md text-xs shadow-2xs">
+                                    <div :class="msg.is_me ? 'bg-blue-600 text-white rounded-2xl rounded-tr-xs' : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-xs'" class="inline-block px-4 py-2.5 max-w-md text-xs shadow-2xs">
                                         <div class="font-bold text-3xs opacity-80 mb-0.5" x-text="msg.sender_name"></div>
                                         <div x-text="msg.message"></div>
                                         <div class="text-3xs opacity-70 mt-1" x-text="msg.time"></div>
                                     </div>
                                 </div>
                             </template>
-                            <p x-show="messages.length === 0" class="text-xs text-slate-400 text-center py-12">Belum ada obrolan. Ketik pesan di bawah untuk memulai percakapan.</p>
+                            <p x-show="messages.length === 0" class="text-xs text-slate-400 dark:text-slate-500 text-center py-12">Belum ada obrolan. Ketik pesan di bawah untuk memulai percakapan.</p>
                         </div>
 
                         <form @submit.prevent="sendMsg" class="flex gap-2">
-                            <input type="text" x-model="newMessage" placeholder="Ketik pesan untuk kandidat..." required class="flex-1 border-slate-300 rounded-xl text-xs focus:ring-blue-500 focus:border-blue-500 font-medium">
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs shadow-2xs transition flex items-center gap-1.5">
+                            <input type="text" x-model="newMessage" placeholder="Ketik pesan untuk kandidat..." required class="flex-1 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl text-xs focus:ring-blue-500 focus:border-blue-500 font-medium">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
                                 <i class="fa-solid fa-paper-plane"></i> Kirim
                             </button>
                         </form>
