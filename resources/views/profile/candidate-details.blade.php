@@ -18,6 +18,13 @@
                 </a>
             </div>
 
+            @if (session('success') || session('status'))
+                <div class="mb-6 p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 rounded-xl shadow-2xs text-xs flex items-center gap-3">
+                    <i class="fa-solid fa-circle-check text-emerald-600 text-lg shrink-0"></i>
+                    <span class="font-bold">{{ session('success') ?? 'Data profil berhasil diperbarui!' }}</span>
+                </div>
+            @endif
+
             @if ($errors->any())
                 <div class="mb-6 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl shadow-2xs text-xs">
                     <p class="font-bold text-sm">Ada beberapa kesalahan saat menyimpan data:</p>
@@ -173,8 +180,9 @@
 
                     <!-- Form Content Area -->
                     <div class="w-full lg:flex-1 min-w-0">
-                        <form method="post" action="{{ route('profile.candidate.details.update') }}" enctype="multipart/form-data" class="space-y-6">
+                        <form method="post" action="{{ route('profile.candidate.details.update') }}" enctype="multipart/form-data" novalidate class="space-y-6">
                             @csrf
+                            <input type="hidden" name="_active_tab" :value="activeTab">
 
                         <!-- 1. INFORMASI PRIBADI -->
                         <div x-show="activeTab === 1" class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xs border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors">
@@ -1495,7 +1503,7 @@
     <script>
         function resumeForm() {
             return {
-                activeTab: 1,
+                activeTab: {{ (int) old('_active_tab', session('active_tab', 1)) }},
                 tabs: [
                     { id: 1, label: 'Informasi Pribadi' },
                     { id: 2, label: 'Ringkasan Profil' },

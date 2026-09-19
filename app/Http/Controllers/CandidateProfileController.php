@@ -138,20 +138,21 @@ class CandidateProfileController extends Controller
             'name' => 'required|string|max:255',
             
             // Personal Info
-            'nickname' => 'required|string|max:100',
-            'phone' => 'required|string|max:20',
-            'birth_place' => 'required|string|max:255',
-            'dob' => 'required|date',
-            'gender' => 'required|in:male,female',
-            'nationality' => 'required|string|max:255',
-            'address' => 'required|string',
-            'city' => 'required|string|max:255',
-            'province' => 'required|string|max:255',
-            'postal_code' => 'required|string|max:20',
-            'summary' => 'required|string',
+            'nickname' => 'nullable|string|max:100',
+            'phone' => 'nullable|string|max:20',
+            'birth_place' => 'nullable|string|max:255',
+            'dob' => 'nullable|date',
+            'gender' => 'nullable|in:male,female',
+            'nationality' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string|max:255',
+            'province' => 'nullable|string|max:255',
+            'district' => 'nullable|string|max:255',
+            'postal_code' => 'nullable|string|max:20',
+            'summary' => 'nullable|string',
             
             // New Indonesian Standard Fields
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'marital_status' => 'nullable|string|in:Lajang,Menikah,Cerai',
             'religion' => 'nullable|string|max:50',
             'nik' => 'nullable|string|max:20',
@@ -235,7 +236,9 @@ class CandidateProfileController extends Controller
 
         $profile->update($data);
 
-        return redirect()->route('profile.candidate.details.edit')->with('status', 'candidate-details-updated');
+        return redirect()->route('profile.candidate.details.edit')
+            ->with('active_tab', $request->input('_active_tab', 1))
+            ->with('success', 'Data profil & resume Anda berhasil disimpan!');
     }
 
     /**
