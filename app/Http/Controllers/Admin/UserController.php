@@ -10,6 +10,7 @@ use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class UserController extends Controller
@@ -465,5 +466,23 @@ class UserController extends Controller
         AuditLog::record('company_deleted', "Super Admin menghapus profil perusahaan {$companyName}");
 
         return back()->with('success', "Profil perusahaan {$companyName} beserta seluruh lowongan terkait berhasil DIHAPUS PERMANEN.");
+    }
+
+    /**
+     * Preview / Stream Company Profile Legal Document for Super Admin.
+     */
+    public function viewCompanyDocument(CompanyProfile $company)
+    {
+        if (!$company->legal_doc_path || !Storage::disk('public')->exists($company->legal_doc_path)) {
+            abort(404, 'Dokumen legalitas perusahaan tidak ditemukan pada server.');
+        }
+
+        $fullPath = Storage::disk('public')->path($company->legal_doc_path);
+        $mimeType = Storage::disk('public')->mimeType($company->legal_doc_path) ?: 'application/pdf';
+
+        return response()->file($fullPath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . basename($company->legal_doc_path) . '"'
+        ]);
     }
 }

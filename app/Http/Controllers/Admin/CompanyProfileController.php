@@ -117,4 +117,25 @@ class CompanyProfileController extends Controller
 
         return back()->with('success', 'Profil & Halaman Karir Perusahaan berhasil diperbarui!');
     }
+
+    /**
+     * Preview / Stream Company Profile Legal Document (NIB/SIUP) securely inline in browser.
+     */
+    public function viewDocument()
+    {
+        $user = Auth::user();
+        $profile = $user->currentCompanyProfile();
+
+        if (!$profile || !$profile->legal_doc_path || !Storage::disk('public')->exists($profile->legal_doc_path)) {
+            abort(404, 'Dokumen legalitas perusahaan tidak ditemukan pada server.');
+        }
+
+        $fullPath = Storage::disk('public')->path($profile->legal_doc_path);
+        $mimeType = Storage::disk('public')->mimeType($profile->legal_doc_path) ?: 'application/pdf';
+
+        return response()->file($fullPath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . basename($profile->legal_doc_path) . '"'
+        ]);
+    }
 }

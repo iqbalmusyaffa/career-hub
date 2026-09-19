@@ -157,7 +157,7 @@
                                     <td class="py-3.5 px-4 whitespace-nowrap">
                                         @if($company->legal_doc_path)
                                             <div class="flex items-center gap-2">
-                                                <a href="{{ Storage::url($company->legal_doc_path) }}" target="_blank" class="px-2.5 py-1 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 transition inline-flex items-center gap-1.5 shadow-2xs">
+                                                <a href="{{ route('admin.companies.document', $company->id) }}" target="_blank" class="px-2.5 py-1 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 transition inline-flex items-center gap-1.5 shadow-2xs">
                                                     <i class="fa-solid fa-file-pdf text-rose-500 text-xs"></i>
                                                     <span>NIB / SIUP</span>
                                                 </a>

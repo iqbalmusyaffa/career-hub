@@ -59,7 +59,7 @@
                                     </td>
                                     <td class="py-4 text-xs">
                                         @if($r->legal_doc_path)
-                                            <a href="{{ Storage::url($r->legal_doc_path) }}" target="_blank" class="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-xl text-3xs font-bold inline-flex items-center gap-1.5 border border-blue-200 dark:border-blue-800 transition">
+                                            <a href="{{ route('admin.role-requests.document', $r->encrypted_id) }}" target="_blank" class="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-xl text-3xs font-bold inline-flex items-center gap-1.5 border border-blue-200 dark:border-blue-800 transition">
                                                 <i class="fa-solid fa-file-pdf text-rose-500"></i> Pratinjau NIB PDF
                                             </a>
                                         @else

@@ -130,7 +130,7 @@
                         <input type="file" name="legal_doc" accept=".pdf,.jpg,.png"
                                class="block w-full text-xs text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-200 dark:file:bg-slate-800 file:text-slate-700 dark:file:text-slate-300 hover:file:bg-slate-300 dark:hover:file:bg-slate-700 transition cursor-pointer">
                         @if($profile->legal_doc_path)
-                            <a href="{{ Storage::url($profile->legal_doc_path) }}" target="_blank" class="text-[11px] text-blue-600 dark:text-blue-400 font-semibold hover:underline mt-1 inline-flex items-center gap-1">
+                            <a href="{{ route('admin.company.profile.document') }}" target="_blank" class="text-[11px] text-blue-600 dark:text-blue-400 font-semibold hover:underline mt-1 inline-flex items-center gap-1">
                                 <i class="fa-solid fa-file-pdf"></i> Lihat File Legalitas Terunggah
                             </a>
                         @endif

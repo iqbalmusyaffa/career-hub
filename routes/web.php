@@ -189,6 +189,7 @@ Route::middleware('auth')->group(function () {
     // Candidate Company Role Request Submission & Tracking
     Route::get('/profile/request-company-role', [\App\Http\Controllers\CompanyRoleRequestController::class, 'show'])->name('profile.role-request.show');
     Route::post('/profile/request-company-role', [\App\Http\Controllers\CompanyRoleRequestController::class, 'store'])->name('profile.role-request.store');
+    Route::get('/profile/request-company-role/{id}/document', [\App\Http\Controllers\CompanyRoleRequestController::class, 'viewDocument'])->name('profile.role-request.document');
 
     // UMK 2026 Lookup & Cities API Route
     Route::get('/api/umk-lookup', [\App\Http\Controllers\Api\UmkController::class, 'lookup'])->name('api.umk.lookup');
@@ -323,6 +324,7 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
     Route::resource('jobs', JobController::class);
     Route::get('/company-profile', [\App\Http\Controllers\Admin\CompanyProfileController::class, 'edit'])->name('company.profile.edit');
     Route::post('/company-profile', [\App\Http\Controllers\Admin\CompanyProfileController::class, 'update'])->name('company.profile.update');
+    Route::get('/company-profile/document', [\App\Http\Controllers\Admin\CompanyProfileController::class, 'viewDocument'])->name('company.profile.document');
     Route::get('/applications/export/csv', [ApplicationController::class, 'exportCsv'])->name('applications.export.csv');
     Route::get('/applications/export/pdf', [ApplicationController::class, 'exportPdf'])->name('applications.export.pdf');
     Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index');
@@ -459,6 +461,7 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
         Route::delete('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
 
         Route::get('/companies', [\App\Http\Controllers\Admin\UserController::class, 'companies'])->name('companies.index');
+        Route::get('/companies/{company}/document', [\App\Http\Controllers\Admin\UserController::class, 'viewCompanyDocument'])->name('companies.document');
         Route::put('/companies/{company}', [\App\Http\Controllers\Admin\UserController::class, 'updateCompany'])->name('companies.update');
         Route::delete('/companies/{company}', [\App\Http\Controllers\Admin\UserController::class, 'destroyCompany'])->name('companies.destroy');
         Route::patch('/companies/{company}/toggle-verify', [\App\Http\Controllers\Admin\UserController::class, 'toggleCompanyVerify'])->name('companies.toggle-verify');
@@ -479,6 +482,7 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
 
         // Super Admin Company & HR Role Request Approval Center
         Route::get('/role-requests', [\App\Http\Controllers\Admin\AdminRoleRequestController::class, 'index'])->name('role-requests.index');
+        Route::get('/role-requests/{id}/document', [\App\Http\Controllers\Admin\AdminRoleRequestController::class, 'viewDocument'])->name('role-requests.document');
         Route::post('/role-requests/{id}/approve', [\App\Http\Controllers\Admin\AdminRoleRequestController::class, 'approve'])->name('role-requests.approve');
         Route::post('/role-requests/{id}/reject', [\App\Http\Controllers\Admin\AdminRoleRequestController::class, 'reject'])->name('role-requests.reject');
 

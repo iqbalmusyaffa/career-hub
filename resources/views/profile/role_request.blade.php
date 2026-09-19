@@ -52,7 +52,7 @@
                                 </div>
 
                                 @if($r->legal_doc_path)
-                                    <a href="{{ Storage::url($r->legal_doc_path) }}" target="_blank" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-300 dark:border-slate-600">
+                                    <a href="{{ route('profile.role-request.document', $r->encrypted_id) }}" target="_blank" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-300 dark:border-slate-600">
                                         <i class="fa-solid fa-file-pdf text-rose-600"></i> Lihat Dokumen Legal
                                     </a>
                                 @endif

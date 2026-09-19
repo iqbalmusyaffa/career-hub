@@ -6,6 +6,7 @@ use App\Models\CompanyRoleRequest;
 use App\Models\CompanyProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CompanyRoleRequestController extends Controller
@@ -83,5 +84,29 @@ class CompanyRoleRequestController extends Controller
         \App\Models\AuditLog::record('company_role_requested', "Pengguna {$user->name} mengajukan pendaftaran akun perusahaan '{$request->company_name}'");
 
         return redirect()->back()->with('success', 'Pengajuan Akun Perusahaan berhasil dikirim! Tim Super Admin akan memverifikasi dokumen Anda.');
+    }
+
+    /**
+     * Preview / Stream User's own Company Legal Document (NIB/SIUP) securely inline in browser.
+     */
+    public function viewDocument($id)
+    {
+        $roleRequest = CompanyRoleRequest::findByEncryptedIdOrFail($id);
+
+        if ($roleRequest->user_id !== Auth::id() && !Auth::user()->hasRole('Super Admin')) {
+            abort(403, 'Anda tidak memiliki otorisasi untuk melihat dokumen ini.');
+        }
+
+        if (!$roleRequest->legal_doc_path || !Storage::disk('public')->exists($roleRequest->legal_doc_path)) {
+            abort(404, 'Dokumen legalitas tidak ditemukan pada server.');
+        }
+
+        $fullPath = Storage::disk('public')->path($roleRequest->legal_doc_path);
+        $mimeType = Storage::disk('public')->mimeType($roleRequest->legal_doc_path) ?: 'application/pdf';
+
+        return response()->file($fullPath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . basename($roleRequest->legal_doc_path) . '"'
+        ]);
     }
 }

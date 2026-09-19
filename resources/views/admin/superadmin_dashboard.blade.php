@@ -181,7 +181,7 @@
                                         </div>
                                         <div class="flex items-center gap-2 shrink-0">
                                             @if($rr->legal_doc_path)
-                                                <a href="{{ Storage::url($rr->legal_doc_path) }}" target="_blank" class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-xs transition flex items-center gap-1.5 shadow-2xs">
+                                                <a href="{{ route('admin.role-requests.document', $rr->encrypted_id) }}" target="_blank" class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-xs transition flex items-center gap-1.5 shadow-2xs">
                                                     <i class="fa-solid fa-file-pdf text-rose-500 text-xs"></i> NIB / Dokumen
                                                 </a>
                                             @endif
@@ -217,7 +217,7 @@
                                         </div>
                                         <div class="flex items-center gap-2 shrink-0">
                                             @if($cp->legal_doc_path)
-                                                <a href="{{ asset('storage/' . $cp->legal_doc_path) }}" target="_blank" class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-xs transition flex items-center gap-1.5 shadow-2xs">
+                                                <a href="{{ route('admin.companies.document', $cp->id) }}" target="_blank" class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-xs transition flex items-center gap-1.5 shadow-2xs">
                                                     <i class="fa-solid fa-file-pdf text-rose-500 text-xs"></i> Dokumen
                                                 </a>
                                             @endif

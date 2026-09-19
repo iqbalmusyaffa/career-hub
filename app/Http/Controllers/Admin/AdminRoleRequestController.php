@@ -7,6 +7,7 @@ use App\Models\CompanyRoleRequest;
 use App\Models\CompanyProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AdminRoleRequestController extends Controller
 {
@@ -220,6 +221,26 @@ class AdminRoleRequestController extends Controller
 
         return redirect()->back()->with('success', "Pengajuan Perusahaan '{$roleRequest->company_name}' telah ditolak.");
     }
+
+    /**
+     * Preview / Stream Company Legal Document (NIB/SIUP) securely inline in browser.
+     */
+     public function viewDocument($id)
+     {
+         $roleRequest = CompanyRoleRequest::findByEncryptedIdOrFail($id);
+
+         if (!$roleRequest->legal_doc_path || !Storage::disk('public')->exists($roleRequest->legal_doc_path)) {
+             abort(404, 'Dokumen legalitas tidak ditemukan pada server.');
+         }
+
+         $fullPath = Storage::disk('public')->path($roleRequest->legal_doc_path);
+         $mimeType = Storage::disk('public')->mimeType($roleRequest->legal_doc_path) ?: 'application/pdf';
+
+         return response()->file($fullPath, [
+             'Content-Type' => $mimeType,
+             'Content-Disposition' => 'inline; filename="' . basename($roleRequest->legal_doc_path) . '"'
+         ]);
+     }
 
     /**
      * Helper to normalize company name by stripping legal prefixes (PT, CV, UD, Inc, Ltd, etc.)
