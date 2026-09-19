@@ -138,50 +138,101 @@
             <!-- Content Grid: Pending Legal Documents & Recent Registrations -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                <!-- Table 1: Pending Company Legal Approvals -->
+                <!-- Table 1: Pending Company & Role Approvals -->
                 <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xs border border-slate-200/80 dark:border-slate-700/80 p-5 sm:p-6 space-y-4">
                     <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700/60 pb-3">
                         <div>
                             <h3 class="font-bold text-sm text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                                <i class="fa-solid fa-file-shield text-amber-500 text-xs"></i> Permohonan Verifikasi Legalitas
+                                <i class="fa-solid fa-file-shield text-amber-500 text-xs"></i> Permohonan Verifikasi & Akun Perusahaan
+                                @if(isset($pendingRoleRequestsCount) && $pendingRoleRequestsCount > 0)
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white animate-pulse">{{ $pendingRoleRequestsCount }} Baru</span>
+                                @endif
                             </h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-normal">Perusahaan yang mengunggah berkas legalitas (NIB / SIUP).</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-normal">Pendaftaran akun Perusahaan/HR baru & unggahan berkas legalitas (NIB/SIUP).</p>
                         </div>
-                        <a href="{{ route('admin.companies.index') }}" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
-                            Lihat Semua &rarr;
+                        <a href="{{ route('admin.role-requests.index') }}" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                            Pusat Verifikasi &rarr;
                         </a>
                     </div>
 
-                    @if(count($pendingCompaniesList) > 0)
+                    @php
+                        $hasPending = (isset($pendingRoleRequests) && count($pendingRoleRequests) > 0) || (isset($pendingCompaniesList) && count($pendingCompaniesList) > 0);
+                    @endphp
+
+                    @if($hasPending)
                         <div class="space-y-3">
-                            @foreach($pendingCompaniesList as $cp)
-                                <div class="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200/80 dark:border-slate-700/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                                    <div class="space-y-1">
-                                        <div class="flex items-center gap-2">
-                                            <span class="font-bold text-slate-900 dark:text-white text-xs">{{ $cp->company_name }}</span>
-                                            <span class="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded text-[10px] font-semibold border border-amber-200 dark:border-amber-800">Menunggu Review</span>
+                            {{-- 1. Pending Role Requests (from Candidate/User) --}}
+                            @if(isset($pendingRoleRequests) && count($pendingRoleRequests) > 0)
+                                @foreach($pendingRoleRequests as $rr)
+                                    <div class="p-3.5 bg-blue-50/60 dark:bg-slate-900/80 rounded-xl border border-blue-200/60 dark:border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                                        <div class="space-y-1">
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="font-bold text-slate-900 dark:text-white text-xs">{{ $rr->company_name }}</span>
+                                                <span class="px-2 py-0.5 bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 rounded text-[10px] font-bold border border-blue-200 dark:border-blue-800">
+                                                    Pengajuan Akun {{ $rr->requested_role ?: 'Company' }}
+                                                </span>
+                                                <span class="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded text-[10px] font-semibold border border-amber-200 dark:border-amber-800">
+                                                    Menunggu Review
+                                                </span>
+                                            </div>
+                                            <p class="text-slate-500 dark:text-slate-400 text-[11px] font-normal">
+                                                Pemohon: <strong class="text-slate-700 dark:text-slate-300">{{ $rr->user->name ?? 'User' }}</strong> ({{ $rr->user->email ?? '-' }}) &bull; Telp: {{ $rr->phone ?? '-' }} &bull; {{ $rr->industry ?? 'Umum' }}
+                                            </p>
                                         </div>
-                                        <p class="text-slate-500 dark:text-slate-400 text-[11px] font-normal">
-                                            Penanggung Jawab: {{ $cp->user->name ?? '-' }} ({{ $cp->user->email ?? '-' }})
-                                        </p>
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            @if($rr->legal_doc_path)
+                                                <a href="{{ Storage::url($rr->legal_doc_path) }}" target="_blank" class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-xs transition flex items-center gap-1.5 shadow-2xs">
+                                                    <i class="fa-solid fa-file-pdf text-rose-500 text-xs"></i> NIB / Dokumen
+                                                </a>
+                                            @endif
+                                            <form action="{{ route('admin.role-requests.approve', $rr->encrypted_id) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" onclick="return confirm('Setujui pengajuan perusahaan {{ addslashes($rr->company_name) }}? Role pemohon akan diubah menjadi Company Owner.')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition text-xs shadow-2xs flex items-center gap-1">
+                                                    <i class="fa-solid fa-check"></i> Setujui
+                                                </button>
+                                            </form>
+                                            <form action="{{ route('admin.role-requests.reject', $rr->encrypted_id) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" onclick="return confirm('Tolak pengajuan perusahaan ini?')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 font-semibold rounded-lg border border-rose-200 dark:border-rose-800 text-xs transition">
+                                                    Tolak
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-2 shrink-0">
-                                        @if($cp->legal_doc_path)
-                                            <a href="{{ asset('storage/' . $cp->legal_doc_path) }}" target="_blank" class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-xs transition flex items-center gap-1.5 shadow-2xs">
-                                                <i class="fa-solid fa-file-pdf text-rose-500 text-xs"></i> Dokumen
+                                @endforeach
+                            @endif
+
+                            {{-- 2. Pending Company Profile Document Verifications --}}
+                            @if(isset($pendingCompaniesList) && count($pendingCompaniesList) > 0)
+                                @foreach($pendingCompaniesList as $cp)
+                                    <div class="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200/80 dark:border-slate-700/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                                        <div class="space-y-1">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-bold text-slate-900 dark:text-white text-xs">{{ $cp->company_name }}</span>
+                                                <span class="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded text-[10px] font-semibold border border-amber-200 dark:border-amber-800">Verifikasi Berkas Legal</span>
+                                            </div>
+                                            <p class="text-slate-500 dark:text-slate-400 text-[11px] font-normal">
+                                                Penanggung Jawab: {{ $cp->user->name ?? '-' }} ({{ $cp->user->email ?? '-' }})
+                                            </p>
+                                        </div>
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            @if($cp->legal_doc_path)
+                                                <a href="{{ asset('storage/' . $cp->legal_doc_path) }}" target="_blank" class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-xs transition flex items-center gap-1.5 shadow-2xs">
+                                                    <i class="fa-solid fa-file-pdf text-rose-500 text-xs"></i> Dokumen
+                                                </a>
+                                            @endif
+                                            <a href="{{ route('admin.companies.index') }}" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition text-xs shadow-2xs">
+                                                Tinjau &rarr;
                                             </a>
-                                        @endif
-                                        <a href="{{ route('admin.companies.index') }}" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition text-xs shadow-2xs">
-                                            Tinjau &rarr;
-                                        </a>
+                                        </div>
                                     </div>
-                                </div>
-                            @endforeach
+                                @endforeach
+                            @endif
                         </div>
                     @else
                         <div class="p-8 text-center bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 font-normal">
                             <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 text-lg mb-1 block"></i>
-                            Semua dokumen legalitas perusahaan telah selesai diverifikasi.
+                            Semua dokumen legalitas dan permohonan akun perusahaan telah selesai diproses.
                         </div>
                     @endif
                 </div>

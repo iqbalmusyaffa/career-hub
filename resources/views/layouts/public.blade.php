@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ config('app.name', 'KarirHub') }} - Platform Lowongan Kerja & Karir</title>
+        <title>{{ (config('app.name') && config('app.name') !== 'Laravel') ? config('app.name') : 'KarirHub' }} - Platform Lowongan Kerja & Karir</title>
         <!-- Fonts & Icons -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
@@ -23,7 +23,7 @@
                                 <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-xs group-hover:bg-blue-700 transition-colors">
                                     <i class="fa-solid fa-briefcase text-sm"></i>
                                 </div>
-                                <span class="font-bold tracking-tight">{{ config('app.name', 'KarirHub') }}</span>
+                                <span class="font-bold tracking-tight">{{ (config('app.name') && config('app.name') !== 'Laravel') ? config('app.name') : 'KarirHub' }}</span>
                             </a>
                         </div>
                         <div class="hidden sm:-my-px sm:ml-8 sm:flex sm:items-center sm:space-x-1">

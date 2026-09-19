@@ -172,6 +172,19 @@
                             <span>Kelola Perusahaan</span>
                         </a>
 
+                        @php
+                            $sidebarPendingRoleCount = \App\Models\CompanyRoleRequest::where('status', 'pending')->count();
+                        @endphp
+                        <a href="{{ route('admin.role-requests.index') }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('admin.role-requests.*') ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-file-shield text-xs w-4 text-center"></i>
+                                <span>Pengajuan Akun Perusahaan</span>
+                            </div>
+                            @if($sidebarPendingRoleCount > 0)
+                                <span class="px-2 py-0.5 bg-amber-400 text-slate-950 text-[10px] font-extrabold rounded-full">{{ $sidebarPendingRoleCount }}</span>
+                            @endif
+                        </a>
+
                         <a href="{{ route('admin.settings.smtp.edit') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('admin.settings.smtp.*') ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <i class="fa-solid fa-sliders text-xs w-4 text-center"></i>
                             <span>Pengaturan SMTP</span>

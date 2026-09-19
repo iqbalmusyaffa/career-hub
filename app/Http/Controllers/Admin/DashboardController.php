@@ -10,6 +10,8 @@ use App\Models\CompanyProfile;
 use App\Models\JobTest;
 use Illuminate\Support\Facades\Auth;
 
+use App\Models\CompanyRoleRequest;
+
 class DashboardController extends Controller
 {
     public function index()
@@ -22,15 +24,26 @@ class DashboardController extends Controller
             $totalCandidates = \Spatie\Permission\Models\Role::where('name', 'Candidate')->exists() ? User::role('Candidate')->count() : 0;
             $totalCompanies = \Spatie\Permission\Models\Role::whereIn('name', ['HR', 'Company Owner'])->exists() ? User::role(['HR', 'Company Owner'])->count() : 0;
             $verifiedCompanies = CompanyProfile::where('is_verified', true)->count();
-            $pendingCompanyVerifications = CompanyProfile::whereNotNull('legal_doc_path')
+            
+            $pendingRoleRequestsCount = CompanyRoleRequest::where('status', 'pending')->count();
+            $pendingCompanyProfileVerifications = CompanyProfile::whereNotNull('legal_doc_path')
                 ->where('is_verified', false)
                 ->count();
+            $pendingCompanyVerifications = $pendingRoleRequestsCount + $pendingCompanyProfileVerifications;
+            
             $suspendedUsers = User::where('is_suspended', true)->count();
             
             $totalJobs = Job::count();
             $activeJobs = Job::where('status', 'active')->count();
             $totalApplications = Application::count();
             $totalTests = JobTest::count();
+
+            // Pending Company & HR Role Requests
+            $pendingRoleRequests = CompanyRoleRequest::with('user')
+                ->where('status', 'pending')
+                ->latest()
+                ->take(5)
+                ->get();
 
             // Companies requiring legal document verification
             $pendingCompaniesList = CompanyProfile::with('user')
@@ -45,7 +58,8 @@ class DashboardController extends Controller
 
             return view('admin.superadmin_dashboard', compact(
                 'totalUsers', 'totalCandidates', 'totalCompanies', 'verifiedCompanies',
-                'pendingCompanyVerifications', 'suspendedUsers', 'totalJobs', 'activeJobs',
+                'pendingCompanyVerifications', 'pendingRoleRequestsCount', 'pendingRoleRequests',
+                'suspendedUsers', 'totalJobs', 'activeJobs',
                 'totalApplications', 'totalTests', 'pendingCompaniesList', 'recentUsers'
             ));
         }
