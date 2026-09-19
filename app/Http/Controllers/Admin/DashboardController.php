@@ -64,27 +64,46 @@ class DashboardController extends Controller
             ));
         }
 
+        $companyProfile = $user->currentCompanyProfile();
+        $companyName = $companyProfile ? $companyProfile->company_name : null;
+
         if ($user->hasRole('Company Owner')) {
             // Company Owner Executive Overview Dashboard
-            $companyProfile = CompanyProfile::firstOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'company_name' => 'PT ' . $user->name,
-                    'industry' => 'Teknologi & Bisnis',
-                    'is_verified' => false,
-                ]
-            );
+            if (!$companyProfile) {
+                $companyProfile = CompanyProfile::firstOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'company_name' => 'PT ' . $user->name,
+                        'industry' => 'Teknologi & Bisnis',
+                        'is_verified' => false,
+                    ]
+                );
+                $companyName = $companyProfile->company_name;
+            }
 
-            $companyJobs = Job::withCount('applications')->latest()->get();
+            $jobsQuery = Job::query();
+            $appQuery = Application::query();
+
+            if ($companyName) {
+                $jobsQuery->where('company_name', 'LIKE', '%' . $companyName . '%');
+                $appQuery->whereHas('job', function($j) use ($companyName) {
+                    $j->where('company_name', 'LIKE', '%' . $companyName . '%');
+                });
+            } else {
+                $jobsQuery->whereRaw('1 = 0');
+                $appQuery->whereRaw('1 = 0');
+            }
+
+            $companyJobs = (clone $jobsQuery)->withCount('applications')->latest()->get();
             $companyJobsCount = $companyJobs->count();
             $activeJobsCount = $companyJobs->where('status', 'active')->count();
 
-            $totalCompanyApplications = Application::count();
-            $hiredCount = Application::where('status', 'accepted')->count();
-            $interviewCount = Application::where('status', 'interview')->count();
-            $pendingCount = Application::where('status', 'pending')->count();
+            $totalCompanyApplications = (clone $appQuery)->count();
+            $hiredCount = (clone $appQuery)->where('status', 'accepted')->count();
+            $interviewCount = (clone $appQuery)->where('status', 'interview')->count();
+            $pendingCount = (clone $appQuery)->where('status', 'pending')->count();
 
-            $recentApplications = Application::with(['user.candidateProfile', 'job'])
+            $recentApplications = (clone $appQuery)->with(['user.candidateProfile', 'job'])
                 ->latest()
                 ->take(5)
                 ->get();
@@ -96,18 +115,31 @@ class DashboardController extends Controller
             ));
         }
 
-        // Standard HR / Admin Dashboard
-        $totalJobs = Job::count();
-        $activeJobs = Job::where('status', 'active')->count();
-        $totalApplicants = Application::distinct('user_id')->count('user_id');
-        $totalApplications = Application::count();
-        $newApplications = Application::where('status', 'pending')->count();
-        $reviewingApplications = Application::where('status', 'reviewing')->count();
-        $acceptedApplications = Application::where('status', 'accepted')->count();
-        $rejectedApplications = Application::where('status', 'rejected')->count();
-        $interviewApplications = Application::where('status', 'interview')->count();
+        // Standard HR Dashboard (Strictly Scoped to Current Company)
+        $jobsQuery = Job::query();
+        $appQuery = Application::query();
 
-        $latestApplications = Application::with(['user.candidateProfile', 'job'])->latest()->take(5)->get();
+        if ($companyName) {
+            $jobsQuery->where('company_name', 'LIKE', '%' . $companyName . '%');
+            $appQuery->whereHas('job', function($j) use ($companyName) {
+                $j->where('company_name', 'LIKE', '%' . $companyName . '%');
+            });
+        } else {
+            $jobsQuery->whereRaw('1 = 0');
+            $appQuery->whereRaw('1 = 0');
+        }
+
+        $totalJobs = (clone $jobsQuery)->count();
+        $activeJobs = (clone $jobsQuery)->where('status', 'active')->count();
+        $totalApplicants = (clone $appQuery)->distinct('user_id')->count('user_id');
+        $totalApplications = (clone $appQuery)->count();
+        $newApplications = (clone $appQuery)->where('status', 'pending')->count();
+        $reviewingApplications = (clone $appQuery)->where('status', 'reviewing')->count();
+        $acceptedApplications = (clone $appQuery)->where('status', 'accepted')->count();
+        $rejectedApplications = (clone $appQuery)->where('status', 'rejected')->count();
+        $interviewApplications = (clone $appQuery)->where('status', 'interview')->count();
+
+        $latestApplications = (clone $appQuery)->with(['user.candidateProfile', 'job'])->latest()->take(5)->get();
 
         $statusCounts = [
             'pending' => $newApplications,
@@ -122,39 +154,73 @@ class DashboardController extends Controller
 
         // Work Type Breakdown
         $workTypeBreakdown = [
-            'fulltime' => Job::whereIn('work_type', ['fulltime', 'WFO', 'Full-time'])->count(),
-            'remote' => Job::whereIn('work_type', ['remote', 'WFH', 'Remote'])->count(),
-            'hybrid' => Job::whereIn('work_type', ['hybrid', 'Hybrid'])->count(),
-            'internship' => Job::whereIn('work_type', ['internship', 'Magang', 'Internship'])->count(),
+            'fulltime' => (clone $jobsQuery)->whereIn('work_type', ['fulltime', 'WFO', 'Full-time'])->count(),
+            'remote' => (clone $jobsQuery)->whereIn('work_type', ['remote', 'WFH', 'Remote'])->count(),
+            'hybrid' => (clone $jobsQuery)->whereIn('work_type', ['hybrid', 'Hybrid'])->count(),
+            'internship' => (clone $jobsQuery)->whereIn('work_type', ['internship', 'Magang', 'Internship'])->count(),
         ];
 
-        // Documents Issued Statistics
-        $agreementsCount = \App\Models\ApplicationAgreement::count();
-        $certificatesCount = \App\Models\InternshipCertificate::count();
-        $transcriptsCount = \App\Models\InternshipTranscript::count();
-        $terminationsCount = \App\Models\EmployeeTermination::count();
+        // Documents Issued Statistics Scoped to Company
+        $agreementsCount = \App\Models\ApplicationAgreement::whereHas('application.job', function($j) use ($companyName) {
+            if ($companyName) {
+                $j->where('company_name', 'LIKE', '%' . $companyName . '%');
+            } else {
+                $j->whereRaw('1 = 0');
+            }
+        })->count();
 
-        // Monthly Applicant Trend (Last 6 Months)
+        $certificatesCount = \App\Models\InternshipCertificate::whereHas('application.job', function($j) use ($companyName) {
+            if ($companyName) {
+                $j->where('company_name', 'LIKE', '%' . $companyName . '%');
+            } else {
+                $j->whereRaw('1 = 0');
+            }
+        })->count();
+
+        $transcriptsCount = \App\Models\InternshipTranscript::whereHas('application.job', function($j) use ($companyName) {
+            if ($companyName) {
+                $j->where('company_name', 'LIKE', '%' . $companyName . '%');
+            } else {
+                $j->whereRaw('1 = 0');
+            }
+        })->count();
+
+        $terminationsCount = \App\Models\EmployeeTermination::whereHas('application.job', function($j) use ($companyName) {
+            if ($companyName) {
+                $j->where('company_name', 'LIKE', '%' . $companyName . '%');
+            } else {
+                $j->whereRaw('1 = 0');
+            }
+        })->count();
+
+        // Monthly Applicant Trend (Last 6 Months) Scoped to Company
         $monthlyTrendLabels = [];
         $monthlyTrendData = [];
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $monthlyTrendLabels[] = $date->format('M Y');
-            $monthlyTrendData[] = Application::whereYear('created_at', $date->year)
+            $monthlyTrendData[] = (clone $appQuery)->whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
                 ->count();
         }
 
-        $topJobs = Job::withCount('applications')
+        $topJobs = (clone $jobsQuery)->withCount('applications')
             ->orderBy('applications_count', 'desc')
             ->take(5)
             ->get();
 
-        $upcomingInterviews = \App\Models\Interview::with(['application.user', 'application.job'])
-            ->where('scheduled_at', '>=', now())
-            ->orderBy('scheduled_at', 'asc')
-            ->take(5)
-            ->get();
+        $upcomingInterviews = \App\Models\Interview::whereHas('application.job', function($j) use ($companyName) {
+            if ($companyName) {
+                $j->where('company_name', 'LIKE', '%' . $companyName . '%');
+            } else {
+                $j->whereRaw('1 = 0');
+            }
+        })
+        ->with(['application.user', 'application.job'])
+        ->where('scheduled_at', '>=', now())
+        ->orderBy('scheduled_at', 'asc')
+        ->take(5)
+        ->get();
 
         return view('admin.dashboard', compact(
             'totalJobs', 'activeJobs', 'totalApplicants', 'totalApplications', 

@@ -20,6 +20,8 @@ class ApplicationRepository implements ApplicationRepositoryInterface
                 $query->whereHas('job', function($j) use ($companyName) {
                     $j->where('company_name', 'LIKE', '%' . $companyName . '%');
                 });
+            } else {
+                $query->whereRaw('1 = 0');
             }
         }
 
@@ -76,6 +78,8 @@ class ApplicationRepository implements ApplicationRepositoryInterface
                 $query->whereHas('job', function($j) use ($companyName) {
                     $j->where('company_name', 'LIKE', '%' . $companyName . '%');
                 });
+            } else {
+                $query->whereRaw('1 = 0');
             }
         }
 

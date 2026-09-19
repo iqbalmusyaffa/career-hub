@@ -12,7 +12,23 @@ class ApplicationsExport implements FromCollection, WithHeadings, WithMapping, S
 {
     public function collection()
     {
-        return Application::with(['user.candidateProfile', 'job'])->latest()->get();
+        $query = Application::with(['user.candidateProfile', 'job'])->latest();
+        $user = auth()->user();
+
+        if ($user && !$user->hasRole('Super Admin')) {
+            $companyProfile = $user->currentCompanyProfile();
+            $companyName = $companyProfile ? $companyProfile->company_name : null;
+
+            if ($companyName) {
+                $query->whereHas('job', function($j) use ($companyName) {
+                    $j->where('company_name', 'LIKE', '%' . $companyName . '%');
+                });
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
+
+        return $query->get();
     }
 
     public function headings(): array

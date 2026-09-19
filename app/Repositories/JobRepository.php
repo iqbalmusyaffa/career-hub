@@ -18,6 +18,8 @@ class JobRepository implements JobRepositoryInterface
 
             if ($companyName) {
                 $query->where('company_name', 'LIKE', '%' . $companyName . '%');
+            } else {
+                $query->whereRaw('1 = 0');
             }
         }
 

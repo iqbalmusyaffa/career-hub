@@ -45,7 +45,23 @@ class ApplicationController extends Controller
 
     public function exportPdf()
     {
-        $applications = \App\Models\Application::with(['user.candidateProfile', 'job'])->latest()->get();
+        $query = \App\Models\Application::with(['user.candidateProfile', 'job'])->latest();
+        $user = auth()->user();
+
+        if ($user && !$user->hasRole('Super Admin')) {
+            $companyProfile = $user->currentCompanyProfile();
+            $companyName = $companyProfile ? $companyProfile->company_name : null;
+
+            if ($companyName) {
+                $query->whereHas('job', function($j) use ($companyName) {
+                    $j->where('company_name', 'LIKE', '%' . $companyName . '%');
+                });
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
+
+        $applications = $query->get();
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.applications_report', compact('applications'))
             ->setPaper('a4', 'landscape');
 
