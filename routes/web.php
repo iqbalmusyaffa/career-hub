@@ -478,9 +478,9 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
         Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('audit-logs.index');
 
         // Super Admin Company & HR Role Request Approval Center
-        Route::get('/role-requests', [\App\Http\Controllers\Admin\AdminRoleRequestController::class, 'index'])->name('admin.role-requests.index');
-        Route::post('/role-requests/{id}/approve', [\App\Http\Controllers\Admin\AdminRoleRequestController::class, 'approve'])->name('admin.role-requests.approve');
-        Route::post('/role-requests/{id}/reject', [\App\Http\Controllers\Admin\AdminRoleRequestController::class, 'reject'])->name('admin.role-requests.reject');
+        Route::get('/role-requests', [\App\Http\Controllers\Admin\AdminRoleRequestController::class, 'index'])->name('role-requests.index');
+        Route::post('/role-requests/{id}/approve', [\App\Http\Controllers\Admin\AdminRoleRequestController::class, 'approve'])->name('role-requests.approve');
+        Route::post('/role-requests/{id}/reject', [\App\Http\Controllers\Admin\AdminRoleRequestController::class, 'reject'])->name('role-requests.reject');
 
         // Super Admin Cancellation Tickets Approval
         Route::get('/cancellation-tickets', [\App\Http\Controllers\Admin\AcceptanceCancellationController::class, 'index'])->name('cancellation-tickets.index');
