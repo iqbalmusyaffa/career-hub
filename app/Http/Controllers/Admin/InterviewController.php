@@ -48,7 +48,7 @@ class InterviewController extends Controller
         // Dispatch Email Notification to Candidate
         try {
             if ($application->user && $application->user->email) {
-                Mail::to($application->user->email)->send(new InterviewScheduledMail($interview));
+                Mail::to($application->user->email)->send(new InterviewScheduledMail($application, $interview));
             }
         } catch (\Exception $e) {
             // Ignore email errors gracefully if SMTP is not configured
