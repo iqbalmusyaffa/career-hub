@@ -140,7 +140,7 @@ class ApplicationRepository implements ApplicationRepositoryInterface
 
     public function findById($id)
     {
-        return Application::with(['user.candidateProfile', 'job'])->findByEncryptedIdOrFail($id);
+        return Application::with(['user.candidateProfile', 'job', 'interview', 'offerLetter', 'certificates', 'transcripts', 'agreements', 'terminations'])->findByEncryptedIdOrFail($id);
     }
 
     public function create(array $data)

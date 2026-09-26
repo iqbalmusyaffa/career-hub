@@ -384,7 +384,7 @@
                                 <tr>
                                     <td colspan="5" class="py-12 text-center text-slate-400 dark:text-slate-500 text-xs font-medium">
                                         <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-600 flex items-center justify-center text-xl mx-auto mb-3">
-                                            <i class="fa-solid fa-shield-check text-emerald-500"></i>
+                                            <i class="fa-solid fa-shield-halved text-emerald-500"></i>
                                         </div>
                                         <div class="text-sm font-semibold text-slate-700 dark:text-slate-300">Daftar Hitam Kosong</div>
                                         <p class="text-slate-400 mt-1">Belum ada entitas berbahaya yang terdaftar dalam sistem.</p>

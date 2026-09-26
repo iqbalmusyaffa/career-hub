@@ -21,7 +21,7 @@
             <div class="flex items-center gap-2">
                 @if($profile->is_verified)
                     <span class="px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 text-xs font-semibold flex items-center gap-2 shadow-xs">
-                        <i class="fa-solid fa-shield-check text-emerald-600 dark:text-emerald-400"></i> Terverifikasi Resmi
+                        <i class="fa-solid fa-shield-halved text-emerald-600 dark:text-emerald-400"></i> Terverifikasi Resmi
                     </span>
                 @else
                     <span class="px-3.5 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 text-xs font-semibold flex items-center gap-2 shadow-xs">
@@ -357,7 +357,7 @@
                 </div>
 
                 <div x-show="!saturdayActive && !sundayActive" class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-2.5 text-[11px] text-slate-500 dark:text-slate-400">
-                    <i class="fa-solid fa-shield-check text-slate-400"></i>
+                    <i class="fa-solid fa-shield-halved text-slate-400"></i>
                     <span>Pola standar 5 hari kerja (Senin–Jumat) aktif. Akhir pekan (Sabtu & Minggu) otomatis menjadi hari libur operasional dan tidak dihitung alpa.</span>
                 </div>
 

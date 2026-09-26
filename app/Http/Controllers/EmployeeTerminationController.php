@@ -21,7 +21,7 @@ class EmployeeTerminationController extends Controller
         $realId = \App\Helpers\IdHasher::decode($applicationId) ?? $applicationId;
         $application = Application::with(['user.candidateProfile', 'job'])->findOrFail($realId);
 
-        $docNumber = 'SKK/' . date('Y/m/') . sprintf('%03d', rand(1, 999));
+        $docNumber = 'SKK/' . date('Y/m/') . sprintf('APP%04d-U%04d', $application->id, $application->user_id);
         $employeeName = $application->user->name;
         $jobTitle = $application->job->title;
 

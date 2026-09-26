@@ -25,7 +25,7 @@
         $roleBadgeClass = 'bg-purple-500/10 text-purple-400 border-purple-500/20';
         $dashboardRoute = route('mentor.dashboard');
         $portalTitle = 'Panel Mentor Pembimbing';
-    } elseif ($user->internshipPeriod) {
+    } elseif ($user->isIntern()) {
         $roleName = 'Peserta Magang';
         $roleBadgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
         $dashboardRoute = route('dashboard');
@@ -137,6 +137,19 @@
                         <a href="{{ route('admin.internship-stipends.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('admin.internship-stipends.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <i class="fa-solid fa-money-bill-wave text-xs w-4 text-center"></i>
                             <span>Uang Saku Magang</span>
+                        </a>
+
+                        @php
+                            $sidebarPendingLeaves = \App\Models\LeaveRequest::where('status', 'pending')->count();
+                        @endphp
+                        <a href="{{ route('admin.leaves.index') }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('admin.leaves.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-calendar-check text-xs w-4 text-center text-indigo-400"></i>
+                                <span>Kelola Cuti & Izin</span>
+                            </div>
+                            @if($sidebarPendingLeaves > 0)
+                                <span class="px-2 py-0.5 bg-amber-400 text-slate-950 text-[10px] font-extrabold rounded-full">{{ $sidebarPendingLeaves }}</span>
+                            @endif
                         </a>
 
                         @if(!$user->hasRole('Super Admin'))
@@ -306,7 +319,7 @@
 
                         <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <i class="fa-solid fa-gauge-high text-xs w-4 text-center"></i>
-                            <span>{{ $user->internshipPeriod ? 'Dashboard Magang' : 'Dashboard Karir' }}</span>
+                            <span>{{ $user->isIntern() ? 'Dashboard Magang' : 'Dashboard Karir' }}</span>
                         </a>
                     </div>
 
@@ -330,9 +343,13 @@
                         </a>
                     </div>
 
-                    <!-- GROUP 3: PROGRAM MAGANG -->
+                    @if($user->isIntern())
+                    <!-- GROUP 3: PROGRAM MAGANG (KHUSUS PESERTA MAGANG AKTIF) -->
                     <div class="space-y-1">
-                        <div class="px-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Program Magang</div>
+                        <div class="px-2.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400 mb-1.5 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>Program Magang</span>
+                        </div>
 
                         <a href="{{ route('candidate.logbook.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('candidate.logbook.index') || request()->routeIs('candidate.logbook.show') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <i class="fa-solid fa-calendar-check text-xs w-4 text-center"></i>
@@ -349,15 +366,28 @@
                             <span>Nilai & Evaluasi</span>
                         </a>
 
+                        <a href="{{ route('candidate.leaves.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('candidate.leaves.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <i class="fa-solid fa-umbrella-beach text-xs w-4 text-center text-indigo-400"></i>
+                            <span>Cuti & Izin Mandiri</span>
+                        </a>
+
                         <a href="{{ route('candidate.resignations.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('candidate.resignations.*') ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <i class="fa-solid fa-arrow-right-from-bracket text-xs w-4 text-center text-rose-400"></i>
                             <span>Pengunduran Diri</span>
                         </a>
                     </div>
+                    @endif
 
                     <!-- GROUP 4: FITUR & TOOLS -->
                     <div class="space-y-1">
                         <div class="px-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Tools & Dokumen</div>
+
+                        @if(!$user->isIntern())
+                        <a href="{{ route('candidate.leaves.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('candidate.leaves.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <i class="fa-solid fa-umbrella-beach text-xs w-4 text-center text-indigo-400"></i>
+                            <span>Cuti & Izin Mandiri</span>
+                        </a>
+                        @endif
 
                         <a href="{{ route('candidate.cv-builder') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('candidate.cv-builder') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <i class="fa-solid fa-file-signature text-xs w-4 text-center"></i>
@@ -369,15 +399,22 @@
                             <span>Estimasi Gaji</span>
                         </a>
 
+                        <a href="{{ route('profile.candidate.documents.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('profile.candidate.documents.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <i class="fa-solid fa-folder-closed text-xs w-4 text-center text-blue-400"></i>
+                            <span>Brankas Dokumen</span>
+                        </a>
+
                         <a href="{{ route('profile.candidate.details.edit') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('profile.candidate.details.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <i class="fa-solid fa-user-pen text-xs w-4 text-center"></i>
                             <span>Edit Profil & CV</span>
                         </a>
 
-                        <a href="{{ route('profile.role-request.show') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('profile.role-request.*') ? 'bg-amber-600 text-white shadow-xs' : 'text-amber-400 hover:bg-slate-800 hover:text-amber-300' }}">
-                            <i class="fa-solid fa-building-circle-check text-xs w-4 text-center"></i>
-                            <span>Ajukan Akun Perusahaan / HR</span>
+                        @if(!$user->isIntern())
+                        <a href="{{ route('profile.role-request.show') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('profile.role-request.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <i class="fa-solid fa-building-circle-check text-xs w-4 text-center text-amber-400"></i>
+                            <span>Daftar Akun Perusahaan</span>
                         </a>
+                        @endif
 
                         <a href="{{ route('pages.guide.candidate') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('pages.guide.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <i class="fa-solid fa-book-open text-xs w-4 text-center text-blue-400"></i>
@@ -421,10 +458,12 @@
                                 <i class="fa-solid fa-id-card text-slate-400 w-4 text-center"></i>
                                 <span>Profil & CV</span>
                             </a>
+                            @if(!$user->isIntern())
                             <a href="{{ route('profile.role-request.show') }}" class="flex items-center gap-2.5 px-3.5 py-1.5 text-xs text-amber-400 hover:bg-slate-700 hover:text-amber-300 transition">
                                 <i class="fa-solid fa-building-circle-check text-amber-400 w-4 text-center"></i>
-                                <span>Ajukan Perusahaan / HR</span>
+                                <span>Daftar Akun Perusahaan</span>
                             </a>
+                            @endif
                         @endif
 
                         @if($user->hasRole('Company Owner') || $user->hasRole('HR'))
@@ -556,7 +595,7 @@
                     </button>
 
                     <!-- Dropdown Drawer -->
-                    <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 z-50 overflow-hidden" style="display: none;">
+                    <div x-show="open" @click.away="open = false" x-transition class="fixed left-3 right-3 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-96 max-w-sm sm:max-w-none mx-auto sm:mx-0 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden" style="display: none;">
                         <div class="p-3.5 bg-slate-900 text-white flex justify-between items-center">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-bell text-blue-400 text-xs"></i>
@@ -636,9 +675,11 @@
                             <x-dropdown-link :href="route('profile.candidate.details.edit')" class="flex items-center gap-2 text-xs">
                                 <i class="fa-solid fa-id-card text-slate-400 w-4"></i> {{ __('Edit Profil & CV') }}
                             </x-dropdown-link>
-                            <x-dropdown-link :href="route('profile.role-request.show')" class="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 font-medium">
-                                <i class="fa-solid fa-building-circle-check text-amber-500 w-4"></i> {{ __('Ajukan Perusahaan / HR') }}
-                            </x-dropdown-link>
+                            @if(!$user->isIntern())
+                                <x-dropdown-link :href="route('profile.role-request.show')" class="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 font-medium">
+                                    <i class="fa-solid fa-building-circle-check text-amber-500 w-4"></i> {{ __('Ajukan Perusahaan / HR') }}
+                                </x-dropdown-link>
+                            @endif
                         @endif
 
                         <form method="POST" action="{{ route('logout') }}">

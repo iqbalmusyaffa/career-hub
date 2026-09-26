@@ -15,9 +15,22 @@
                 </div>
             </div>
 
-            <span class="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-xl text-xs font-semibold border border-blue-200/80 dark:border-blue-900">
-                Performance Rating
-            </span>
+            <div class="flex items-center gap-2 flex-wrap">
+                @if($survey)
+                    <span class="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 rounded-xl text-xs font-semibold border border-emerald-200/80 dark:border-emerald-900 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                        <span>Survei Akhir Diisi</span>
+                    </span>
+                @else
+                    <span class="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 rounded-xl text-xs font-semibold border border-amber-200/80 dark:border-amber-900 flex items-center gap-1.5">
+                        <i class="fa-solid fa-clock text-amber-500"></i>
+                        <span>Menunggu Survei Peserta</span>
+                    </span>
+                @endif
+                <span class="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-xl text-xs font-semibold border border-blue-200/80 dark:border-blue-900">
+                    Performance Rating
+                </span>
+            </div>
         </div>
     </x-slot>
 

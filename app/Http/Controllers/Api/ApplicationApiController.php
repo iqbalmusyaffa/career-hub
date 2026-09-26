@@ -159,7 +159,7 @@ class ApplicationApiController extends Controller
     )]
     public function myApplications(Request $request)
     {
-        $applications = Application::with(['job', 'interviews', 'offerLetter'])
+        $applications = Application::with(['job', 'interview', 'offerLetter', 'certificates', 'transcripts', 'agreements', 'terminations'])
             ->where('user_id', $request->user()->id)
             ->latest()
             ->get();

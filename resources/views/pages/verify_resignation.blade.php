@@ -16,7 +16,7 @@
         <!-- Logo & Verification Header -->
         <div class="space-y-3">
             <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-3xl mx-auto shadow-lg">
-                <i class="fa-solid fa-shield-check"></i>
+                <i class="fa-solid fa-shield-halved"></i>
             </div>
             <div>
                 <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-bold uppercase tracking-wider">

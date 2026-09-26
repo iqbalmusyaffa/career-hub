@@ -21,13 +21,31 @@ class InternshipTranscriptController extends Controller
         $realId = \App\Helpers\IdHasher::decode($applicationId) ?? $applicationId;
         $application = Application::with(['user.candidateProfile', 'job', 'onboarding'])->findOrFail($realId);
 
-        $transcriptNumber = 'TRANSKRIP/MAGANG/' . date('Y/m/') . sprintf('%03d', rand(1, 999));
+        $transcriptNumber = 'TRANSKRIP/MAGANG/' . date('Y/m/') . sprintf('APP%04d-U%04d', $application->id, $application->user_id);
         $participantName = $application->user->name;
-        $studentIdNumber = $application->onboarding->student_id_number ?? ($application->user->candidateProfile->nim ?? '-');
-        $institutionName = $application->onboarding->institution_name ?? ($application->user->candidateProfile->university ?? 'Perguruan Tinggi / Kampus');
+        
+        $profile = $application->user->candidateProfile;
+        $educations = is_array($profile?->educations) ? $profile->educations : [];
+        $firstEdu = !empty($educations) ? $educations[0] : null;
+
+        $studentIdNumber = $application->onboarding?->student_id_number 
+            ?? $profile?->nim 
+            ?? $profile?->nisn 
+            ?? ($firstEdu['student_id'] ?? ($firstEdu['nim'] ?? ''));
+
+        $institutionName = $application->onboarding?->institution_name 
+            ?? $profile?->university 
+            ?? ($firstEdu['institution'] ?? ($firstEdu['school'] ?? ($firstEdu['name'] ?? ($profile?->last_education ?? ''))));
+
         $jobTitle = $application->job->title;
 
-        return view('admin.transcripts.create', compact('application', 'transcriptNumber', 'participantName', 'studentIdNumber', 'institutionName', 'jobTitle'));
+        // Auto-resolve assigned mentor if available
+        $mentorUser = \App\Models\User::role('Mentor')->first();
+        $mentorName = $mentorUser?->name ?? 'Rizky Ramadhan, M.T';
+        $mentorPhone = $mentorUser?->candidateProfile?->phone ?? '081234567890';
+        $mentorEmail = $mentorUser?->email ?? 'mentor@company.com';
+
+        return view('admin.transcripts.create', compact('application', 'transcriptNumber', 'participantName', 'studentIdNumber', 'institutionName', 'jobTitle', 'mentorName', 'mentorPhone', 'mentorEmail'));
     }
 
     /**
@@ -145,6 +163,14 @@ class InternshipTranscriptController extends Controller
 
         if ($transcript->user_id !== Auth::id() && !Auth::user()->hasAnyRole(['HR', 'Super Admin', 'Company Owner', 'Mentor'])) {
             abort(403, 'Anda tidak memiliki otorisasi melihat transkrip nilai ini.');
+        }
+
+        if ($transcript->user_id === Auth::id() && Auth::user()->hasRole('Candidate')) {
+            $hasSurvey = \App\Models\InternshipSurvey::where('user_id', Auth::id())->exists() || session()->has('survey_submitted_' . Auth::id());
+            if (!$hasSurvey) {
+                return redirect()->route('candidate.logbook.progress')
+                    ->with('error', 'Silakan lengkapi survei evaluasi akhir program magang terlebih dahulu untuk mengunduh Transkrip Nilai resmi.');
+            }
         }
 
         if ($transcript->pdf_path && Storage::disk('public')->exists($transcript->pdf_path)) {

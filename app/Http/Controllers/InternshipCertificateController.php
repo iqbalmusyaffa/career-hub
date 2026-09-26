@@ -21,12 +21,26 @@ class InternshipCertificateController extends Controller
         $realId = \App\Helpers\IdHasher::decode($applicationId) ?? $applicationId;
         $application = Application::with(['user.candidateProfile', 'job', 'onboarding'])->findOrFail($realId);
 
-        $certNumber = 'CERT/MAGANG/' . date('Y/m/') . sprintf('%03d', rand(1, 999));
+        $certNumber = 'CERT/MAGANG/' . date('Y/m/') . sprintf('APP%04d-U%04d', $application->id, $application->user_id);
         $participantName = $application->user->name;
-        $institutionName = $application->onboarding->institution_name ?? ($application->user->candidateProfile->university ?? 'Perguruan Tinggi / Kampus');
+        
+        $profile = $application->user->candidateProfile;
+        $educations = is_array($profile?->educations) ? $profile->educations : [];
+        $firstEdu = !empty($educations) ? $educations[0] : null;
+
+        $institutionName = $application->onboarding?->institution_name 
+            ?? $profile?->university 
+            ?? ($firstEdu['institution'] ?? ($firstEdu['school'] ?? ($firstEdu['name'] ?? ($profile?->last_education ?? 'Perguruan Tinggi / Sekolah'))));
+
         $jobTitle = $application->job->title;
 
-        return view('admin.certificates.create', compact('application', 'certNumber', 'participantName', 'institutionName', 'jobTitle'));
+        // Auto-resolve assigned mentor if available
+        $mentorUser = \App\Models\User::role('Mentor')->first();
+        $mentorName = $mentorUser?->name ?? 'Rizky Ramadhan, M.T';
+        $mentorPhone = $mentorUser?->candidateProfile?->phone ?? '081234567890';
+        $mentorEmail = $mentorUser?->email ?? 'mentor@company.com';
+
+        return view('admin.certificates.create', compact('application', 'certNumber', 'participantName', 'institutionName', 'jobTitle', 'mentorName', 'mentorPhone', 'mentorEmail'));
     }
 
     /**
@@ -115,16 +129,21 @@ class InternshipCertificateController extends Controller
             abort(403, 'Anda tidak memiliki otorisasi melihat sertifikat ini.');
         }
 
-        if ($certificate->pdf_path && Storage::disk('public')->exists($certificate->pdf_path)) {
-            $fullPath = Storage::disk('public')->path($certificate->pdf_path);
-            return response()->file($fullPath, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="Sertifikat_Magang_' . Str::slug($certificate->participant_name) . '.pdf"'
-            ]);
+        if ($certificate->user_id === Auth::id() && Auth::user()->hasRole('Candidate')) {
+            $hasSurvey = \App\Models\InternshipSurvey::where('user_id', Auth::id())->exists() || session()->has('survey_submitted_' . Auth::id());
+            if (!$hasSurvey) {
+                return redirect()->route('candidate.logbook.progress')
+                    ->with('error', 'Silakan lengkapi survei evaluasi akhir program magang terlebih dahulu untuk mengunduh E-Sertifikat resmi.');
+            }
         }
 
-        // Regenerate on the fly in landscape
+        // Generate fresh landscape PDF and update cache
         $pdf = Pdf::loadView('pdf.internship_certificate', compact('certificate'))->setPaper('a4', 'landscape');
+        
+        if ($certificate->pdf_path) {
+            Storage::disk('public')->put($certificate->pdf_path, $pdf->output());
+        }
+
         return $pdf->stream("Sertifikat_Magang_" . Str::slug($certificate->participant_name) . ".pdf");
     }
 }

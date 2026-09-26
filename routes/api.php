@@ -2,15 +2,21 @@
 
 use App\Http\Controllers\Api\Admin\AdminApplicationApiController;
 use App\Http\Controllers\Api\Admin\AdminCompanyTeamApiController;
+use App\Http\Controllers\Api\Admin\AdminInternshipApiController;
 use App\Http\Controllers\Api\Admin\AdminJobApiController;
 use App\Http\Controllers\Api\Admin\AdminSuperApiController;
 use App\Http\Controllers\Api\ApplicationApiController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CandidateCvApiController;
 use App\Http\Controllers\Api\CandidateDocumentApiController;
+use App\Http\Controllers\Api\CandidateInternshipApiController;
 use App\Http\Controllers\Api\CandidateProfileApiController;
 use App\Http\Controllers\Api\CandidateTestApiController;
+use App\Http\Controllers\Api\CompanyReportApiController;
 use App\Http\Controllers\Api\JobApiController;
+use App\Http\Controllers\Api\MentorApiController;
 use App\Http\Controllers\Api\NotificationApiController;
+use App\Http\Controllers\Api\SalaryBenchmarkApiController;
 use App\Http\Controllers\Api\UmkController;
 use Illuminate\Support\Facades\Route;
 
@@ -56,6 +62,15 @@ Route::prefix('v1')->middleware(['throttle:api'])->group(function () {
     Route::get('/regions/majors', [UmkController::class, 'majors']);
 
     // ==========================================
+    // 3.1 SALARY BENCHMARK & MARKET INSIGHTS API
+    // ==========================================
+    Route::get('/salary-benchmark', [SalaryBenchmarkApiController::class, 'index']);
+    Route::post('/salary-benchmark/calculate', [SalaryBenchmarkApiController::class, 'index']);
+    Route::get('/salary-benchmark/roles', [SalaryBenchmarkApiController::class, 'roles']);
+    Route::get('/salary-benchmark/compare', [SalaryBenchmarkApiController::class, 'compare']);
+    Route::get('/salary-benchmark/locations', [SalaryBenchmarkApiController::class, 'locations']);
+
+    // ==========================================
     // 4. CANDIDATE PROTECTED APIS (auth:sanctum)
     // ==========================================
     Route::middleware(['auth:sanctum'])->group(function () {
@@ -68,6 +83,10 @@ Route::prefix('v1')->middleware(['throttle:api'])->group(function () {
         Route::get('/candidate/profile', [CandidateProfileApiController::class, 'show']);
         Route::put('/candidate/profile', [CandidateProfileApiController::class, 'update']);
         Route::post('/candidate/profile/photo', [CandidateProfileApiController::class, 'uploadPhoto']);
+
+        // Candidate ATS CV Builder & Structured Data
+        Route::get('/candidate/cv', [CandidateCvApiController::class, 'show']);
+        Route::post('/candidate/cv', [CandidateCvApiController::class, 'save']);
 
         // Candidate Document Vault (KTP, Ijazah, Certs, etc.)
         Route::get('/candidate/documents', [CandidateDocumentApiController::class, 'index']);
@@ -95,6 +114,18 @@ Route::prefix('v1')->middleware(['throttle:api'])->group(function () {
         Route::get('/candidate/transcripts', [ApplicationApiController::class, 'myTranscripts']);
         Route::get('/candidate/terminations', [ApplicationApiController::class, 'myTerminations']);
 
+        // Candidate Internship Presensi, Daily Logbooks & Progress
+        Route::get('/candidate/internship/logbooks', [CandidateInternshipApiController::class, 'logbooks']);
+        Route::get('/candidate/internship/logbooks/{date}', [CandidateInternshipApiController::class, 'showLogbook']);
+        Route::post('/candidate/internship/logbooks', [CandidateInternshipApiController::class, 'storeLogbook']);
+        Route::get('/candidate/internship/progress', [CandidateInternshipApiController::class, 'progress']);
+        Route::post('/candidate/internship/bank-account', [CandidateInternshipApiController::class, 'bankAccount']);
+        Route::get('/candidate/internship/stipends', [CandidateInternshipApiController::class, 'stipends']);
+        Route::post('/candidate/internship/resignations', [CandidateInternshipApiController::class, 'resignations']);
+
+        // Company Red Flag / Fraud Report Submission
+        Route::post('/company-reports', [CompanyReportApiController::class, 'store']);
+
         // In-App Bell Notifications
         Route::get('/notifications', [NotificationApiController::class, 'index']);
         Route::post('/notifications/{id}/read', [NotificationApiController::class, 'markAsRead']);
@@ -102,7 +133,19 @@ Route::prefix('v1')->middleware(['throttle:api'])->group(function () {
     });
 
     // ==========================================
-    // 5. HR & EMPLOYER APIS (role:HR|Company Owner|Super Admin)
+    // 5. MENTOR WORKSPACE APIS (role:Mentor|HR|Super Admin)
+    // ==========================================
+    Route::middleware(['auth:sanctum', 'role:Mentor|HR|Super Admin'])->prefix('mentor')->group(function () {
+        Route::get('/dashboard', [MentorApiController::class, 'dashboard']);
+        Route::get('/logbooks', [MentorApiController::class, 'logbooks']);
+        Route::post('/logbooks/{id}/approve', [MentorApiController::class, 'approveLogbook']);
+        Route::post('/logbooks/{id}/reject', [MentorApiController::class, 'rejectLogbook']);
+        Route::get('/interns', [MentorApiController::class, 'interns']);
+        Route::post('/evaluations', [MentorApiController::class, 'evaluations']);
+    });
+
+    // ==========================================
+    // 6. HR & EMPLOYER APIS (role:HR|Company Owner|Super Admin)
     // ==========================================
     Route::middleware(['auth:sanctum', 'role:HR|Super Admin|Company Owner'])->prefix('admin')->group(function () {
 
@@ -133,6 +176,13 @@ Route::prefix('v1')->middleware(['throttle:api'])->group(function () {
         Route::post('/applications/{id}/terminations', [AdminApplicationApiController::class, 'createTermination']);
         Route::post('/applications/{id}/internal-notes', [AdminApplicationApiController::class, 'storeInternalNote']);
 
+        // Internship Stipends & Attendance Unlocks
+        Route::get('/internship-stipends', [AdminInternshipApiController::class, 'stipends']);
+        Route::post('/internship-stipends/{id}/status', [AdminInternshipApiController::class, 'updateStipendStatus']);
+        Route::get('/internship-unlocks', [AdminInternshipApiController::class, 'unlocks']);
+        Route::post('/internship-unlocks/{id}/approve', [AdminInternshipApiController::class, 'approveUnlock']);
+        Route::post('/internship-unlocks/{id}/reject', [AdminInternshipApiController::class, 'rejectUnlock']);
+
         // Company Team & Multi-Branch Offices
         Route::get('/company-team', [AdminCompanyTeamApiController::class, 'teamIndex']);
         Route::post('/company-team', [AdminCompanyTeamApiController::class, 'teamStore']);
@@ -154,7 +204,7 @@ Route::prefix('v1')->middleware(['throttle:api'])->group(function () {
     });
 
     // ==========================================
-    // 6. SUPER ADMIN EXCLUSIVE APIS (role:Super Admin)
+    // 7. SUPER ADMIN EXCLUSIVE APIS (role:Super Admin)
     // ==========================================
     Route::middleware(['auth:sanctum', 'role:Super Admin'])->prefix('admin')->group(function () {
         Route::get('/users', [AdminSuperApiController::class, 'users']);
@@ -176,6 +226,10 @@ Route::prefix('v1')->middleware(['throttle:api'])->group(function () {
         Route::get('/cancellation-tickets', [AdminSuperApiController::class, 'cancellationTickets']);
         Route::post('/cancellation-tickets/{id}/approve', [AdminSuperApiController::class, 'approveCancellationTicket']);
         Route::post('/cancellation-tickets/{id}/reject', [AdminSuperApiController::class, 'rejectCancellationTicket']);
+
+        // Company Red Flag Reports Moderation
+        Route::get('/company-reports', [CompanyReportApiController::class, 'index']);
+        Route::patch('/company-reports/{id}/status', [CompanyReportApiController::class, 'updateStatus']);
     });
 
 });

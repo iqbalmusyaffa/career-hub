@@ -77,14 +77,14 @@ Route::get('/dashboard', function () {
     });
 
     // Internship detection & metrics
+    $isIntern = $user->isIntern();
     $internshipPeriod = $user->internshipPeriod;
     $activeInternshipApp = $applications->first(function($app) {
         $st = is_object($app->status) ? $app->status->value : (string)$app->status;
         $workType = strtolower($app->job->work_type ?? '');
-        return in_array($st, ['accepted', 'hired']) && ($workType === 'internship' || $workType === 'magang');
+        $hasBatch = !empty($app->job->batch);
+        return in_array($st, ['accepted', 'hired']) && (str_contains($workType, 'intern') || str_contains($workType, 'magang') || $hasBatch);
     });
-
-    $isIntern = (bool) ($internshipPeriod || $activeInternshipApp);
     
     $internMetrics = null;
     if ($isIntern) {
@@ -93,7 +93,7 @@ Route::get('/dashboard', function () {
             ->where('status', 'approved')
             ->sum('work_hours');
         $totalDaysPresent = \App\Models\InternshipLogbook::where('user_id', $user->id)
-            ->whereIn('attendance_type', ['Hadir', 'present', 'wfo', 'wfh'])
+            ->whereIn('attendance_type', ['Hadir', 'present', 'wfo', 'wfh', 'Hadir Tepat Waktu', 'Terlambat'])
             ->count();
         $approvedLogbooks = \App\Models\InternshipLogbook::where('user_id', $user->id)
             ->where('status', 'approved')
@@ -108,6 +108,7 @@ Route::get('/dashboard', function () {
             ->latest('date')
             ->take(5)
             ->get();
+        $evaluation = \App\Models\InternshipEvaluation::where('user_id', $user->id)->latest()->first();
         $transcript = \App\Models\InternshipTranscript::where('user_id', $user->id)->latest()->first();
         $certificate = \App\Models\InternshipCertificate::where('user_id', $user->id)->latest()->first();
 
@@ -120,6 +121,7 @@ Route::get('/dashboard', function () {
             'pendingLogbooks' => $pendingLogbooks,
             'todayLogbook' => $todayLogbook,
             'recentLogbooks' => $recentLogbooks,
+            'evaluation' => $evaluation,
             'transcript' => $transcript,
             'certificate' => $certificate,
             'period' => $internshipPeriod,
@@ -197,9 +199,10 @@ Route::middleware('auth')->group(function () {
     // Bookmark & CV routes
     Route::post('/jobs/{job}/bookmark', [\App\Http\Controllers\BookmarkController::class, 'toggle'])->name('jobs.bookmark');
     Route::get('/saved-jobs', [\App\Http\Controllers\BookmarkController::class, 'index'])->name('saved-jobs.index');
-    Route::get('/profile/cv/download', [\App\Http\Controllers\CvController::class, 'download'])->name('profile.cv.download');
+    Route::match(['get', 'post'], '/profile/cv/download', [\App\Http\Controllers\CvController::class, 'download'])->name('profile.cv.download');
     Route::get('/candidates/{userId}/cv/download', [\App\Http\Controllers\CvController::class, 'download'])->name('candidates.cv.download');
     Route::get('/candidate/cv-builder', [\App\Http\Controllers\CvController::class, 'builder'])->name('candidate.cv-builder');
+    Route::post('/candidate/cv-builder/save', [\App\Http\Controllers\CvController::class, 'saveProfile'])->name('candidate.cv-builder.save');
 
     // Candidate Online Test routes
     Route::get('/candidate/tests/{job}', [\App\Http\Controllers\CandidateTestController::class, 'show'])->name('candidate.tests.show');
@@ -231,13 +234,21 @@ Route::middleware('auth')->group(function () {
     Route::post('/candidate/internship/survey', [\App\Http\Controllers\CandidateLogbookController::class, 'submitSurvey'])->name('candidate.logbook.survey.store');
     Route::get('/candidate/internship/unlock-requests/{id}/pdf', [\App\Http\Controllers\CandidateLogbookController::class, 'downloadUnlockPdf'])->name('candidate.unlock-requests.pdf');
     Route::post('/candidate/internship/bank-account', [\App\Http\Controllers\CandidateLogbookController::class, 'saveBankAccount'])->name('candidate.internship.bank-account.store');
+    Route::get('/candidate/internship/bank-account/statement', [\App\Http\Controllers\CandidateLogbookController::class, 'downloadBankStatementPdf'])->name('candidate.internship.bank-account.statement-pdf');
     Route::get('/candidate/internship/stipends/{id}/slip', [\App\Http\Controllers\CandidateLogbookController::class, 'downloadStipendSlip'])->name('candidate.internship.stipends.slip');
 
     // Candidate Self-Resignation Routes
     Route::get('/candidate/internship/resignations', [\App\Http\Controllers\CandidateResignationController::class, 'index'])->name('candidate.resignations.index');
     Route::post('/candidate/internship/resignations', [\App\Http\Controllers\CandidateResignationController::class, 'store'])->name('candidate.resignations.store');
+    Route::get('/candidate/internship/resignations/template/pdf', [\App\Http\Controllers\CandidateResignationController::class, 'downloadTemplatePdf'])->name('candidate.resignations.template.pdf');
+    Route::get('/candidate/internship/resignations/template/word', [\App\Http\Controllers\CandidateResignationController::class, 'downloadTemplateWord'])->name('candidate.resignations.template.word');
     Route::get('/candidate/internship/resignations/{id}/download', [\App\Http\Controllers\CandidateResignationController::class, 'downloadPdf'])->name('candidate.resignations.download');
     Route::post('/candidate/internship/resignations/{id}/cancel', [\App\Http\Controllers\CandidateResignationController::class, 'cancel'])->name('candidate.resignations.cancel');
+
+    // Candidate Leave & Attendance Management Routes
+    Route::get('/candidate/leaves', [\App\Http\Controllers\Candidate\CandidateLeaveController::class, 'index'])->name('candidate.leaves.index');
+    Route::post('/candidate/leaves', [\App\Http\Controllers\Candidate\CandidateLeaveController::class, 'store'])->name('candidate.leaves.store');
+    Route::post('/candidate/leaves/{leave}/cancel', [\App\Http\Controllers\Candidate\CandidateLeaveController::class, 'cancel'])->name('candidate.leaves.cancel');
 
     // Dedicated Mentor Role Workspace, ACC Absensi, & Final Performance Rating Routes
     Route::get('/mentor/dashboard', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'dashboard'])->name('mentor.dashboard');
@@ -447,6 +458,12 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
     Route::post('/internship-stipends/{id}/send-reminder', [\App\Http\Controllers\Admin\InternshipStipendController::class, 'sendBankReminder'])->name('internship-stipends.send-reminder');
     Route::post('/internship-stipends/bulk-transfer', [\App\Http\Controllers\Admin\InternshipStipendController::class, 'bulkTransfer'])->name('internship-stipends.bulk-transfer');
     Route::get('/internship-stipends/export/excel', [\App\Http\Controllers\Admin\InternshipStipendController::class, 'exportExcel'])->name('internship-stipends.export-excel');
+
+    // FITUR: Modul Manajemen Cuti & Izin (Leave & Attendance Management)
+    Route::get('/leaves', [\App\Http\Controllers\Admin\LeaveManagementController::class, 'index'])->name('leaves.index');
+    Route::post('/leaves/{leave}/approve', [\App\Http\Controllers\Admin\LeaveManagementController::class, 'approve'])->name('leaves.approve');
+    Route::post('/leaves/{leave}/reject', [\App\Http\Controllers\Admin\LeaveManagementController::class, 'reject'])->name('leaves.reject');
+    Route::post('/leaves/policy', [\App\Http\Controllers\Admin\LeaveManagementController::class, 'updatePolicy'])->name('leaves.policy.update');
 
     // Super Admin Exclusive Control & Moderation
     Route::middleware('role:Super Admin')->group(function () {

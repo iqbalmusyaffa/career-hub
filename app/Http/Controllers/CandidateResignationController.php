@@ -22,6 +22,10 @@ class CandidateResignationController extends Controller
     {
         $user = Auth::user();
 
+        if ($user->hasRole('Candidate') && !$user->isIntern()) {
+            return redirect()->route('dashboard')->with('error', 'Halaman pengunduran diri magang hanya dapat diakses oleh peserta magang aktif.');
+        }
+
         // Cari periode magang aktif atau lamaran magang yang diterima
         $period = InternshipPeriod::where('user_id', $user->id)->with('company')->first();
         $application = Application::where('user_id', $user->id)
@@ -77,6 +81,10 @@ class CandidateResignationController extends Controller
     {
         $user = Auth::user();
 
+        if ($user->hasRole('Candidate') && !$user->isIntern()) {
+            return redirect()->route('dashboard')->with('error', 'Halaman pengunduran diri magang hanya dapat diakses oleh peserta magang aktif.');
+        }
+
         // Check if there is already a pending request
         $existing = InternshipResignation::where('user_id', $user->id)
             ->where('status', 'pending')
@@ -87,7 +95,7 @@ class CandidateResignationController extends Controller
         }
 
         $request->validate([
-            'reason_category' => 'required|string|in:academic,health,relocation,personal,other',
+            'reason_category' => 'required|string|in:academic,health,relocation,personal,job_offer,company_issue,other',
             'reason_details' => 'required|string|min:10|max:2000',
             'effective_date' => 'required|date|after_or_equal:today',
             'handover_notes' => 'nullable|string|max:1000',
@@ -187,5 +195,57 @@ class CandidateResignationController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Pengajuan pengunduran diri telah dibatalkan.');
+    }
+
+    /**
+     * Download Resignation Letter Template in PDF format.
+     */
+    public function downloadTemplatePdf()
+    {
+        $user = Auth::user();
+        $period = InternshipPeriod::where('user_id', $user->id)->with('company')->first();
+        $application = Application::where('user_id', $user->id)
+            ->whereIn('status', ['accepted', 'hired'])
+            ->with(['job.companyProfile'])
+            ->latest()
+            ->first();
+
+        $companyName = $period && $period->company ? $period->company->company_name : ($application && $application->job ? $application->job->company_name : 'Perusahaan Magang');
+        $jobTitle = $application && $application->job ? $application->job->title : ($period ? ($period->period_name ?? 'Peserta Magang') : 'Peserta Magang');
+
+        $pdf = Pdf::loadView('pdf.resignation_template_pdf', compact('user', 'companyName', 'jobTitle'))
+            ->setPaper('a4', 'portrait');
+
+        $fileName = 'Template_Surat_Pengunduran_Diri_' . Str::slug($user->name) . '.pdf';
+
+        return $pdf->download($fileName);
+    }
+
+    /**
+     * Download Resignation Letter Template in Word (.doc) format.
+     */
+    public function downloadTemplateWord()
+    {
+        $user = Auth::user();
+        $period = InternshipPeriod::where('user_id', $user->id)->with('company')->first();
+        $application = Application::where('user_id', $user->id)
+            ->whereIn('status', ['accepted', 'hired'])
+            ->with(['job.companyProfile'])
+            ->latest()
+            ->first();
+
+        $companyName = $period && $period->company ? $period->company->company_name : ($application && $application->job ? $application->job->company_name : 'Perusahaan Magang');
+        $jobTitle = $application && $application->job ? $application->job->title : ($period ? ($period->period_name ?? 'Peserta Magang') : 'Peserta Magang');
+
+        $content = view('pdf.resignation_template_word', compact('user', 'companyName', 'jobTitle'))->render();
+        $fileName = 'Template_Surat_Pengunduran_Diri_' . Str::slug($user->name) . '.doc';
+
+        return response($content, 200, [
+            'Content-Type' => 'application/msword; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
     }
 }

@@ -152,31 +152,51 @@
             <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-800 overflow-hidden">
                 
                 <!-- Period Header Bar -->
-                <div class="p-4 bg-slate-50 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                    <a href="{{ route('candidate.logbook.index', array_filter(['month' => $prevMonth, 'candidate_id' => $isAdminOrStaff ? $user->id : null])) }}" class="p-2 rounded-xl bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800 transition shadow-2xs" title="Bulan Sebelumnya">
-                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                <div class="p-3 sm:p-4 bg-slate-50 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
+                    <a href="{{ route('candidate.logbook.index', array_filter(['month' => $prevMonth, 'candidate_id' => $isAdminOrStaff ? $user->id : null])) }}" 
+                       class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 border border-slate-200 dark:border-slate-700 transition shadow-2xs flex items-center justify-center shrink-0 cursor-pointer touch-manipulation" 
+                       title="Bulan Sebelumnya ({{ $prevMonth }})">
+                        <i class="fa-solid fa-chevron-left text-sm"></i>
                     </a>
 
-                    <div class="text-center">
-                        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-900 mb-1">
-                            <i class="fa-solid fa-layer-group text-[10px]"></i>
-                            <span>{{ $periodName }}</span>
+                    <div class="text-center flex-1 min-w-0 px-2">
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-900 mb-0.5 truncate max-w-full">
+                            <i class="fa-solid fa-layer-group text-[10px] shrink-0"></i>
+                            <span class="truncate">{{ $periodName }}</span>
                         </div>
-                        <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                            {{ $monthLabel }}
-                        </h3>
-                        <p class="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                        
+                        <!-- Interactive Month Selector (Tap to switch month directly on mobile/desktop) -->
+                        <div class="flex items-center justify-center">
+                            <select onchange="window.location.href=this.value" 
+                                    class="text-xs sm:text-base font-black text-slate-900 dark:text-white uppercase tracking-wider bg-transparent border-0 focus:ring-0 focus:outline-hidden cursor-pointer text-center py-0.5 px-2 hover:text-blue-600 dark:hover:text-blue-400 transition" 
+                                    title="Klik untuk memilih bulan periode">
+                                @if(isset($periodMonths) && count($periodMonths) > 0)
+                                    @foreach($periodMonths as $pm)
+                                        <option value="{{ route('candidate.logbook.index', array_filter(['month' => $pm['key'], 'candidate_id' => $isAdminOrStaff ? $user->id : null])) }}" {{ $pm['isCurrent'] ? 'selected' : '' }} class="text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 font-bold">
+                                            {{ $pm['label'] }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    <option selected>{{ $monthLabel }}</option>
+                                @endif
+                            </select>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 -ml-1 pointer-events-none"></i>
+                        </div>
+
+                        <p class="text-[10px] sm:text-[11px] font-medium text-slate-400 dark:text-slate-500 truncate">
                             Periode: {{ $periodStartDate->translatedFormat('d M Y') }} – {{ $periodEndDate->translatedFormat('d M Y') }}
                         </p>
                     </div>
 
-                    <a href="{{ route('candidate.logbook.index', array_filter(['month' => $nextMonth, 'candidate_id' => $isAdminOrStaff ? $user->id : null])) }}" class="p-2 rounded-xl bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800 transition shadow-2xs" title="Bulan Berikutnya">
-                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    <a href="{{ route('candidate.logbook.index', array_filter(['month' => $nextMonth, 'candidate_id' => $isAdminOrStaff ? $user->id : null])) }}" 
+                       class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 border border-slate-200 dark:border-slate-700 transition shadow-2xs flex items-center justify-center shrink-0 cursor-pointer touch-manipulation" 
+                       title="Bulan Berikutnya ({{ $nextMonth }})">
+                        <i class="fa-solid fa-chevron-right text-sm"></i>
                     </a>
                 </div>
 
                 <!-- Calendar Grid Matrix -->
-                <div class="p-4 sm:p-6">
+                <div class="p-3 sm:p-6">
                     <div class="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-2xs">
                         
                         <!-- Days of Week Header -->
@@ -213,6 +233,7 @@
                                             $isCutiBersama = $holidayObj && $holidayObj->type === 'cuti_bersama' && !$isOverridden;
                                             $isCompanyHoliday = $holidayObj && $holidayObj->type === 'company_holiday';
                                             $isPast = $dateCarbon->lessThan($todayCarbon);
+                                            $isFuture = $dateCarbon->greaterThan($todayCarbon);
                                             $isBeforeStart = $dateCarbon->lessThan($periodStartDate->copy()->startOfDay());
                                             $isAfterEnd = $dateCarbon->greaterThan($periodEndDate->copy()->startOfDay());
                                             $isOutsidePeriod = $isBeforeStart || $isAfterEnd;
@@ -239,29 +260,36 @@
                                                 $status = 'unfilled';
                                             }
 
+                                            // All dates are clickable to view logbook detail (read-only for future/locked dates)
+                                            $isClickable = true;
+
                                             $cellTooltip = '';
                                             if ($holidayObj) {
                                                 $typeStr = $holidayObj->type === 'company_holiday' ? 'Libur Khusus Perusahaan' : ($holidayObj->type === 'cuti_bersama' ? 'Cuti Bersama Pemerintah' : 'Libur Nasional');
-                                                $cellTooltip = $holidayObj->name . ' (' . $typeStr . ')';
+                                                $cellTooltip = $holidayObj->name . ' (' . $typeStr . ') - Klik untuk melihat detail';
+                                            } elseif ($isFuture) {
+                                                $cellTooltip = 'Presensi belum dibuka untuk tanggal mendatang (' . $dateCarbon->translatedFormat('d M Y') . ') - Klik untuk melihat detail';
                                             } elseif ($status === 'outside_period') {
-                                                $cellTooltip = $isBeforeStart ? 'Sebelum Periode Magang Dimulai' : 'Setelah Periode Magang Selesai';
+                                                $cellTooltip = ($isBeforeStart ? 'Sebelum Periode Magang Dimulai' : 'Setelah Periode Magang Selesai') . ' - Klik untuk melihat detail';
                                             } elseif ($status === 'absent') {
-                                                $cellTooltip = 'Terlewat / Tidak Hadir (Terkunci)';
+                                                $cellTooltip = 'Terlewat / Tidak Hadir (Terkunci) - Klik untuk melihat detail';
                                             } elseif ($status === 'unlocked') {
-                                                $cellTooltip = 'Dispensasi Presensi Disetujui';
+                                                $cellTooltip = 'Dispensasi Presensi Disetujui - Klik untuk mengisi logbook';
+                                            } else {
+                                                $cellTooltip = $dateCarbon->translatedFormat('d F Y') . ' - Klik untuk membuka';
                                             }
                                         @endphp
 
                                         <a href="{{ route('candidate.logbook.show', array_filter(['date' => $dateStr, 'candidate_id' => $isAdminOrStaff ? $user->id : null])) }}" 
                                            title="{{ $cellTooltip }}"
-                                           class="py-3 px-1 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 transition flex flex-col items-center justify-center gap-1 min-h-[64px] relative group {{ $isPadding ? 'opacity-40 bg-slate-50/40 dark:bg-slate-900/20' : ($highlight ? 'bg-blue-50/80 dark:bg-blue-950/50' : ($status === 'unlocked' ? 'bg-emerald-50/50 dark:bg-emerald-950/30' : ($isNationalHoliday ? 'bg-rose-50/40 dark:bg-rose-950/30' : ($isCutiBersama ? 'bg-amber-50/40 dark:bg-amber-950/30' : ($isCompanyHoliday ? 'bg-purple-50/40 dark:bg-purple-950/30' : ($isWeekend ? 'bg-slate-50/60 dark:bg-slate-900/40' : ($status === 'outside_period' ? 'opacity-40 bg-slate-50/40 dark:bg-slate-900/20' : ($status === 'absent' ? 'bg-rose-50/20 dark:bg-rose-950/10' : '')))))))) }}">
+                                           class="py-3 px-1 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 transition flex flex-col items-center justify-center gap-1 min-h-[64px] relative group {{ $isFuture ? 'cursor-not-allowed' : 'cursor-pointer' }} {{ $isPadding ? 'opacity-40 bg-slate-50/40 dark:bg-slate-900/20' : ($highlight ? 'bg-blue-50/80 dark:bg-blue-950/50' : ($status === 'unlocked' ? 'bg-emerald-50/50 dark:bg-emerald-950/30' : ($isNationalHoliday ? 'bg-rose-50/40 dark:bg-rose-950/30' : ($isCutiBersama ? 'bg-amber-50/40 dark:bg-amber-950/30' : ($isCompanyHoliday ? 'bg-purple-50/40 dark:bg-purple-950/30' : ($isWeekend ? 'bg-slate-50/60 dark:bg-slate-900/40' : ($status === 'outside_period' ? 'opacity-40 bg-slate-50/40 dark:bg-slate-900/20' : ($status === 'absent' ? 'bg-rose-50/20 dark:bg-rose-950/10' : ($isFuture ? 'bg-slate-50/20 dark:bg-slate-900/10' : ''))))))))) }}">
                                             
                                             @if($highlight)
                                                 <div class="w-6 h-6 rounded-full border-2 border-blue-600 text-blue-600 dark:text-blue-400 font-bold text-xs flex items-center justify-center bg-white dark:bg-slate-800 shadow-2xs">
                                                     {{ $item['day'] }}
                                                 </div>
                                             @else
-                                                <span class="text-xs font-semibold {{ $isNationalHoliday ? 'text-rose-600 dark:text-rose-400' : ($isCutiBersama ? 'text-amber-600 dark:text-amber-400' : ($isCompanyHoliday ? 'text-purple-600 dark:text-purple-400' : ($status === 'absent' ? 'text-rose-600 dark:text-rose-400' : ($status === 'unlocked' ? 'text-emerald-600 dark:text-emerald-400' : ($status === 'outside_period' ? 'text-slate-400 dark:text-slate-600' : 'text-slate-700 dark:text-slate-300'))))) }}">{{ $item['day'] }}</span>
+                                                <span class="text-xs font-semibold {{ $isNationalHoliday ? 'text-rose-600 dark:text-rose-400' : ($isCutiBersama ? 'text-amber-600 dark:text-amber-400' : ($isCompanyHoliday ? 'text-purple-600 dark:text-purple-400' : ($status === 'absent' ? 'text-rose-600 dark:text-rose-400' : ($status === 'unlocked' ? 'text-emerald-600 dark:text-emerald-400' : ($status === 'outside_period' ? 'text-slate-400 dark:text-slate-600' : ($isFuture ? 'text-slate-500 dark:text-slate-400' : 'text-slate-700 dark:text-slate-300')))))) }}">{{ $item['day'] }}</span>
                                             @endif
 
                                             @if($status === 'approved')
@@ -303,62 +331,91 @@
                     </div>
 
                     <!-- Legend Items -->
-                    <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-                        <div class="flex flex-wrap items-center justify-between gap-y-2.5 gap-x-4 text-xs font-semibold">
+                    <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle-info text-[10px]"></i>
+                                <span>Keterangan Status Kalender</span>
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                             
-                            <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                                <i class="fa-solid fa-check text-emerald-500"></i>
-                                <span>Disetujui</span>
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                                <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-check text-emerald-500 text-xs"></i>
+                                </div>
+                                <span class="truncate">Disetujui</span>
                             </div>
 
-                            <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                                <span class="w-2 h-2 bg-rose-600 rounded-full inline-block"></span>
-                                <span>Libur Nasional</span>
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                                <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <span class="w-2 h-2 bg-blue-600 rotate-45 inline-block"></span>
+                                </div>
+                                <span class="truncate">Menunggu Mentor</span>
                             </div>
 
-                            <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                                <span class="w-2 h-2 bg-amber-500 rounded-full inline-block"></span>
-                                <span>Cuti Bersama</span>
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                                <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <span class="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[8px] border-b-amber-600 inline-block"></span>
+                                </div>
+                                <span class="truncate">Perlu Tindakan</span>
                             </div>
 
-                            <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                                <span class="w-2 h-2 bg-purple-600 rounded-full inline-block"></span>
-                                <span>Libur Perusahaan</span>
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                                <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-xmark text-red-600 text-xs"></i>
+                                </div>
+                                <span class="truncate">Ditolak</span>
                             </div>
 
-                            <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                                <span class="w-2 h-2 bg-rose-400 rounded-full inline-block opacity-75"></span>
-                                <span>Tidak Hadir</span>
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                                <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <span class="w-2 h-2 bg-rose-400 rounded-full inline-block opacity-75"></span>
+                                </div>
+                                <span class="truncate">Tidak Hadir</span>
                             </div>
 
-                            <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                                <i class="fa-solid fa-xmark text-red-600"></i>
-                                <span>Ditolak</span>
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                                <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-lock-open text-emerald-500 text-xs"></i>
+                                </div>
+                                <span class="truncate">Dispensasi</span>
                             </div>
 
-                            <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                                <span class="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[8px] border-b-amber-600 inline-block"></span>
-                                <span>Perlu Tindakan</span>
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                                <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <span class="w-2 h-2 rounded-full border border-slate-400 inline-block"></span>
+                                </div>
+                                <span class="truncate">Belum Diisi</span>
                             </div>
 
-                            <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                                <span class="w-2 h-2 bg-blue-600 rotate-45 inline-block"></span>
-                                <span>Menunggu Mentor</span>
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                                <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <span class="w-2 h-2 bg-rose-600 rounded-full inline-block"></span>
+                                </div>
+                                <span class="truncate">Libur Nasional</span>
                             </div>
 
-                            <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                                <span class="w-2 h-2 rounded-full border border-slate-400 inline-block"></span>
-                                <span>Belum Diisi</span>
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                                <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <span class="w-2 h-2 bg-amber-500 rounded-full inline-block"></span>
+                                </div>
+                                <span class="truncate">Cuti Bersama</span>
                             </div>
 
-                            <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                                <span class="w-2 h-2 bg-slate-800 dark:bg-slate-400 rounded-2xs inline-block"></span>
-                                <span>Weekend</span>
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                                <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <span class="w-2 h-2 bg-purple-600 rounded-full inline-block"></span>
+                                </div>
+                                <span class="truncate">Libur Perusahaan</span>
                             </div>
 
-                            <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                                <i class="fa-solid fa-lock-open text-emerald-500"></i>
-                                <span>Dispensasi</span>
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                                <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <span class="w-2 h-2 bg-slate-800 dark:bg-slate-400 rounded-2xs inline-block"></span>
+                                </div>
+                                <span class="truncate">Weekend</span>
                             </div>
 
                         </div>

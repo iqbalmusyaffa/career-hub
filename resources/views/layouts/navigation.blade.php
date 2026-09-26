@@ -50,6 +50,9 @@
                             <x-nav-link :href="route('mentor.logbooks.index')" :active="request()->routeIs('mentor.logbooks.*') || request()->routeIs('mentor.settings.*')">
                                 Batch & Presensi Magang
                             </x-nav-link>
+                            <x-nav-link :href="route('admin.leaves.index')" :active="request()->routeIs('admin.leaves.*')">
+                                Kelola Cuti & Izin
+                            </x-nav-link>
                             @if(!auth()->user()->hasRole('Super Admin'))
                                 <x-nav-link :href="route('admin.company.profile.edit')" :active="request()->routeIs('admin.company.profile.*')">
                                     Profil Perusahaan
@@ -107,8 +110,13 @@
                             <x-nav-link :href="route('saved-jobs.index')" :active="request()->routeIs('saved-jobs.*')">
                                 Lowongan Tersimpan
                             </x-nav-link>
+                            @if(auth()->user()->isIntern())
                             <x-nav-link :href="route('candidate.logbook.index')" :active="request()->routeIs('candidate.logbook.*')">
                                 Presensi Magang
+                            </x-nav-link>
+                            @endif
+                            <x-nav-link :href="route('candidate.leaves.index')" :active="request()->routeIs('candidate.leaves.*')">
+                                Cuti & Izin
                             </x-nav-link>
                             <x-nav-link :href="route('candidate.cv-builder')" :active="request()->routeIs('candidate.cv-builder')">
                                 CV Builder
@@ -193,7 +201,7 @@
                         </button>
 
                         <!-- Dropdown Drawer -->
-                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 z-50 overflow-hidden" style="display: none;">
+                        <div x-show="open" @click.away="open = false" x-transition class="fixed left-3 right-3 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-96 max-w-sm sm:max-w-none mx-auto sm:mx-0 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden" style="display: none;">
                             <div class="p-3.5 bg-slate-900 text-white flex justify-between items-center">
                                 <div class="flex items-center gap-2">
                                     <i class="fa-solid fa-bell text-blue-400 text-xs"></i>
@@ -328,10 +336,12 @@
                             @endif
 
                             @if(auth()->user()->hasRole('Candidate'))
-                            <x-dropdown-link :href="route('candidate.logbook.index')" class="flex items-center gap-2.5 py-2 text-xs">
-                                <i class="fa-solid fa-calendar-check text-slate-400 w-4"></i>
+                            @if(auth()->user()->isIntern())
+                            <x-dropdown-link :href="route('candidate.logbook.index')" class="flex items-center gap-2.5 py-2 text-xs text-emerald-600 font-semibold">
+                                <i class="fa-solid fa-calendar-check text-emerald-600 w-4"></i>
                                 {{ __('Presensi Magang') }}
                             </x-dropdown-link>
+                            @endif
                             <x-dropdown-link :href="route('profile.candidate.details.edit')" class="flex items-center gap-2.5 py-2 text-xs">
                                 <i class="fa-solid fa-file-lines text-slate-400 w-4"></i>
                                 {{ __('Profil & CV') }}
@@ -412,6 +422,9 @@
                 <x-responsive-nav-link :href="route('mentor.logbooks.index')" :active="request()->routeIs('mentor.logbooks.*') || request()->routeIs('mentor.settings.*')">
                     Batch & Presensi Magang
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.leaves.index')" :active="request()->routeIs('admin.leaves.*')">
+                    Kelola Cuti & Izin
+                </x-responsive-nav-link>
                 @endif
 
                 @if(auth()->user()->hasRole('Mentor'))
@@ -429,6 +442,14 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.*')">
                     Perusahaan
+                </x-responsive-nav-link>
+                @if(auth()->user()->isIntern())
+                <x-responsive-nav-link :href="route('candidate.logbook.index')" :active="request()->routeIs('candidate.logbook.*')">
+                    Presensi Magang
+                </x-responsive-nav-link>
+                @endif
+                <x-responsive-nav-link :href="route('candidate.leaves.index')" :active="request()->routeIs('candidate.leaves.*')">
+                    Cuti & Izin
                 </x-responsive-nav-link>
                 @endif
             @else

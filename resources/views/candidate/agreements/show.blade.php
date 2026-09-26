@@ -142,26 +142,72 @@
                     </div>
                 @else
                     <!-- SIGNED DISPLAY STATE -->
-                    <div class="pt-6 border-t border-slate-200 space-y-4">
-                        <div class="p-5 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="pt-6 border-t border-slate-200 space-y-6">
+                        <div class="p-5 bg-emerald-50 border border-emerald-200 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xs">
                             <div class="flex items-center gap-3">
                                 <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-xl shrink-0 font-bold shadow-sm">
                                     ✓
                                 </div>
                                 <div>
                                     <span class="font-extrabold text-emerald-900 text-sm block">Dokumen Ini Telah Ditandatangani Secara Sah!</span>
-                                    <span class="text-xs text-emerald-700">Ditandatangani oleh <strong>{{ $agreement->signer_name }}</strong> pada {{ $agreement->signed_at ? $agreement->signed_at->format('d M Y, H:i') : '-' }} WIB</span>
+                                    <span class="text-xs text-emerald-700">Ditandatangani oleh <strong>{{ $agreement->signer_name }}</strong> pada {{ $agreement->signed_at ? $agreement->signed_at->format('d M Y, H:i') : '-' }} WIB (IP: {{ $agreement->signer_ip ?? '127.0.0.1' }})</span>
                                 </div>
                             </div>
-                            <a href="{{ route('agreements.download', $agreement) }}" class="shrink-0 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl transition shadow-2xs">
-                                📥 Unduh File PDF
+                            <a href="{{ route('agreements.download', $agreement) }}" class="shrink-0 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl transition shadow-2xs flex items-center gap-2">
+                                <i class="fa-solid fa-download"></i> Unduh File PDF Resmi
                             </a>
+                        </div>
+
+                        <!-- 3 DIGITAL QR SIGNATURES CARDS -->
+                        @php
+                            $downloadUrl = route('agreements.download', $agreement);
+                            $companyName = $agreement->application->job->company_name ?? 'PT TalentFlow Tech';
+
+                            $qrHrData = "DOKUMEN SAH HRD\nPerusahaan: " . $companyName . "\nHR: " . ($agreement->hr_signer_name ?? 'HR Manager') . "\nNo: " . $agreement->contract_number . "\nStatus: TERVERIFIKASI HR\nUnduh: " . $downloadUrl;
+                            $qrHrSvg = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(90)->generate($qrHrData));
+
+                            $qrOwnerData = "DOKUMEN SAH DIREKSI\nPerusahaan: " . $companyName . "\nDirektur: " . ($agreement->owner_signer_name ?? 'Direktur Utama') . "\nNo: " . $agreement->contract_number . "\nStatus: DISAHKAN DIREKSI\nUnduh: " . $downloadUrl;
+                            $qrOwnerSvg = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(90)->generate($qrOwnerData));
+
+                            $qrCandData = "TANDA TANGAN DIGITAL KANDIDAT\nNama: " . ($agreement->signer_name ?? $agreement->user->name) . "\nEmail: " . $agreement->user->email . "\nIP: " . ($agreement->signer_ip ?? '127.0.0.1') . "\nWaktu: " . ($agreement->signed_at ? $agreement->signed_at->format('d/m/Y H:i') : '-') . " WIB\nStatus: SAH OTP VERIFIED\nUnduh: " . $downloadUrl;
+                            $qrCandSvg = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(90)->generate($qrCandData));
+                        @endphp
+
+                        <div class="space-y-2">
+                            <h4 class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                                🔐 3 Tanda Tangan Digital Resmi Berbasis QR Code
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <!-- HR QR Card -->
+                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center space-y-2">
+                                    <span class="text-3xs font-extrabold uppercase text-slate-500 block">1. TTD Digital HRD</span>
+                                    <img src="data:image/svg+xml;base64,{{ $qrHrSvg }}" class="w-20 h-20 mx-auto bg-white p-1.5 rounded-xl border border-slate-200 shadow-2xs">
+                                    <div class="font-bold text-xs text-slate-900">{{ $agreement->hr_signer_name ?? 'HR Manager' }}</div>
+                                    <span class="text-3xs text-emerald-600 font-bold block">✓ Terverifikasi HR</span>
+                                </div>
+
+                                <!-- Owner QR Card -->
+                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center space-y-2">
+                                    <span class="text-3xs font-extrabold uppercase text-slate-500 block">2. TTD Digital Direksi</span>
+                                    <img src="data:image/svg+xml;base64,{{ $qrOwnerSvg }}" class="w-20 h-20 mx-auto bg-white p-1.5 rounded-xl border border-slate-200 shadow-2xs">
+                                    <div class="font-bold text-xs text-slate-900">{{ $agreement->owner_signer_name ?? 'Direktur Utama' }}</div>
+                                    <span class="text-3xs text-emerald-600 font-bold block">✓ Terverifikasi Direksi</span>
+                                </div>
+
+                                <!-- Candidate QR Card -->
+                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center space-y-2">
+                                    <span class="text-3xs font-extrabold uppercase text-slate-500 block">3. TTD Digital Kandidat</span>
+                                    <img src="data:image/svg+xml;base64,{{ $qrCandSvg }}" class="w-20 h-20 mx-auto bg-white p-1.5 rounded-xl border border-slate-200 shadow-2xs">
+                                    <div class="font-bold text-xs text-slate-900">{{ $agreement->signer_name }}</div>
+                                    <span class="text-3xs text-emerald-600 font-bold block">✓ Sah OTP ({{ $agreement->signed_at ? $agreement->signed_at->format('d/m/Y') : '' }})</span>
+                                </div>
+                            </div>
                         </div>
 
                         @if($agreement->signature_data)
                             <div class="text-center pt-2">
-                                <span class="text-3xs font-bold uppercase text-slate-400 block mb-1">Pratinjau Tanda Tangan Digital Kandidat:</span>
-                                <img src="{{ $agreement->signature_data }}" class="max-h-24 mx-auto border border-slate-200 rounded-xl p-2 bg-white shadow-2xs">
+                                <span class="text-3xs font-bold uppercase text-slate-400 block mb-1">Coretan Tanda Tangan Canvas:</span>
+                                <img src="{{ $agreement->signature_data }}" class="max-h-20 mx-auto border border-slate-200 rounded-xl p-2 bg-white shadow-2xs">
                             </div>
                         @endif
                     </div>

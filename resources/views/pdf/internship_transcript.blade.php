@@ -195,6 +195,12 @@
 @php
     $verificationUrl = route('certificates.verify.public', ['code' => $transcript->transcript_number]);
     $qrCodeBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(65)->generate($verificationUrl));
+
+    $qrMentorData = "VALIDASI PENILAIAN MENTOR\nNama: " . ($transcript->mentor_name ?? 'Mentor Magang') . "\nNo. Transkrip: " . $transcript->transcript_number . "\nNilai Akhir: " . $transcript->final_score . "\nStatus: SAH & DIVERIFIKASI MENTOR\nVerifikasi: " . $verificationUrl;
+    $qrMentorSvg = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(55)->generate($qrMentorData));
+
+    $qrHrData = "VALIDASI PENGESAHAN HRD\nNama: " . ($transcript->hr_name ?? 'HR Manager') . "\nNo. Transkrip: " . $transcript->transcript_number . "\nStatus: DISAHKAN HRD PERUSAHAAN\nVerifikasi: " . $verificationUrl;
+    $qrHrSvg = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(55)->generate($qrHrData));
 @endphp
 
     <div class="top-bar"></div>
@@ -291,9 +297,12 @@
 
     <div class="signatures">
         <div class="sig-col">
-            <div class="sig-title">MENTOR PEMBIMBING LAPANGAN</div>
+            <div class="sig-title" style="margin-bottom: 6px;">MENTOR PEMBIMBING LAPANGAN</div>
+            <div style="text-align: center; margin: 3px auto;">
+                <img src="data:image/svg+xml;base64,{{ $qrMentorSvg }}" style="width: 45px; height: 45px; border: 1px solid #cbd5e1; padding: 2px; background: #fff; border-radius: 4px;">
+            </div>
             <div class="sig-name">{{ $transcript->mentor_name ?? 'Mentor Magang' }}</div>
-            <div class="sig-role">Pembimbing Lapangan</div>
+            <div class="sig-role">Pembimbing Lapangan &bull; ✅ Terverifikasi</div>
             @if($transcript->mentor_phone || $transcript->mentor_email)
                 <div style="font-size: 6.5pt; color: #64748b; margin-top: 2px;">
                     {{ $transcript->mentor_phone ?? '' }} @if($transcript->mentor_phone && $transcript->mentor_email)&bull;@endif {{ $transcript->mentor_email ?? '' }}
@@ -302,9 +311,12 @@
         </div>
 
         <div class="sig-col sig-col-right">
-            <div class="sig-title">HRD MANAGER</div>
+            <div class="sig-title" style="margin-bottom: 6px;">HRD MANAGER</div>
+            <div style="text-align: center; margin: 3px auto;">
+                <img src="data:image/svg+xml;base64,{{ $qrHrSvg }}" style="width: 45px; height: 45px; border: 1px solid #cbd5e1; padding: 2px; background: #fff; border-radius: 4px;">
+            </div>
             <div class="sig-name">{{ $transcript->hr_name ?? 'HR Manager' }}</div>
-            <div class="sig-role">Human Resources Dept</div>
+            <div class="sig-role">Human Resources Dept &bull; ✅ Terverifikasi</div>
             <div style="font-size: 6.5pt; color: #64748b; margin-top: 2px;">
                 Tgl Terbit: {{ $transcript->issued_at ? $transcript->issued_at->format('d F Y') : '-' }}
             </div>

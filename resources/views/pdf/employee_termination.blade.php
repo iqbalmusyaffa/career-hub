@@ -163,6 +163,16 @@
 @php
     $verificationUrl = route('candidate.terminations.show', $termination);
     $qrCodeBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(65)->generate($verificationUrl));
+
+    $companyName = $termination->application->job->company_name ?? 'PT TALENTFLOW INDONESIA';
+    $qrHrData = "DOKUMEN SAH HRD\nPerusahaan: " . $companyName . "\nHR Manager: " . ($termination->hr_name ?? 'HR Manager') . "\nNo. Dokumen: " . $termination->document_number . "\nStatus: DISAHKAN HRD\nVerifikasi: " . $verificationUrl;
+    $qrHrSvg = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(55)->generate($qrHrData));
+
+    $qrOwnerData = "DOKUMEN SAH DIREKSI\nPerusahaan: " . $companyName . "\nDirektur: " . ($termination->owner_name ?? 'Direktur Utama') . "\nNo. Dokumen: " . $termination->document_number . "\nStatus: DISETUJUI DIREKSI\nVerifikasi: " . $verificationUrl;
+    $qrOwnerSvg = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(55)->generate($qrOwnerData));
+
+    $qrEmpData = "TANDA TANGAN KARYAWAN\nNama: " . ($termination->signer_name ?? $termination->employee_name) . "\nNo. Dokumen: " . $termination->document_number . "\nStatus: TERIMA & MENYETUJUI\nVerifikasi: " . $verificationUrl;
+    $qrEmpSvg = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(55)->generate($qrEmpData));
 @endphp
 
     <div class="top-bar"></div>
@@ -222,39 +232,42 @@
     <div class="signatures">
         <!-- SIGNATORY 1: HR MANAGER -->
         <div style="width: 31%; float: left; text-align: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 4px; box-sizing: border-box;">
-            <div style="font-weight: 800; font-size: 7.5pt; color: #475569; text-transform: uppercase; border-bottom: 1px dashed #cbd5e1; padding-bottom: 3px; margin-bottom: 6px;">1. HR MANAGER</div>
+            <div style="font-weight: 800; font-size: 7.5pt; color: #475569; text-transform: uppercase; border-bottom: 1px dashed #cbd5e1; padding-bottom: 3px; margin-bottom: 6px;">1. TTD DIGITAL HRD</div>
+            <div style="text-align: center; margin: 3px auto;">
+                <img src="data:image/svg+xml;base64,{{ $qrHrSvg }}" style="width: 45px; height: 45px; border: 1px solid #cbd5e1; padding: 2px; background: #fff; border-radius: 4px;">
+            </div>
             @if($termination->company_signature_path)
-                <img src="{{ public_path('storage/' . $termination->company_signature_path) }}" style="max-height: 60px; max-width: 100%; margin: 4px auto; display: block;">
-            @else
-                <div style="height: 50px; line-height: 50px; font-weight: bold; color: #94a3b8; font-size: 7.5pt; font-style: italic;">[TERVERIFIKASI HR]</div>
+                <img src="{{ public_path('storage/' . $termination->company_signature_path) }}" style="max-height: 40px; max-width: 100%; margin: 2px auto; display: block;">
             @endif
             <div style="font-weight: 800; font-size: 8pt; color: #0f172a; text-decoration: underline;">{{ $termination->hr_name ?? 'HR Manager' }}</div>
-            <div style="font-size: 7pt; color: #64748b;">Human Resources Dept</div>
+            <div style="font-size: 7pt; color: #64748b;">Human Resources &bull; ✅ Sah</div>
         </div>
 
         <!-- SIGNATORY 2: OWNER / DIREKTUR -->
         <div style="width: 31%; float: left; text-align: center; margin-left: 3.5%; margin-right: 3.5%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 4px; box-sizing: border-box;">
-            <div style="font-weight: 800; font-size: 7.5pt; color: #475569; text-transform: uppercase; border-bottom: 1px dashed #cbd5e1; padding-bottom: 3px; margin-bottom: 6px;">2. OWNER / DIREKTUR</div>
+            <div style="font-weight: 800; font-size: 7.5pt; color: #475569; text-transform: uppercase; border-bottom: 1px dashed #cbd5e1; padding-bottom: 3px; margin-bottom: 6px;">2. TTD DIGITAL DIREKSI</div>
+            <div style="text-align: center; margin: 3px auto;">
+                <img src="data:image/svg+xml;base64,{{ $qrOwnerSvg }}" style="width: 45px; height: 45px; border: 1px solid #cbd5e1; padding: 2px; background: #fff; border-radius: 4px;">
+            </div>
             @if($termination->owner_signature_path)
-                <img src="{{ public_path('storage/' . $termination->owner_signature_path) }}" style="max-height: 60px; max-width: 100%; margin: 4px auto; display: block;">
-            @else
-                <div style="height: 50px; line-height: 50px; font-weight: bold; color: #94a3b8; font-size: 7.5pt; font-style: italic;">[TERVERIFIKASI OWNER]</div>
+                <img src="{{ public_path('storage/' . $termination->owner_signature_path) }}" style="max-height: 40px; max-width: 100%; margin: 2px auto; display: block;">
             @endif
             <div style="font-weight: 800; font-size: 8pt; color: #0f172a; text-decoration: underline;">{{ $termination->owner_name ?? 'Direktur Utama' }}</div>
-            <div style="font-size: 7pt; color: #64748b;">Pimpinan Perusahaan</div>
+            <div style="font-size: 7pt; color: #64748b;">Pimpinan Perusahaan &bull; ✅ Sah</div>
         </div>
 
         <!-- SIGNATORY 3: KARYAWAN -->
         <div style="width: 31%; float: right; text-align: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 4px; box-sizing: border-box;">
-            <div style="font-weight: 800; font-size: 7.5pt; color: #475569; text-transform: uppercase; border-bottom: 1px dashed #cbd5e1; padding-bottom: 3px; margin-bottom: 6px;">3. KARYAWAN</div>
+            <div style="font-weight: 800; font-size: 7.5pt; color: #475569; text-transform: uppercase; border-bottom: 1px dashed #cbd5e1; padding-bottom: 3px; margin-bottom: 6px;">3. TTD KARYAWAN</div>
+            <div style="text-align: center; margin: 3px auto;">
+                <img src="data:image/svg+xml;base64,{{ $qrEmpSvg }}" style="width: 45px; height: 45px; border: 1px solid #cbd5e1; padding: 2px; background: #fff; border-radius: 4px;">
+            </div>
             @if($termination->signature_data)
-                <img src="{{ $termination->signature_data }}" style="max-height: 60px; max-width: 100%; margin: 4px auto; display: block;">
-            @else
-                <div style="height: 50px; line-height: 50px; font-weight: bold; color: #94a3b8; font-size: 7.5pt; font-style: italic;">[Belum Ditandatangani]</div>
+                <img src="{{ $termination->signature_data }}" style="max-height: 35px; max-width: 100%; margin: 2px auto; display: block;">
             @endif
             <div style="font-weight: 800; font-size: 8pt; color: #0f172a; text-decoration: underline;">{{ $termination->signer_name ?? $termination->employee_name }}</div>
             <div style="font-size: 7pt; color: #64748b;">
-                Tgl: {{ $termination->signed_at ? $termination->signed_at->format('d M Y') : '-' }}
+                Tgl: {{ $termination->signed_at ? $termination->signed_at->format('d M Y') : '-' }} &bull; ✅ Sah
             </div>
         </div>
         <div class="clear"></div>

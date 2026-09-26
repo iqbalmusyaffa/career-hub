@@ -39,11 +39,13 @@ class InternshipResignation extends Model
     public function getCategoryLabelAttribute()
     {
         return match($this->reason_category) {
-            'academic' => 'Akademik / Tugas Kampus',
-            'health' => 'Kondisi Kesehatan',
-            'relocation' => 'Pindah Domisili',
+            'job_offer' => 'Diterima Bekerja / Tawaran Kerja',
+            'company_issue' => 'Ketidaksesuaian Lingkungan / Perusahaan Redflag',
+            'academic' => 'Akademik / Tugas Akhir Kampus',
+            'health' => 'Kondisi Kesehatan / Sakit',
+            'relocation' => 'Pindah Domisili / Tempat Tinggal',
             'personal' => 'Alasan Pribadi / Keluarga',
-            default => 'Lainnya',
+            default => 'Alasan Lainnya',
         };
     }
 

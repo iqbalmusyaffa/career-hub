@@ -332,6 +332,9 @@
                                     @if(isset($internMetrics['transcript']) && $internMetrics['transcript'])
                                         <p class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 tracking-tight">{{ $internMetrics['transcript']->final_score }}</p>
                                         <p class="text-[11px] text-emerald-600 font-semibold">{{ $internMetrics['transcript']->predicate ?? 'Lulus Magang' }}</p>
+                                    @elseif(isset($internMetrics['evaluation']) && $internMetrics['evaluation'])
+                                        <p class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 tracking-tight">{{ number_format($internMetrics['evaluation']->final_score, 1) }}</p>
+                                        <p class="text-[11px] text-emerald-600 font-semibold">Grade {{ $internMetrics['evaluation']->final_grade ?? 'A' }}</p>
                                     @else
                                         <p class="text-lg font-bold text-slate-800 dark:text-slate-200 tracking-tight">Sedang Berjalan</p>
                                         <p class="text-[11px] text-slate-400 font-normal">Penilaian akhir periode</p>
@@ -343,15 +346,15 @@
                             </div>
                             <div class="pt-1 text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold flex items-center justify-between">
                                 <span>Status Transkrip</span>
-                                <span>{{ isset($internMetrics['transcript']) ? 'Tersedia' : 'Tahap Akhir' }}</span>
+                                <span>{{ (isset($internMetrics['transcript']) && $internMetrics['transcript']) ? 'Tersedia' : ((isset($internMetrics['evaluation']) && $internMetrics['evaluation']) ? 'Dinilai Mentor' : 'Tahap Akhir') }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- 3. STEPPER ALUR MAGANG (INTERNSHIP LIFECYCLE) -->
-                <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-7 shadow-xs border border-slate-200/80 dark:border-slate-800 space-y-5">
-                    <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-7 shadow-xs border border-slate-200/80 dark:border-slate-800 space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
                         <div>
                             <span class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-md border border-emerald-200/80 dark:border-emerald-900 inline-block mb-1">
                                 Siklus Program Magang
@@ -364,59 +367,154 @@
                     @php
                         $hasCert = (bool) ($internMetrics['certificate'] ?? false);
                         $hasTrans = (bool) ($internMetrics['transcript'] ?? false);
+                        $targetHours = (int) ($internMetrics['targetHours'] ?? 400);
+                        $completedHours = (int) ($internMetrics['completedHours'] ?? 0);
+                        $hasSignedAgreement = !\App\Models\ApplicationAgreement::where('user_id', auth()->id())->where('status', 'sent')->exists();
+
+                        // Determine active stage strictly according to internship workflow:
+                        // 1. Onboarding & Kontrak
+                        // 2. Pelaksanaan & Presensi
+                        // 3. Penilaian Mentor
+                        // 4. Sertifikat Kelulusan
+                        if ($hasCert) {
+                            $currentInternStep = 4;
+                            $isGraduated = true;
+                        } elseif ($hasTrans) {
+                            $currentInternStep = 4;
+                            $isGraduated = false;
+                        } elseif (($targetHours > 0 && $completedHours >= $targetHours) || (isset($pEnd) && now()->gt($pEnd))) {
+                            $currentInternStep = 3;
+                            $isGraduated = false;
+                        } elseif ($hasSignedAgreement) {
+                            $currentInternStep = 2;
+                            $isGraduated = false;
+                        } else {
+                            $currentInternStep = 1;
+                            $isGraduated = false;
+                        }
+
+                        $internStages = [
+                            [
+                                'step' => 1,
+                                'title' => 'Onboarding & Kontrak',
+                                'desc' => 'Tanda Tangan & Berkas',
+                                'icon' => 'fa-file-signature',
+                                'active_badge' => 'Tahap 1 (Aktif)',
+                            ],
+                            [
+                                'step' => 2,
+                                'title' => 'Pelaksanaan & Presensi',
+                                'desc' => 'Jurnal & Jam Kerja',
+                                'icon' => 'fa-calendar-check',
+                                'active_badge' => 'Tahap 2 (Aktif)',
+                            ],
+                            [
+                                'step' => 3,
+                                'title' => 'Penilaian Mentor',
+                                'desc' => 'Evaluasi & Nilai',
+                                'icon' => 'fa-chart-line',
+                                'active_badge' => 'Tahap 3 (Proses Nilai)',
+                            ],
+                            [
+                                'step' => 4,
+                                'title' => 'Sertifikat Kelulusan',
+                                'desc' => 'Transkrip & Sertifikat',
+                                'icon' => 'fa-graduation-cap',
+                                'active_badge' => 'Tahap 4 (Penerbitan)',
+                            ],
+                        ];
                     @endphp
 
-                    <div class="overflow-x-auto pb-3 pt-1 scrollbar-thin">
-                        <div class="flex items-center min-w-max md:min-w-0 md:justify-between gap-3 px-1">
-                            
-                            <!-- Step 1: Diterima & Onboarding (Passed) -->
-                            <div class="flex items-center">
-                                <div class="flex flex-col items-center text-center space-y-1.5 w-28 md:w-auto">
-                                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0">
+                    <!-- Desktop & Tablet Connected Stepper (md:flex) -->
+                    <div class="hidden md:flex items-start justify-between px-1">
+                        @foreach($internStages as $idx => $stg)
+                            @php
+                                $isPassed = ($isGraduated && $stg['step'] === 4) || $currentInternStep > $stg['step'];
+                                $isCurrent = !$isGraduated && $currentInternStep === $stg['step'];
+                                $isUpcoming = !$isPassed && !$isCurrent;
+                            @endphp
+
+                            <div class="flex flex-col items-center text-center flex-1 max-w-[200px] px-1 group">
+                                <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-bold shadow-xs transition duration-200 shrink-0
+                                    {{ $isCurrent ? 'bg-blue-600 text-white ring-4 ring-blue-100 dark:ring-blue-900/40 shadow-blue-500/20 shadow-md' : ($isPassed ? 'bg-emerald-600 text-white shadow-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700') }}">
+                                    @if($isPassed)
                                         <i class="fa-solid fa-check"></i>
-                                    </div>
-                                    <span class="text-[10px] font-bold text-emerald-600 uppercase">Tahap 1</span>
-                                    <span class="text-xs font-semibold text-slate-800 dark:text-slate-200">Onboarding & Kontrak</span>
+                                    @else
+                                        <i class="fa-solid {{ $stg['icon'] }}"></i>
+                                    @endif
                                 </div>
-                                <div class="w-8 sm:w-12 lg:w-20 h-0.5 mx-2 rounded-full bg-emerald-500"></div>
-                            </div>
-
-                            <!-- Step 2: Pelaksanaan & Logbook (Current Active) -->
-                            <div class="flex items-center">
-                                <div class="flex flex-col items-center text-center space-y-1.5 w-28 md:w-auto">
-                                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs font-bold ring-4 ring-blue-100 dark:ring-blue-900/40 shadow-xs shrink-0">
-                                        <i class="fa-solid fa-calendar-check"></i>
-                                    </div>
-                                    <span class="text-[10px] font-bold text-blue-600 uppercase">Tahap 2 (Aktif)</span>
-                                    <span class="text-xs font-semibold text-slate-900 dark:text-white">Pelaksanaan & Presensi</span>
-                                </div>
-                                <div class="w-8 sm:w-12 lg:w-20 h-0.5 mx-2 rounded-full {{ $hasTrans ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800' }}"></div>
-                            </div>
-
-                            <!-- Step 3: Evaluasi Nilai Mentor -->
-                            <div class="flex items-center">
-                                <div class="flex flex-col items-center text-center space-y-1.5 w-28 md:w-auto">
-                                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl {{ $hasTrans ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700' }} flex items-center justify-center text-xs font-bold shadow-xs shrink-0">
-                                        @if($hasTrans) <i class="fa-solid fa-check"></i> @else <i class="fa-solid fa-chart-pie"></i> @endif
-                                    </div>
-                                    <span class="text-[10px] font-bold uppercase {{ $hasTrans ? 'text-emerald-600' : 'text-slate-400' }}">Tahap 3</span>
-                                    <span class="text-xs font-medium {{ $hasTrans ? 'text-slate-800 dark:text-slate-200 font-semibold' : 'text-slate-400' }}">Penilaian Mentor</span>
-                                </div>
-                                <div class="w-8 sm:w-12 lg:w-20 h-0.5 mx-2 rounded-full {{ $hasCert ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800' }}"></div>
-                            </div>
-
-                            <!-- Step 4: Sertifikat & Transkrip -->
-                            <div class="flex items-center">
-                                <div class="flex flex-col items-center text-center space-y-1.5 w-28 md:w-auto">
-                                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl {{ $hasCert ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700' }} flex items-center justify-center text-xs font-bold shadow-xs shrink-0">
-                                        @if($hasCert) <i class="fa-solid fa-check"></i> @else <i class="fa-solid fa-graduation-cap"></i> @endif
-                                    </div>
-                                    <span class="text-[10px] font-bold uppercase {{ $hasCert ? 'text-emerald-600' : 'text-slate-400' }}">Tahap 4</span>
-                                    <span class="text-xs font-medium {{ $hasCert ? 'text-slate-800 dark:text-slate-200 font-semibold' : 'text-slate-400' }}">Sertifikat Kelulusan</span>
+                                
+                                <div class="mt-2.5 space-y-0.5">
+                                    <span class="text-[10px] font-bold uppercase tracking-wider block
+                                        {{ $isCurrent ? 'text-blue-600 dark:text-blue-400' : ($isPassed ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500') }}">
+                                        {{ $isPassed ? ($stg['step'] === 4 ? 'Tahap 4 (Lulus)' : 'Tahap ' . $stg['step']) : ($isCurrent ? $stg['active_badge'] : 'Tahap ' . $stg['step']) }}
+                                    </span>
+                                    <p class="text-xs font-semibold {{ $isCurrent ? 'text-slate-900 dark:text-white' : ($isPassed ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500') }}">
+                                        {{ $stg['title'] }}
+                                    </p>
+                                    <p class="text-[11px] {{ $isCurrent ? 'text-blue-600/80 dark:text-blue-400/80 font-medium' : 'text-slate-400 dark:text-slate-500' }}">
+                                        {{ $stg['desc'] }}
+                                    </p>
                                 </div>
                             </div>
 
-                        </div>
+                            @if(!$loop->last)
+                                @php
+                                    $isLinePassed = $currentInternStep > $stg['step'] || ($isGraduated && $stg['step'] < 4);
+                                @endphp
+                                <div class="flex-1 h-0.5 mt-5 mx-2 rounded-full transition-colors duration-300 {{ $isLinePassed ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800' }}"></div>
+                            @endif
+                        @endforeach
+                    </div>
+
+                    <!-- Mobile Responsive Stepper Grid (< md) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:hidden">
+                        @foreach($internStages as $idx => $stg)
+                            @php
+                                $isPassed = ($isGraduated && $stg['step'] === 4) || $currentInternStep > $stg['step'];
+                                $isCurrent = !$isGraduated && $currentInternStep === $stg['step'];
+                                $isUpcoming = !$isPassed && !$isCurrent;
+                            @endphp
+
+                            <div class="p-3.5 rounded-xl border transition-all flex items-start gap-3
+                                {{ $isCurrent 
+                                    ? 'bg-blue-50/60 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900/60 shadow-xs' 
+                                    : ($isPassed 
+                                        ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200/70 dark:border-emerald-900/40' 
+                                        : 'bg-slate-50/60 dark:bg-slate-800/30 border-slate-200/70 dark:border-slate-800/60') }}">
+                                
+                                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold shrink-0
+                                    {{ $isCurrent ? 'bg-blue-600 text-white ring-2 ring-blue-200 dark:ring-blue-900/50' : ($isPassed ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-400') }}">
+                                    @if($isPassed)
+                                        <i class="fa-solid fa-check"></i>
+                                    @else
+                                        <i class="fa-solid {{ $stg['icon'] }}"></i>
+                                    @endif
+                                </div>
+
+                                <div class="min-w-0 flex-1 space-y-0.5">
+                                    <div class="flex items-center justify-between gap-1">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider
+                                            {{ $isCurrent ? 'text-blue-600 dark:text-blue-400' : ($isPassed ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500') }}">
+                                            {{ $isPassed ? ($stg['step'] === 4 ? 'Tahap 4 (Lulus)' : 'Tahap ' . $stg['step']) : ($isCurrent ? $stg['active_badge'] : 'Tahap ' . $stg['step']) }}
+                                        </span>
+                                        @if($isPassed)
+                                            <span class="text-[9px] font-bold px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 rounded">Selesai</span>
+                                        @elseif($isCurrent)
+                                            <span class="text-[9px] font-bold px-1.5 py-0.5 bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 rounded animate-pulse">Berjalan</span>
+                                        @else
+                                            <span class="text-[9px] font-medium text-slate-400">Menunggu</span>
+                                        @endif
+                                    </div>
+                                    <h4 class="text-xs font-bold truncate {{ $isCurrent ? 'text-slate-900 dark:text-white' : ($isPassed ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500') }}">
+                                        {{ $stg['title'] }}
+                                    </h4>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                                        {{ $stg['desc'] }}
+                                    </p>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
 

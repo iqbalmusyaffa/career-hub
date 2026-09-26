@@ -97,23 +97,23 @@
             @endif
 
             <!-- Filters & Search Bar Card -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-2xs space-y-4">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-2xs space-y-3">
                 
                 <form method="GET" action="{{ route('notifications.all') }}" class="space-y-3">
                     <input type="hidden" name="scope" value="{{ $scope }}">
 
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <!-- Tabs -->
-                        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none text-xs font-semibold">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <!-- Tabs (Scrollable on Mobile) -->
+                        <div class="flex items-center gap-1.5 overflow-x-auto pb-1.5 md:pb-0 scrollbar-none text-xs font-semibold -mx-1 px-1">
                             <a href="{{ route('notifications.all', ['scope' => $scope, 'role' => $roleFilter, 'status' => 'all', 'type' => $type, 'search' => $search]) }}" 
-                               class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {{ $status === 'all' ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                               class="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap shrink-0 {{ $status === 'all' ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                                 <i class="fa-solid fa-layer-group text-[11px]"></i>
                                 <span>Semua</span>
                                 <span class="px-1.5 py-0.2 rounded-full text-[10px] {{ $status === 'all' ? 'bg-slate-700 text-white dark:bg-slate-200 dark:text-slate-900' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' }}">{{ $totalCount }}</span>
                             </a>
 
                             <a href="{{ route('notifications.all', ['scope' => $scope, 'role' => $roleFilter, 'status' => 'unread', 'type' => $type, 'search' => $search]) }}" 
-                               class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {{ $status === 'unread' ? 'bg-blue-600 text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                               class="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap shrink-0 {{ $status === 'unread' ? 'bg-blue-600 text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                                 <i class="fa-solid fa-envelope text-[11px]"></i>
                                 <span>Belum Dibaca</span>
                                 @if($unreadCount > 0)
@@ -122,24 +122,24 @@
                             </a>
 
                             <a href="{{ route('notifications.all', ['scope' => $scope, 'role' => $roleFilter, 'status' => 'read', 'type' => $type, 'search' => $search]) }}" 
-                               class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {{ $status === 'read' ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                               class="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap shrink-0 {{ $status === 'read' ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                                 <i class="fa-solid fa-envelope-open text-[11px]"></i>
                                 <span>Telah Dibaca</span>
                             </a>
 
-                            <div class="h-5 w-px bg-slate-200 dark:bg-slate-700 mx-1 hidden sm:block"></div>
+                            <div class="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 shrink-0"></div>
 
                             <!-- Type Filters -->
                             <a href="{{ route('notifications.all', ['scope' => $scope, 'role' => $roleFilter, 'status' => $status, 'type' => 'info', 'search' => $search]) }}" 
-                               class="px-3 py-1.5 rounded-lg text-xs transition whitespace-nowrap {{ $type === 'info' ? 'bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 font-bold' : 'text-slate-500 hover:text-blue-600' }}">
+                               class="px-2.5 py-1.5 rounded-lg text-xs transition whitespace-nowrap shrink-0 {{ $type === 'info' ? 'bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 font-bold' : 'text-slate-500 hover:text-blue-600' }}">
                                 <i class="fa-solid fa-circle-info text-blue-500 mr-1"></i> Info
                             </a>
                             <a href="{{ route('notifications.all', ['scope' => $scope, 'role' => $roleFilter, 'status' => $status, 'type' => 'warning', 'search' => $search]) }}" 
-                               class="px-3 py-1.5 rounded-lg text-xs transition whitespace-nowrap {{ $type === 'warning' ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-bold' : 'text-slate-500 hover:text-amber-600' }}">
+                               class="px-2.5 py-1.5 rounded-lg text-xs transition whitespace-nowrap shrink-0 {{ $type === 'warning' ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-bold' : 'text-slate-500 hover:text-amber-600' }}">
                                 <i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i> Peringatan
                             </a>
                             <a href="{{ route('notifications.all', ['scope' => $scope, 'role' => $roleFilter, 'status' => $status, 'type' => 'success', 'search' => $search]) }}" 
-                               class="px-3 py-1.5 rounded-lg text-xs transition whitespace-nowrap {{ $type === 'success' ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold' : 'text-slate-500 hover:text-emerald-600' }}">
+                               class="px-2.5 py-1.5 rounded-lg text-xs transition whitespace-nowrap shrink-0 {{ $type === 'success' ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold' : 'text-slate-500 hover:text-emerald-600' }}">
                                 <i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Sukses
                             </a>
                         </div>
@@ -204,16 +204,16 @@
                     @endphp
                     <div class="group bg-white dark:bg-slate-900 rounded-2xl border transition-all duration-200 p-4 sm:p-5 shadow-2xs hover:shadow-xs flex flex-col sm:flex-row items-start justify-between gap-4 {{ !$notif->is_read ? 'border-blue-300 dark:border-blue-700/80 bg-blue-50/20 dark:bg-blue-950/20 ring-1 ring-blue-100 dark:ring-blue-900/30' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700' }}">
                         
-                        <div class="flex items-start gap-3.5 flex-1 min-w-0">
+                        <div class="flex items-start gap-3.5 flex-1 min-w-0 w-full sm:w-auto">
                             <!-- Icon Badge -->
-                            <div class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-sm shadow-2xs {{ $notif->type === 'success' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : ($notif->type === 'warning' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200 dark:border-amber-800' : 'bg-blue-100 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-200 dark:border-blue-800') }}">
+                            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center shrink-0 text-sm shadow-2xs {{ $notif->type === 'success' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : ($notif->type === 'warning' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200 dark:border-amber-800' : 'bg-blue-100 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-200 dark:border-blue-800') }}">
                                 <i class="fa-solid {{ $notif->type === 'success' ? 'fa-circle-check' : ($notif->type === 'warning' ? 'fa-triangle-exclamation' : 'fa-circle-info') }}"></i>
                             </div>
 
                             <!-- Content Area -->
                             <div class="flex-1 min-w-0">
                                 <div class="flex flex-wrap items-center gap-2 mb-1">
-                                    <h3 class="font-bold text-sm text-slate-900 dark:text-white leading-snug">
+                                    <h3 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white leading-snug">
                                         {{ $notif->title }}
                                     </h3>
                                     
@@ -249,44 +249,47 @@
                         </div>
 
                         <!-- Action Controls -->
-                        <div class="flex items-center gap-1.5 sm:self-center shrink-0 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
-                            
-                            <!-- Lihat Detail Modal Trigger -->
-                            <button type="button" 
-                                    @click="openDetail({{ json_encode($notifData) }})"
-                                    class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                                    title="Baca rincian notifikasi selengkapnya">
-                                <i class="fa-regular fa-eye text-slate-500"></i>
-                                <span>Lihat Rincian</span>
-                            </button>
-
-                            @if($notif->link && $notif->link !== '#')
-                                <form method="POST" action="{{ route('notifications.read', $notif->id) }}">
-                                    @csrf
-                                    <input type="hidden" name="redirect_to_link" value="1">
-                                    <button type="submit" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs">
-                                        <span>Buka Halaman</span>
-                                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                                    </button>
-                                </form>
-                            @endif
-
-                            @if(!$notif->is_read)
-                                <form method="POST" action="{{ route('notifications.read', $notif->id) }}">
-                                    @csrf
-                                    <button type="submit" class="p-2 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition cursor-pointer" title="Tandai telah dibaca">
-                                        <i class="fa-solid fa-check text-xs"></i>
-                                    </button>
-                                </form>
-                            @endif
-
-                            <form method="POST" action="{{ route('notifications.destroy', $notif->id) }}" onsubmit="return confirm('Hapus notifikasi ini?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer" title="Hapus Notifikasi">
-                                    <i class="fa-solid fa-trash text-xs"></i>
+                        <div class="flex items-center gap-2 sm:self-center shrink-0 w-full sm:w-auto justify-between sm:justify-end pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
+                            <div class="flex items-center gap-1.5">
+                                <!-- Lihat Detail Modal Trigger -->
+                                <button type="button" 
+                                        @click="openDetail({{ json_encode($notifData) }})"
+                                        class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                                        title="Baca rincian notifikasi selengkapnya">
+                                    <i class="fa-regular fa-eye text-slate-500"></i>
+                                    <span>Lihat Rincian</span>
                                 </button>
-                            </form>
+
+                                @if($notif->link && $notif->link !== '#')
+                                    <form method="POST" action="{{ route('notifications.read', $notif->id) }}">
+                                        @csrf
+                                        <input type="hidden" name="redirect_to_link" value="1">
+                                        <button type="submit" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs">
+                                            <span>Buka Halaman</span>
+                                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+
+                            <div class="flex items-center gap-1">
+                                @if(!$notif->is_read)
+                                    <form method="POST" action="{{ route('notifications.read', $notif->id) }}">
+                                        @csrf
+                                        <button type="submit" class="p-1.5 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition cursor-pointer" title="Tandai telah dibaca">
+                                            <i class="fa-solid fa-check text-xs"></i>
+                                        </button>
+                                    </form>
+                                @endif
+
+                                <form method="POST" action="{{ route('notifications.destroy', $notif->id) }}" onsubmit="return confirm('Hapus notifikasi ini?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer" title="Hapus Notifikasi">
+                                        <i class="fa-solid fa-trash text-xs"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 @empty

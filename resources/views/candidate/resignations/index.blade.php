@@ -12,7 +12,24 @@
                     Kelola permohonan pengunduran diri resmi, akses panduan magang, dan sesi akun Anda.
                 </p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                <!-- Server Time Badge (Live Clock) -->
+                <div class="flex items-center gap-2 shrink-0" x-data="{
+                    currentTime: '',
+                    updateClock() {
+                        const now = new Date();
+                        const hours = String(now.getHours()).padStart(2, '0');
+                        const minutes = String(now.getMinutes()).padStart(2, '0');
+                        const seconds = String(now.getSeconds()).padStart(2, '0');
+                        this.currentTime = `${hours}.${minutes}.${seconds} WIB (GMT+7)`;
+                    }
+                }" x-init="updateClock(); setInterval(() => updateClock(), 1000)">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 text-xs font-medium border border-slate-200 dark:border-slate-800 shadow-2xs">
+                        <i class="fa-regular fa-clock text-slate-400"></i>
+                        <span>Waktu Server <span x-text="currentTime" class="font-mono font-bold text-slate-800 dark:text-slate-200"></span></span>
+                    </div>
+                </div>
+
                 <a href="{{ route('dashboard') }}" class="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold py-2 px-4 rounded-xl text-xs transition border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-2">
                     <i class="fa-solid fa-arrow-left text-xs"></i>
                     <span>Kembali ke Dashboard</span>
@@ -160,6 +177,8 @@
                                 </label>
                                 <select name="reason_category" required class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 focus:ring-rose-500 focus:border-rose-500">
                                     <option value="">-- Pilih Kategori Alasan --</option>
+                                    <option value="job_offer" {{ old('reason_category') === 'job_offer' ? 'selected' : '' }}>Diterima Bekerja / Tawaran Kerja (Full-time / Part-time)</option>
+                                    <option value="company_issue" {{ old('reason_category') === 'company_issue' ? 'selected' : '' }}>Ketidaksesuaian Lingkungan / Perusahaan Redflag</option>
                                     <option value="academic" {{ old('reason_category') === 'academic' ? 'selected' : '' }}>Akademik / Tugas Akhir Kampus</option>
                                     <option value="health" {{ old('reason_category') === 'health' ? 'selected' : '' }}>Kondisi Kesehatan / Sakit</option>
                                     <option value="relocation" {{ old('reason_category') === 'relocation' ? 'selected' : '' }}>Pindah Domisili / Tempat Tinggal</option>
@@ -197,6 +216,29 @@
                                     Catatan Serah Terima Pekerjaan / Aset (Opsional)
                                 </label>
                                 <textarea name="handover_notes" rows="2" placeholder="Tuliskan daftar tugas atau file yang telah diserahterimakan kepada mentor/rekan kerja..." class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 focus:ring-rose-500 focus:border-rose-500">{{ old('handover_notes') }}</textarea>
+                            </div>
+
+                            <!-- Template Download Helper Box -->
+                            <div class="p-3.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200/80 dark:border-slate-700/80 space-y-2.5">
+                                <div class="flex items-start gap-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 text-xs mt-0.5">
+                                        <i class="fa-solid fa-file-lines"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-xs font-bold text-slate-800 dark:text-white">Belum Memiliki Format Surat?</p>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Unduh draf template surat resmi pengunduran diri yang telah disiapkan otomatis dengan data magang Anda:</p>
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2 pt-1">
+                                    <a href="{{ route('candidate.resignations.template.word') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition">
+                                        <i class="fa-solid fa-file-word"></i>
+                                        <span>Unduh Template Word (.doc)</span>
+                                    </a>
+                                    <a href="{{ route('candidate.resignations.template.pdf') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition">
+                                        <i class="fa-solid fa-file-pdf"></i>
+                                        <span>Unduh Template PDF (.pdf)</span>
+                                    </a>
+                                </div>
                             </div>
 
                             <div>
@@ -242,8 +284,8 @@
                 </a>
             </div>
 
-            <!-- 4. TOMBOL KELUAR DARI AKUN (LOGOUT) & JAM SERVER REAL-TIME (SESUAI GAMBAR) -->
-            <div class="pt-2 text-center space-y-4">
+            <!-- 4. TOMBOL KELUAR DARI AKUN (LOGOUT) -->
+            <div class="pt-2 text-center">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="inline-flex items-center gap-2 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-bold text-xs py-2 px-4 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/30 transition cursor-pointer">
@@ -251,24 +293,6 @@
                         <span>Keluar dari akun</span>
                     </button>
                 </form>
-
-                <!-- Live Real-Time Server Clock Badge -->
-                <div x-data="{ 
-                    timeStr: '{{ now()->timezone('Asia/Jakarta')->format('H:i:s') }} WIB (GMT+7)',
-                    init() {
-                        let serverDate = new Date({{ now()->timezone('Asia/Jakarta')->timestamp * 1000 }});
-                        setInterval(() => {
-                            serverDate.setSeconds(serverDate.getSeconds() + 1);
-                            let hours = String(serverDate.getHours()).padStart(2, '0');
-                            let minutes = String(serverDate.getMinutes()).padStart(2, '0');
-                            let seconds = String(serverDate.getSeconds()).padStart(2, '0');
-                            this.timeStr = `${hours}.${minutes}.${seconds} WIB (GMT+7)`;
-                        }, 1000);
-                    }
-                }" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 text-xs font-medium border border-slate-200/80 dark:border-slate-700 shadow-2xs">
-                    <i class="fa-regular fa-clock text-slate-400"></i>
-                    <span>Waktu Server <strong x-text="timeStr"></strong></span>
-                </div>
             </div>
 
         </div>

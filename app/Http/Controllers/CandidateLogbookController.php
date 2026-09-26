@@ -12,6 +12,11 @@ class CandidateLogbookController extends Controller
     {
         $currentUser = auth()->user();
         $isAdminOrStaff = $currentUser->hasAnyRole(['Super Admin', 'HR', 'Mentor']);
+
+        if ($currentUser->hasRole('Candidate') && !$currentUser->isIntern() && !$isAdminOrStaff) {
+            return redirect()->route('dashboard')->with('error', 'Fitur Program Magang & Presensi hanya dapat diakses oleh kandidat yang telah diterima sebagai Peserta Magang.');
+        }
+
         $candidateList = $isAdminOrStaff ? \App\Models\User::role('Candidate')->orderBy('name')->get() : collect();
 
         // Target user: if admin/staff provided candidate_id, or if candidate role, or default to first active intern
@@ -157,6 +162,19 @@ class CandidateLogbookController extends Controller
         $totalWorkingDays = max(1, $workingDaysPassed);
         $attendancePercentage = min(100, round(($totalFilled / $totalWorkingDays) * 100));
 
+        // 7. Generate list of all months within the internship period for mobile/desktop switcher
+        $periodMonths = [];
+        $pCursor = $periodStartDate->copy()->startOfMonth();
+        $pEndCursor = $periodEndDate->copy()->endOfMonth();
+        while ($pCursor->lessThanOrEqualTo($pEndCursor)) {
+            $periodMonths[] = [
+                'key' => $pCursor->format('Y-m'),
+                'label' => $pCursor->translatedFormat('F Y'),
+                'isCurrent' => $pCursor->format('Y-m') === $selectedMonth->format('Y-m'),
+            ];
+            $pCursor->addMonth();
+        }
+
         return view('candidate.logbook.index', compact(
             'user',
             'currentUser',
@@ -168,6 +186,8 @@ class CandidateLogbookController extends Controller
             'overridesMap',
             'startDate',
             'endDate',
+            'selectedMonth',
+            'periodMonths',
             'monthLabel',
             'periodName',
             'periodStartDate',
@@ -187,6 +207,10 @@ class CandidateLogbookController extends Controller
     {
         $currentUser = auth()->user();
         $isAdminOrStaff = $currentUser->hasAnyRole(['Super Admin', 'HR', 'Mentor']);
+
+        if ($currentUser->hasRole('Candidate') && !$currentUser->isIntern() && !$isAdminOrStaff) {
+            return redirect()->route('dashboard')->with('error', 'Fitur Program Magang & Presensi hanya dapat diakses oleh kandidat yang telah diterima sebagai Peserta Magang.');
+        }
 
         if ($isAdminOrStaff && $request->has('candidate_id')) {
             $user = \App\Models\User::find($request->candidate_id) ?? $currentUser;
@@ -210,6 +234,9 @@ class CandidateLogbookController extends Controller
         $isPastDate = $carbonDate->lessThan($today);
         $isFutureDate = $carbonDate->greaterThan($today);
         $isToday = $carbonDate->equalTo($today);
+
+        $isEditable = false;
+        $lockReason = null;
 
         // Editable conditions:
         // 1. Today (before 23:59:59)
@@ -241,9 +268,6 @@ class CandidateLogbookController extends Controller
         $isWeekend = $carbonDate->isWeekend();
         $isHoliday = ($holidayObj && !$isCompanyWorkingDayOverride) || ($isWeekend && !$isCompanyWorkingDayOverride);
         
-        $isEditable = false;
-        $lockReason = '';
-
         if ($isHoliday && !$isCompanyWorkingDayOverride && !$isSuperAdminUnlocked && !$isRevisionAllowed && (!$logbook->exists || empty($logbook->status))) {
             $isEditable = false;
             if ($holidayObj) {
@@ -260,7 +284,7 @@ class CandidateLogbookController extends Controller
             }
         } elseif ($isFutureDate) {
             $isEditable = false;
-            $lockReason = 'Presensi belum dibuka untuk tanggal masa depan.';
+            $lockReason = 'Presensi dan laporan logbook belum dibuka untuk tanggal masa depan (' . $carbonDate->translatedFormat('d F Y') . '). Pengisian hanya dapat dilakukan saat hari H presensi dimulai.';
         } elseif ($isToday) {
             if ($logbook->exists && in_array($logbook->status, ['approved', 'pending'])) {
                 $isEditable = false;
@@ -328,6 +352,11 @@ class CandidateLogbookController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
+
+        if ($user->hasRole('Candidate') && !$user->isIntern()) {
+            return redirect()->route('dashboard')->with('error', 'Fitur Program Magang & Presensi hanya dapat diakses oleh kandidat yang telah diterima sebagai Peserta Magang.');
+        }
+
         $carbonDate = Carbon::parse($request->date)->startOfDay();
         $today = Carbon::today();
         
@@ -474,6 +503,11 @@ class CandidateLogbookController extends Controller
     public function progress()
     {
         $user = auth()->user();
+
+        if ($user->hasRole('Candidate') && !$user->isIntern()) {
+            return redirect()->route('dashboard')->with('error', 'Fitur Program Magang & Presensi hanya dapat diakses oleh kandidat yang telah diterima sebagai Peserta Magang.');
+        }
+
         $latestApp = $user->applications()->with('job.companyProfile')->latest()->first();
         $periodSetting = \App\Models\InternshipPeriod::where('user_id', $user->id)->first();
         $jobBatch = $latestApp?->job?->batch;
@@ -684,7 +718,7 @@ class CandidateLogbookController extends Controller
 
         // 6. Survey Status (Active on last month of internship or if evaluated)
         $isLastMonth = $now->diffInMonths($periodEndDate, false) <= 1;
-        $hasSubmittedSurvey = session()->has('survey_submitted_' . $user->id);
+        $hasSubmittedSurvey = \App\Models\InternshipSurvey::where('user_id', $user->id)->exists() || session()->has('survey_submitted_' . $user->id);
 
         return view('candidate.logbook.progress', compact(
             'user',
@@ -715,58 +749,92 @@ class CandidateLogbookController extends Controller
     public function claimCertificate(Request $request)
     {
         $user = auth()->user();
-        $evaluation = \App\Models\InternshipEvaluation::where('user_id', $user->id)->latest()->first();
 
-        // Auto-generate or synchronize certificate and transcript
-        $result = \App\Services\CertificateGenerationService::generateOrUpdateForIntern($user, $evaluation);
+        if ($user->hasRole('Candidate') && !$user->isIntern()) {
+            return redirect()->route('dashboard')->with('error', 'Fitur Program Magang & Presensi hanya dapat diakses oleh kandidat yang telah diterima sebagai Peserta Magang.');
+        }
 
-        return redirect()->route('candidate.logbook.progress')
-            ->with('success', '🎓 Selamat! E-Sertifikat Kelulusan Magang (No: ' . $result['certificate']->certificate_number . ') & Transkrip Nilai Akademik resmi Anda berhasil diterbitkan.');
+        $certificate = \App\Models\InternshipCertificate::where('user_id', $user->id)->first();
+        if (!$certificate) {
+            return redirect()->route('candidate.logbook.progress')
+                ->with('error', 'E-Sertifikat belum diterbitkan oleh Mentor Pembimbing.');
+        }
+
+        $hasSurvey = \App\Models\InternshipSurvey::where('user_id', $user->id)->exists() || session()->has('survey_submitted_' . $user->id);
+        if (!$hasSurvey) {
+            return redirect()->route('candidate.logbook.progress')
+                ->with('error', 'Silakan lengkapi survei evaluasi akhir program magang terlebih dahulu untuk mengklaim E-Sertifikat resmi.');
+        }
+
+        return redirect()->route('candidate.certificates.show', $certificate->id);
     }
 
     public function submitSurvey(Request $request)
     {
         $user = auth()->user();
-        $request->validate([
+
+        if ($user->hasRole('Candidate') && !$user->isIntern()) {
+            return redirect()->route('dashboard')->with('error', 'Fitur Program Magang & Presensi hanya dapat diakses oleh kandidat yang telah diterima sebagai Peserta Magang.');
+        }
+
+        $validated = $request->validate([
             'mentor_rating' => 'required|integer|between:1,5',
             'program_rating' => 'required|integer|between:1,5',
-            'feedback' => 'required|string|min:10',
+            'environment_rating' => 'nullable|integer|between:1,5',
+            'career_readiness_rating' => 'nullable|integer|between:1,5',
+            'recommendation_nps' => 'nullable|string|in:highly_recommended,neutral,not_recommended',
+            'is_anonymous' => 'nullable|boolean',
+            'feedback' => 'required|string|min:10|max:2000',
         ]);
+
+        $period = InternshipPeriod::where('user_id', $user->id)->first();
+        $application = Application::where('user_id', $user->id)
+            ->whereIn('status', ['accepted', 'hired'])
+            ->with('job')
+            ->latest()
+            ->first();
+
+        $companyId = $period ? $period->company_id : ($application && $application->job ? $application->job->company_profile_id : null);
+
+        \App\Models\InternshipSurvey::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'company_id' => $companyId,
+                'mentor_rating' => $validated['mentor_rating'],
+                'program_rating' => $validated['program_rating'],
+                'environment_rating' => $validated['environment_rating'] ?? 5,
+                'career_readiness_rating' => $validated['career_readiness_rating'] ?? 5,
+                'recommendation_nps' => $validated['recommendation_nps'] ?? 'highly_recommended',
+                'is_anonymous' => $request->boolean('is_anonymous'),
+                'feedback' => $validated['feedback'],
+            ]
+        );
 
         session()->put('survey_submitted_' . $user->id, true);
 
         \App\Models\AuditLog::record(
             'INTERNSHIP_SURVEY_SUBMIT',
-            "Peserta Magang {$user->name} mengirimkan survei evaluasi akhir program magang",
+            "Peserta Magang {$user->name} mengirimkan survei evaluasi akhir program magang" . ($request->boolean('is_anonymous') ? ' (Anonim)' : ''),
             $user
         );
 
         return redirect()->route('candidate.logbook.progress')
-            ->with('success', 'Terima kasih! Survei evaluasi program magang Anda berhasil dikirim.');
+            ->with('success', 'Terima kasih! Survei evaluasi program magang Anda berhasil dikirim. E-Sertifikat dan Transkrip Nilai resmi Anda kini siap diunduh!')
+            ->with('open_certificate_modal', true);
     }
 
     public function evaluation()
     {
         $user = auth()->user();
+
+        if ($user->hasRole('Candidate') && !$user->isIntern()) {
+            return redirect()->route('dashboard')->with('error', 'Fitur Program Magang & Presensi hanya dapat diakses oleh kandidat yang telah diterima sebagai Peserta Magang.');
+        }
+
         $evaluation = \App\Models\InternshipEvaluation::with(['mentor', 'company'])
             ->where('user_id', $user->id)
+            ->latest('evaluated_at')
             ->first();
-
-        if (!$evaluation) {
-            $evaluation = \App\Models\InternshipEvaluation::create([
-                'user_id' => $user->id,
-                'discipline_score' => 90,
-                'initiative_score' => 88,
-                'work_quality_score' => 92,
-                'teamwork_score' => 90,
-                'problem_solving_score' => 85,
-                'final_score' => 89.3,
-                'final_grade' => 'A',
-                'feedback_summary' => 'Menunjukkan dedikasi, inisiatif, dan performa teknis yang sangat luar biasa selama program magang.',
-                'recommendation' => 'highly_recommended',
-                'evaluated_at' => now(),
-            ]);
-        }
 
         return view('candidate.logbook.evaluation', compact('user', 'evaluation'));
     }
@@ -774,6 +842,11 @@ class CandidateLogbookController extends Controller
     public function downloadUnlockPdf($id)
     {
         $user = auth()->user();
+
+        if ($user->hasRole('Candidate') && !$user->isIntern()) {
+            return redirect()->route('dashboard')->with('error', 'Fitur Program Magang & Presensi hanya dapat diakses oleh kandidat yang telah diterima sebagai Peserta Magang.');
+        }
+
         $unlockRequest = \App\Models\InternshipUnlockRequest::with(['mentor', 'intern.candidateProfile', 'intern.applications.job', 'company', 'resolver'])
             ->where('intern_id', $user->id)
             ->findOrFail($id);
@@ -794,6 +867,10 @@ class CandidateLogbookController extends Controller
     {
         $user = auth()->user();
 
+        if ($user->hasRole('Candidate') && !$user->isIntern()) {
+            return redirect()->route('dashboard')->with('error', 'Fitur Program Magang & Presensi hanya dapat diakses oleh kandidat yang telah diterima sebagai Peserta Magang.');
+        }
+
         $request->validate([
             'bank_name' => 'required|string|max:50',
             'bank_account_number' => 'required|string|max:50',
@@ -813,7 +890,15 @@ class CandidateLogbookController extends Controller
             ])->withInput();
         }
 
+        $latestApp = \App\Models\Application::where('user_id', $user->id)
+            ->whereIn('status', ['accepted', 'hired'])
+            ->latest()
+            ->first() ?? $user->applications()->latest()->first();
+
         $onboarding = \App\Models\CandidateOnboarding::firstOrNew(['user_id' => $user->id]);
+        if (!$onboarding->exists) {
+            $onboarding->application_id = $latestApp?->id ?? 1;
+        }
         $onboarding->bank_name = $request->bank_name;
         $onboarding->bank_account_number = $request->bank_account_number;
         $onboarding->bank_account_holder = $request->bank_account_holder;
@@ -845,9 +930,66 @@ class CandidateLogbookController extends Controller
             ->with('success', 'Rekening bank pencairan uang saku berhasil disimpan dan diverifikasi sesuai nama KTP.');
     }
 
+    public function downloadBankStatementPdf()
+    {
+        $user = auth()->user();
+
+        if ($user->hasRole('Candidate') && !$user->isIntern()) {
+            return redirect()->route('dashboard')->with('error', 'Fitur Program Magang & Presensi hanya dapat diakses oleh kandidat yang telah diterima sebagai Peserta Magang.');
+        }
+
+        $onboarding = \App\Models\CandidateOnboarding::where('user_id', $user->id)->first();
+        if (!$onboarding || empty($onboarding->bank_account_number)) {
+            return redirect()->back()->with('error', 'Rekening bank pencairan uang saku belum dilengkapi.');
+        }
+
+        $latestApp = $user->applications()->with(['job.companyProfile'])->latest()->first();
+        $company = $latestApp?->job?->companyProfile ?? (object)['company_name' => 'PT Mitra Karir & Industri'];
+        $jobTitle = $latestApp?->job?->title ?? 'Peserta Program Magang';
+        $periodSetting = \App\Models\InternshipPeriod::where('user_id', $user->id)->first();
+        $periodName = $periodSetting?->period_name ?? $latestApp?->job?->batch ?? 'Batch 1 - Semester Genap 2026';
+
+        $generatedAt = $onboarding->updated_at ?? \Carbon\Carbon::now();
+        $docNumber = 'SPK-REK/' . $generatedAt->format('Y/m') . '/' . str_pad($user->id, 4, '0', STR_PAD_LEFT);
+
+        $superAdmin = \App\Models\User::role('Super Admin')->first()
+            ?? \App\Models\User::whereHas('roles', fn($q) => $q->where('name', 'like', '%Admin%'))->first()
+            ?? \App\Models\User::first();
+
+        // 1. User E-Signature QR Code (Generated upon user submission)
+        $userSignatureData = "DIGITAL-SIGNATURE-PESERTA\nNama: {$user->name}\nNIK: " . ($user->candidateProfile->nik ?? '-') . "\nRekening: {$onboarding->bank_name} - {$onboarding->bank_account_number}\nAtas Nama: {$onboarding->bank_account_holder}\nDitandatangani Pada: " . $generatedAt->format('Y-m-d H:i:s') . "\nStatus: VALID & DIAJUKAN RESMI OLEH PESERTA";
+        $userQrCodeBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(75)->margin(1)->generate($userSignatureData));
+
+        // 2. Super Admin Authorization QR Code
+        $adminVerificationData = "SUPER-ADMIN-AUTHENTICATION\nDoc: {$docNumber}\nOtorisator: " . ($superAdmin->name ?? 'Super Administrator') . "\nJabatan: Super Admin & Head of Finance\nStatus: APPROVED & RECORDED\nTanggal Verifikasi: " . $generatedAt->format('Y-m-d H:i:s');
+        $adminQrCodeBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(75)->margin(1)->generate($adminVerificationData));
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.bank_account_statement', compact(
+            'user',
+            'onboarding',
+            'company',
+            'jobTitle',
+            'periodName',
+            'docNumber',
+            'generatedAt',
+            'superAdmin',
+            'userQrCodeBase64',
+            'adminQrCodeBase64'
+        ))->setPaper('a4', 'portrait');
+
+        $filename = 'Surat_Pernyataan_Rekening_' . \Illuminate\Support\Str::slug($user->name) . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
     public function downloadStipendSlip($id)
     {
         $user = auth()->user();
+
+        if ($user->hasRole('Candidate') && !$user->isIntern()) {
+            return redirect()->route('dashboard')->with('error', 'Fitur Program Magang & Presensi hanya dapat diakses oleh kandidat yang telah diterima sebagai Peserta Magang.');
+        }
+
         $stipend = \App\Models\InternshipStipendDisbursement::with(['user.candidateProfile', 'company', 'verifier'])
             ->where('user_id', $user->id)
             ->findOrFail($id);
@@ -871,6 +1013,10 @@ class CandidateLogbookController extends Controller
     {
         $currentUser = auth()->user();
         $isAdminOrStaff = $currentUser->hasAnyRole(['Super Admin', 'HR', 'Mentor']);
+
+        if ($currentUser->hasRole('Candidate') && !$currentUser->isIntern() && !$isAdminOrStaff) {
+            return redirect()->route('dashboard')->with('error', 'Fitur Program Magang & Presensi hanya dapat diakses oleh kandidat yang telah diterima sebagai Peserta Magang.');
+        }
         
         if ($isAdminOrStaff && $request->has('candidate_id')) {
             $user = \App\Models\User::find($request->candidate_id) ?? $currentUser;

@@ -66,7 +66,7 @@
 
             <!-- Interactive Stage Tabs (Ashby / Linear Style) -->
             <div class="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-1.5 overflow-x-auto">
-                <nav class="flex items-center gap-1 min-w-max">
+                <nav class="flex items-center gap-1.5 min-w-max">
                     @foreach($tabs as $tab)
                         @php
                             $isActive = ($tab['key'] === '' && empty($currentStatus)) || ($tab['key'] !== '' && $currentStatus === $tab['key']);
@@ -77,10 +77,10 @@
                             $tabUrl = route('admin.applications.index', $urlParams);
                         @endphp
                         <a href="{{ $tabUrl }}" 
-                           class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition {{ $isActive ? 'bg-slate-900 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70' }}">
-                            <span class="w-2 h-2 rounded-full {{ $tab['dot'] }}"></span>
-                            <span>{{ $tab['label'] }}</span>
-                            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold {{ $isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200/60' }}">
+                           class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-150 {{ $isActive ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/90' }}">
+                            <span class="w-2 h-2 rounded-full {{ $isActive && $tab['key'] === '' ? 'bg-white' : $tab['dot'] }} {{ $isActive ? 'ring-2 ring-white/40' : '' }}"></span>
+                            <span class="{{ $isActive ? 'text-white font-bold' : 'text-slate-700 font-semibold' }}">{{ $tab['label'] }}</span>
+                            <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold {{ $isActive ? 'bg-white/20 text-white ring-1 ring-white/30' : 'bg-slate-100 text-slate-700 border border-slate-200/80' }}">
                                 {{ number_format($tab['count']) }}
                             </span>
                         </a>

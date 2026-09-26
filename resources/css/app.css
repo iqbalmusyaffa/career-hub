@@ -190,3 +190,39 @@
 .dark .text-rose-900 {
     color: #fda4af !important;
 }
+
+/* =========================================================
+   DEVEXTREME / MODERN CUSTOM SCROLLBAR SYSTEM
+   ========================================================= */
+.custom-scrollbar::-webkit-scrollbar,
+.dx-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track,
+.dx-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.dx-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.dx-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb,
+.dark .dx-scrollbar::-webkit-scrollbar-thumb {
+    background: #334155;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.dark .dx-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}

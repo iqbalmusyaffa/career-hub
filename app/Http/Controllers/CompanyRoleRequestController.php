@@ -17,6 +17,11 @@ class CompanyRoleRequestController extends Controller
     public function show()
     {
         $user = Auth::user();
+
+        if ($user->hasRole('Candidate') && $user->isIntern()) {
+            return redirect()->route('dashboard')->with('error', 'Peserta magang aktif tidak dapat mengakses halaman pendaftaran akun perusahaan.');
+        }
+
         $requests = CompanyRoleRequest::where('user_id', $user->id)->latest()->get();
 
         return view('profile.role_request', compact('user', 'requests'));
@@ -28,6 +33,10 @@ class CompanyRoleRequestController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
+
+        if ($user->hasRole('Candidate') && $user->isIntern()) {
+            return redirect()->route('dashboard')->with('error', 'Peserta magang aktif tidak memiliki otorisasi untuk mendaftarkan akun perusahaan.');
+        }
 
         $request->validate([
             'requested_role' => 'required|string|in:Company Owner,HR',

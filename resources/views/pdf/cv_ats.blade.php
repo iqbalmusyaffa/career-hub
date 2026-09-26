@@ -5,218 +5,271 @@
     <title>CV ATS Friendly - {{ $user->name }}</title>
     <style>
         @page {
-            margin: 25px 35px;
+            margin: 28px 36px;
+        }
+        * {
+            box-sizing: border-box;
         }
         body {
             font-family: Arial, Helvetica, sans-serif;
             color: #111827;
-            line-height: 1.45;
-            font-size: 11px;
+            line-height: 1.4;
+            font-size: 10pt;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
         }
         .header {
             text-align: center;
-            border-bottom: 2px solid #0f172a;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1.5px solid #111827;
         }
         .name {
-            font-size: 22px;
+            font-size: 18pt;
             font-weight: bold;
-            color: #0f172a;
+            color: #000000;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-bottom: 3px;
+        }
+        .target-role {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        .contact-info {
+            font-size: 9pt;
+            color: #374151;
+            line-height: 1.35;
+        }
+        .section-title {
+            font-size: 10.5pt;
+            font-weight: bold;
+            color: #000000;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #111827;
+            padding-bottom: 2px;
+            margin-top: 12px;
+            margin-bottom: 6px;
+        }
+        .entry {
+            margin-bottom: 8px;
+        }
+        .entry-table {
+            width: 100%;
+            border-collapse: collapse;
             margin-bottom: 2px;
         }
-        .position {
-            font-size: 12px;
+        .entry-title {
+            font-size: 10pt;
             font-weight: bold;
-            color: #2563eb;
-            margin-bottom: 5px;
+            color: #000000;
         }
-        .contact {
-            font-size: 10px;
-            color: #334155;
-        }
-        .section-heading {
-            font-size: 11.5px;
+        .entry-company {
+            font-size: 9.5pt;
             font-weight: bold;
-            color: #0f172a;
-            text-transform: uppercase;
-            border-bottom: 1.5px solid #0f172a;
-            padding-bottom: 2px;
-            margin-top: 14px;
-            margin-bottom: 8px;
-            letter-spacing: 0.5px;
+            color: #1f2937;
         }
-        .item-table {
-            width: 100%;
-            margin-bottom: 8px;
-            border-collapse: collapse;
-        }
-        .job-title {
-            font-weight: bold;
-            font-size: 11px;
-            color: #0f172a;
-        }
-        .company-name {
-            font-weight: bold;
-            color: #2563eb;
-        }
-        .date-range {
+        .entry-date {
             text-align: right;
-            font-size: 10px;
-            color: #475569;
+            font-size: 9pt;
+            color: #374151;
+            white-space: nowrap;
+            vertical-align: top;
         }
-        .desc-text {
-            font-size: 10px;
-            color: #334155;
-            margin-top: 2px;
+        .entry-location {
+            font-size: 8.5pt;
+            color: #4b5563;
+            font-style: italic;
+        }
+        .bullet-list {
+            margin: 2px 0 4px 16px;
+            padding: 0;
+            font-size: 9pt;
+            color: #1f2937;
+        }
+        .bullet-list li {
+            margin-bottom: 2px;
+            line-height: 1.35;
             text-align: justify;
         }
-        .skill-badge {
-            display: inline-block;
-            background-color: #f1f5f9;
-            color: #0f172a;
-            padding: 2px 7px;
-            border: 1px solid #cbd5e1;
-            font-size: 9.5px;
-            margin-right: 4px;
-            margin-bottom: 4px;
-            border-radius: 3px;
+        .plain-text {
+            font-size: 9pt;
+            color: #1f2937;
+            line-height: 1.35;
+            text-align: justify;
+            margin: 0;
         }
-        p { margin: 0 0 3px 0; }
+        .skills-list {
+            font-size: 9pt;
+            color: #1f2937;
+            line-height: 1.45;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Header Section (ATS Center Standard) -->
+    <!-- Header / Contact Block (Standard Linear ATS) -->
     <div class="header">
         <div class="name">{{ $user->name }}</div>
-        <div class="position">{{ $profile->current_position ?? 'Kandidat Profesional' }}</div>
-        <div class="contact">
-            Email: {{ $user->email }}
-            @if($profile->phone) | No. HP: {{ $profile->phone }} @endif
-            @if($profile->address) | Lokasi: {{ $profile->address }} @endif
-            @if($profile->dob) | Tgl Lahir: {{ $profile->dob->format('d M Y') }} @endif
-            @if($profile->gender) | Gender: {{ ucfirst($profile->gender) }} @endif
+        @if(!empty($profile->current_position))
+            <div class="target-role">{{ $profile->current_position }}</div>
+        @endif
+        <div class="contact-info">
+            {{ $user->email }}
+            @if(!empty($profile->phone)) • {{ $profile->phone }} @endif
+            @if(!empty($profile->address)) • {{ $profile->address }} @endif
+            @if(!empty($profile->social_links['linkedin'])) • {{ $profile->social_links['linkedin'] }} @endif
+            @if(!empty($profile->social_links['portfolio'])) • {{ $profile->social_links['portfolio'] }} @endif
         </div>
     </div>
 
-    <!-- Ringkasan Profil -->
-    @if($profile->summary)
-        <div class="section-heading">Ringkasan Eksekutif & Profil</div>
-        <p class="desc-text">{{ $profile->summary }}</p>
+    <!-- 1. Ringkasan Profesional -->
+    @if(!empty($profile->summary))
+        <div class="section-title">RINGKASAN PROFESIONAL</div>
+        <p class="plain-text">{{ $profile->summary }}</p>
     @endif
 
-    <!-- Pengalaman Kerja -->
-    @if(!empty($profile->experiences) && is_array($profile->experiences))
-        <div class="section-heading">Pengalaman Kerja & Profesional</div>
+    <!-- 2. Pengalaman Kerja -->
+    @if(!empty($profile->experiences) && is_array($profile->experiences) && count($profile->experiences) > 0)
+        <div class="section-title">PENGALAMAN KERJA</div>
         @foreach($profile->experiences as $exp)
-            <div style="margin-bottom: 8px;">
-                <table class="item-table">
+            <div class="entry">
+                <table class="entry-table">
                     <tr>
                         <td style="vertical-align: top;">
-                            <span class="job-title">{{ $exp['title'] ?? ($exp['position'] ?? 'Posisi Pekerjaan') }}</span>
+                            <span class="entry-title">{{ $exp['title'] ?? ($exp['position'] ?? 'Posisi Pekerjaan') }}</span>
                             @if(!empty($exp['company']))
-                                <span class="company-name"> — {{ $exp['company'] }}</span>
+                                <span class="entry-company"> — {{ $exp['company'] }}</span>
+                            @endif
+                            @if(!empty($exp['location']))
+                                <span class="entry-location">({{ $exp['location'] }})</span>
                             @endif
                         </td>
-                        <td class="date-range" style="vertical-align: top;">
-                            {{ $exp['start_date'] ?? '' }} - {{ (!empty($exp['is_current']) && $exp['is_current']) ? 'Sekarang' : ($exp['end_date'] ?? 'Selesai') }}
+                        <td class="entry-date">
+                            {{ $exp['start_date'] ?? '' }} – {{ (!empty($exp['is_current']) && $exp['is_current']) ? 'Sekarang' : ($exp['end_date'] ?? 'Selesai') }}
                         </td>
                     </tr>
                 </table>
+
                 @if(!empty($exp['description']))
-                    <div class="desc-text">{{ $exp['description'] }}</div>
+                    @php
+                        $lines = preg_split('/\r\n|\r|\n/', trim($exp['description']));
+                        $lines = array_filter(array_map('trim', $lines), fn($l) => !empty($l));
+                    @endphp
+                    @if(count($lines) > 1)
+                        <ul class="bullet-list">
+                            @foreach($lines as $line)
+                                <li>{{ ltrim($line, "•-*\t ") }}</li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <ul class="bullet-list">
+                            <li>{{ ltrim($lines[0] ?? $exp['description'], "•-*\t ") }}</li>
+                        </ul>
+                    @endif
                 @endif
             </div>
         @endforeach
     @endif
 
-    <!-- Pendidikan -->
-    @if(!empty($profile->educations) && is_array($profile->educations))
-        <div class="section-heading">Pendidikan Akademis</div>
+    <!-- 3. Pendidikan -->
+    @if(!empty($profile->educations) && is_array($profile->educations) && count($profile->educations) > 0)
+        <div class="section-title">PENDIDIKAN</div>
         @foreach($profile->educations as $edu)
-            <div style="margin-bottom: 6px;">
-                <table class="item-table">
+            <div class="entry">
+                <table class="entry-table">
                     <tr>
                         <td style="vertical-align: top;">
-                            <span class="job-title">{{ $edu['institution'] ?? ($edu['school'] ?? 'Institusi Pendidikan') }}</span>
-                            <span style="color: #475569;"> — {{ $edu['degree'] ?? '' }} {{ $edu['field_of_study'] ?? '' }}</span>
+                            <span class="entry-title">{{ $edu['institution'] ?? ($edu['school'] ?? 'Institusi Pendidikan') }}</span>
+                            @if(!empty($edu['degree']) || !empty($edu['field_of_study']))
+                                <span class="entry-company"> — {{ $edu['degree'] ?? '' }} {{ $edu['field_of_study'] ?? '' }}</span>
+                            @endif
                         </td>
-                        <td class="date-range" style="vertical-align: top;">
-                            {{ $edu['start_year'] ?? '' }} - {{ $edu['end_year'] ?? 'Selesai' }}
+                        <td class="entry-date">
+                            {{ $edu['start_year'] ?? ($edu['start_date'] ?? '') }} – {{ $edu['end_year'] ?? ($edu['end_date'] ?? 'Selesai') }}
                         </td>
                     </tr>
                 </table>
                 @if(!empty($edu['gpa']))
-                    <div class="desc-text"><strong>IPK/Nilai:</strong> {{ $edu['gpa'] }}</div>
+                    <div class="plain-text" style="font-size: 8.5pt; color: #374151;">IPK / Nilai: <strong>{{ $edu['gpa'] }}</strong></div>
+                @endif
+                @if(!empty($edu['description']))
+                    <div class="plain-text" style="font-size: 8.5pt; color: #4b5563; margin-top: 1px;">{{ $edu['description'] }}</div>
                 @endif
             </div>
         @endforeach
     @endif
 
-    <!-- Pengalaman Organisasi -->
-    @if(!empty($profile->organizations) && is_array($profile->organizations))
-        <div class="section-heading">Pengalaman Organisasi & Komunitas</div>
+    <!-- 4. Keahlian & Kompetensi -->
+    @if(!empty($profile->skills) && is_array($profile->skills) && count($profile->skills) > 0)
+        @php
+            $skillNames = array_map(function($s) {
+                return is_array($s) ? ($s['name'] ?? implode(', ', $s)) : (string)$s;
+            }, $profile->skills);
+            $skillNames = array_filter(array_map('trim', $skillNames));
+        @endphp
+        @if(count($skillNames) > 0)
+            <div class="section-title">KEAHLIAN & KOMPETENSI</div>
+            <div class="skills-list">
+                {{ implode(' • ', $skillNames) }}
+            </div>
+        @endif
+    @endif
+
+    <!-- 5. Pengalaman Organisasi -->
+    @if(!empty($profile->organizations) && is_array($profile->organizations) && count($profile->organizations) > 0)
+        <div class="section-title">PENGALAMAN ORGANISASI</div>
         @foreach($profile->organizations as $org)
-            <div style="margin-bottom: 6px;">
-                <table class="item-table">
+            <div class="entry">
+                <table class="entry-table">
                     <tr>
                         <td style="vertical-align: top;">
-                            <span class="job-title">{{ $org['position'] ?? 'Anggota' }}</span>
-                            <span class="company-name"> — {{ $org['name'] ?? 'Organisasi' }}</span>
-                            @if(!empty($org['level'])) <span style="font-size: 8pt; color: #64748b;">({{ $org['level'] }})</span> @endif
+                            <span class="entry-title">{{ $org['position'] ?? 'Anggota' }}</span>
+                            <span class="entry-company"> — {{ $org['name'] ?? 'Organisasi' }}</span>
+                            @if(!empty($org['level'])) <span class="entry-location">({{ $org['level'] }})</span> @endif
                         </td>
-                        <td class="date-range" style="vertical-align: top;">
+                        <td class="entry-date">
                             @if(!empty($org['start_date']))
-                                {{ \Carbon\Carbon::parse($org['start_date'])->format('M Y') }} - {{ (!empty($org['is_current']) && $org['is_current']) ? 'Sekarang' : (!empty($org['end_date']) ? \Carbon\Carbon::parse($org['end_date'])->format('M Y') : 'Selesai') }}
+                                {{ \Carbon\Carbon::parse($org['start_date'])->format('M Y') }} – {{ (!empty($org['is_current']) && $org['is_current']) ? 'Sekarang' : (!empty($org['end_date']) ? \Carbon\Carbon::parse($org['end_date'])->format('M Y') : 'Selesai') }}
                             @else
                                 {{ $org['period'] ?? '' }}
                             @endif
                         </td>
                     </tr>
                 </table>
-                @if(!empty($org['location']))
-                    <div style="font-size: 8pt; color: #64748b; margin-top: 1px;">Lokasi: {{ $org['location'] }}</div>
-                @endif
                 @if(!empty($org['description']))
-                    <div class="desc-text" style="margin-top: 2px;">{{ $org['description'] }}</div>
+                    <div class="plain-text" style="font-size: 8.5pt; color: #374151; margin-top: 1px;">
+                        • {{ $org['description'] }}
+                    </div>
                 @endif
             </div>
         @endforeach
     @endif
 
-    <!-- Keahlian Utama -->
-    @if(!empty($profile->skills) && is_array($profile->skills))
-        <div class="section-heading">Keahlian & Kompetensi Teknis</div>
-        <div style="margin-top: 4px;">
-            @foreach($profile->skills as $skill)
-                <span class="skill-badge">{{ is_array($skill) ? ($skill['name'] ?? implode(', ', $skill)) : $skill }}</span>
+    <!-- 6. Sertifikasi & Pelatihan -->
+    @if(!empty($profile->certificates) && is_array($profile->certificates) && count($profile->certificates) > 0)
+        <div class="section-title">SERTIFIKASI & LISENSI</div>
+        <ul class="bullet-list">
+            @foreach($profile->certificates as $cert)
+                <li>
+                    <strong>{{ is_array($cert) ? ($cert['name'] ?? '') : $cert }}</strong>
+                    @if(is_array($cert) && !empty($cert['issuer'])) — {{ $cert['issuer'] }} @endif
+                    @if(is_array($cert) && !empty($cert['year'])) ({{ $cert['year'] }}) @endif
+                </li>
             @endforeach
-        </div>
+        </ul>
     @endif
 
-    <!-- Sertifikasi & Pelatihan -->
-    @if(!empty($profile->certificates) && is_array($profile->certificates))
-        <div class="section-heading">Sertifikasi & Lisensi</div>
-        @foreach($profile->certificates as $cert)
-            <div style="margin-bottom: 4px;" class="desc-text">
-                <strong>• {{ is_array($cert) ? ($cert['name'] ?? '') : $cert }}</strong>
-                @if(is_array($cert) && !empty($cert['issuer'])) (Penerbit: {{ $cert['issuer'] }}) @endif
-                @if(is_array($cert) && !empty($cert['year'])) - Tahun {{ $cert['year'] }} @endif
-            </div>
-        @endforeach
-    @endif
-
-    <!-- Bahasa -->
-    @if(!empty($profile->languages) && is_array($profile->languages))
-        <div class="section-heading">Kemampuan Bahasa</div>
-        <div class="desc-text">
+    <!-- 7. Kemampuan Bahasa -->
+    @if(!empty($profile->languages) && is_array($profile->languages) && count($profile->languages) > 0)
+        <div class="section-title">KEMAMPUAN BAHASA</div>
+        <div class="skills-list">
             @foreach($profile->languages as $index => $lang)
-                <strong>{{ is_array($lang) ? ($lang['name'] ?? '') : $lang }}</strong>
-                @if(is_array($lang) && !empty($lang['proficiency'])) (Tingkat: {{ $lang['proficiency'] }}) @endif
-                {{ $index < count($profile->languages) - 1 ? ' • ' : '' }}
+                <strong>{{ is_array($lang) ? ($lang['name'] ?? '') : $lang }}</strong>@if(is_array($lang) && !empty($lang['proficiency'])) ({{ $lang['proficiency'] }})@endif{{ $index < count($profile->languages) - 1 ? ' • ' : '' }}
             @endforeach
         </div>
     @endif

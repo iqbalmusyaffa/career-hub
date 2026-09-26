@@ -1,10 +1,10 @@
 <x-app-layout>
     <!-- Header Banner -->
     <x-slot name="header">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2 border-b border-slate-200 dark:border-slate-800">
             <div class="flex items-center gap-3">
-                <a href="{{ route('candidate.logbook.index') }}" class="w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition flex items-center justify-center shadow-xs shrink-0">
-                    <i class="fa-solid fa-arrow-left text-sm"></i>
+                <a href="{{ route('candidate.logbook.index') }}" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition flex items-center justify-center shadow-2xs shrink-0" title="Kembali ke Kalender">
+                    <i class="fa-solid fa-arrow-left text-xs sm:text-sm"></i>
                 </a>
                 <div>
                     <div class="flex items-center gap-2">
@@ -14,16 +14,31 @@
                         <span class="text-3xs text-slate-400">•</span>
                         <span class="text-3xs font-bold text-slate-500 dark:text-slate-400">Periode 1</span>
                     </div>
-                    <h2 class="font-black text-xl text-slate-900 dark:text-white leading-tight mt-0.5 flex items-center gap-2">
+                    <h1 class="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5">
                         Laporan Harian Magang
-                        <span class="text-xs font-semibold text-slate-400">({{ $carbonDate->isoFormat('D MMMM YYYY') }})</span>
-                    </h2>
+                    </h1>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3">
-                <a href="{{ route('candidate.logbook.index') }}" class="px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-extrabold transition shadow-2xs">
-                    ← Kembali ke Kalender
+            <div class="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
+                <!-- Live Server Time -->
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 text-xs font-medium border border-slate-200 dark:border-slate-800 shadow-2xs" x-data="{
+                    currentTime: '',
+                    updateClock() {
+                        const now = new Date();
+                        const hours = String(now.getHours()).padStart(2, '0');
+                        const minutes = String(now.getMinutes()).padStart(2, '0');
+                        const seconds = String(now.getSeconds()).padStart(2, '0');
+                        this.currentTime = `${hours}.${minutes}.${seconds} WIB (GMT+7)`;
+                    }
+                }" x-init="updateClock(); setInterval(() => updateClock(), 1000)">
+                    <i class="fa-regular fa-clock text-slate-400"></i>
+                    <span>Waktu Server <span x-text="currentTime" class="font-mono font-bold text-slate-800 dark:text-slate-200"></span></span>
+                </div>
+
+                <a href="{{ route('candidate.logbook.index') }}" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold transition shadow-2xs">
+                    <i class="fa-solid fa-calendar-days text-xs text-slate-400"></i>
+                    <span>Kalender</span>
                 </a>
             </div>
         </div>
@@ -178,20 +193,20 @@
                         <!-- Main Card -->
                         <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-700 p-6 sm:p-8 space-y-6">
                             
-                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/80 pb-5">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700/80 pb-4 sm:pb-5">
                                 <div>
                                     <span class="text-3xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest block">DETAIL LAPORAN HARIAN</span>
-                                    <h3 class="text-2xl font-black text-slate-900 dark:text-white mt-1">
-                                        {{ $carbonDate->isoFormat('D MMMM YYYY') }}
+                                    <h3 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-0.5">
+                                        {{ $carbonDate->isoFormat('dddd, D MMMM YYYY') }}
                                     </h3>
                                 </div>
 
-                                <div class="hidden sm:block">
+                                <div class="self-start sm:self-auto">
                                     @if($isHoliday && (!$logbook->exists || empty($logbook->status)))
-                                        <span class="px-4 py-1.5 {{ $holidayObj && $holidayObj->type === 'national_holiday' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30' : ($holidayObj && $holidayObj->type === 'cuti_bersama' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30' : 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/30') }} rounded-full text-xs font-black uppercase tracking-wider inline-flex items-center gap-1.5">
-                                            <span class="w-2 h-2 rounded-full {{ $holidayObj && $holidayObj->type === 'national_holiday' ? 'bg-rose-500' : ($holidayObj && $holidayObj->type === 'cuti_bersama' ? 'bg-amber-500' : 'bg-slate-500') }}"></span>
+                                        <span class="px-4 py-1.5 {{ $holidayObj && $holidayObj->type === 'national_holiday' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30' : ($holidayObj && $holidayObj->type === 'cuti_bersama' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30' : ($holidayObj && $holidayObj->type === 'company_holiday' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30' : 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/30')) }} rounded-full text-xs font-black uppercase tracking-wider inline-flex items-center gap-1.5">
+                                            <span class="w-2 h-2 rounded-full {{ $holidayObj && $holidayObj->type === 'national_holiday' ? 'bg-rose-500' : ($holidayObj && $holidayObj->type === 'cuti_bersama' ? 'bg-amber-500' : ($holidayObj && $holidayObj->type === 'company_holiday' ? 'bg-purple-500' : 'bg-slate-500')) }}"></span>
                                             @if($holidayObj)
-                                                {{ $holidayObj->type === 'cuti_bersama' ? 'Cuti Bersama' : 'Libur Nasional' }} (Hari Libur)
+                                                {{ $holidayObj->type === 'cuti_bersama' ? 'Cuti Bersama' : ($holidayObj->type === 'company_holiday' ? 'Libur Khusus Perusahaan' : 'Libur Nasional') }} (Hari Libur)
                                             @elseif($isWeekend)
                                                 Hari Libur (Weekend)
                                             @else
@@ -643,15 +658,6 @@
                                 <i class="fa-solid fa-rotate text-xs" :class="gpsLoading ? 'animate-spin' : ''"></i>
                                 <span x-text="gpsLoading ? 'Mengunci Sinyal GPS...' : 'Segarkan / Validasi Titik GPS'"></span>
                             </button>
-                        </div>
-
-                        <!-- Server Time Pill -->
-                        <div class="flex justify-center">
-                            <div class="inline-flex items-center gap-2 px-5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-xs text-xs font-bold text-slate-700 dark:text-slate-300">
-                                <i class="fa-regular fa-clock text-slate-400"></i>
-                                <span>Waktu Server</span>
-                                <span class="font-extrabold text-slate-900 dark:text-white" x-text="new Date().toLocaleTimeString('id-ID') + ' WIB'"></span>
-                            </div>
                         </div>
 
                     </div>

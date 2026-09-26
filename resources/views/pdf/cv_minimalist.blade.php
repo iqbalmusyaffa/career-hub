@@ -101,9 +101,10 @@
         <div class="position">{{ $profile->current_position ?? 'Kandidat Profesional' }}</div>
         <div class="contact-bar">
             <strong>Email:</strong> {{ $user->email }}
-            @if($profile->phone) | <strong>HP:</strong> {{ $profile->phone }} @endif
-            @if($profile->address) | <strong>Lokasi:</strong> {{ $profile->address }} @endif
-            @if($profile->dob) | <strong>Tgl Lahir:</strong> {{ $profile->dob->format('d M Y') }} @endif
+            @if(!empty($profile->phone)) | <strong>HP:</strong> {{ $profile->phone }} @endif
+            @if(!empty($profile->address)) | <strong>Lokasi:</strong> {{ $profile->address }} @endif
+            @if(!empty($profile->social_links['linkedin'])) | <strong>LinkedIn:</strong> {{ $profile->social_links['linkedin'] }} @endif
+            @if(!empty($profile->social_links['portfolio'])) | <strong>Portofolio:</strong> {{ $profile->social_links['portfolio'] }} @endif
         </div>
     </div>
 
@@ -114,7 +115,7 @@
     @endif
 
     <!-- Work Experience -->
-    @if(!empty($profile->experiences) && is_array($profile->experiences))
+    @if(!empty($profile->experiences) && is_array($profile->experiences) && count($profile->experiences) > 0)
         <div class="section-title">Pengalaman Kerja & Profesional</div>
         @foreach($profile->experiences as $exp)
             <div style="margin-bottom: 10px;">
@@ -139,7 +140,7 @@
     @endif
 
     <!-- Education -->
-    @if(!empty($profile->educations) && is_array($profile->educations))
+    @if(!empty($profile->educations) && is_array($profile->educations) && count($profile->educations) > 0)
         <div class="section-title">Pendidikan Akademis</div>
         @foreach($profile->educations as $edu)
             <div style="margin-bottom: 8px;">
@@ -156,6 +157,34 @@
                 </table>
                 @if(!empty($edu['gpa']))
                     <div class="desc-text"><strong>IPK:</strong> {{ $edu['gpa'] }}</div>
+                @endif
+            </div>
+        @endforeach
+    @endif
+
+    <!-- Organizations -->
+    @if(!empty($profile->organizations) && is_array($profile->organizations) && count($profile->organizations) > 0)
+        <div class="section-title">Pengalaman Organisasi & Relawan</div>
+        @foreach($profile->organizations as $org)
+            <div style="margin-bottom: 8px;">
+                <table class="item-table">
+                    <tr>
+                        <td style="vertical-align: top;">
+                            <span class="item-title">{{ $org['position'] ?? 'Anggota' }}</span>
+                            <span class="item-sub"> | {{ $org['name'] ?? 'Organisasi' }}</span>
+                            @if(!empty($org['level'])) <span style="font-size: 8.5px; color: #64748b;">({{ $org['level'] }})</span> @endif
+                        </td>
+                        <td class="item-date" style="vertical-align: top;">
+                            @if(!empty($org['start_date']))
+                                {{ \Carbon\Carbon::parse($org['start_date'])->format('M Y') }} - {{ (!empty($org['is_current']) && $org['is_current']) ? 'Sekarang' : (!empty($org['end_date']) ? \Carbon\Carbon::parse($org['end_date'])->format('M Y') : 'Selesai') }}
+                            @else
+                                {{ $org['period'] ?? '' }}
+                            @endif
+                        </td>
+                    </tr>
+                </table>
+                @if(!empty($org['description']))
+                    <div class="desc-text">{{ $org['description'] }}</div>
                 @endif
             </div>
         @endforeach

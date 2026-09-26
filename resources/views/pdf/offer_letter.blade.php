@@ -124,8 +124,8 @@
                 No. HP: {{ $application->user->candidateProfile->phone ?? '-' }}
             </td>
             <td style="text-align: right;">
-                <strong>Tanggal Terbit:</strong> {{ date('d F Y') }}<br>
-                <strong>Batas Konfirmasi:</strong> {{ $offerLetter->expiration_date ? $offerLetter->expiration_date->format('d F Y') : '7 Hari Kerja' }}
+                <strong>Tanggal Terbit:</strong> {{ \Carbon\Carbon::now()->locale('id')->translatedFormat('d F Y') }}<br>
+                <strong>Batas Konfirmasi:</strong> {{ $offerLetter->expiration_date ? \Carbon\Carbon::parse($offerLetter->expiration_date)->locale('id')->translatedFormat('d F Y') : '7 Hari Kerja' }}
             </td>
         </tr>
     </table>
@@ -133,23 +133,56 @@
     <!-- Body Content -->
     <p>Dengan hormat,</p>
     <p>
-        Sehubungan dengan proses seleksi dan wawancara yang telah Anda jalani, kami dari <strong>{{ $application->job->company_name }}</strong> merasa sangat terkesan dengan kualifikasi dan potensi yang Anda miliki. Oleh karena itu, kami dengan bangga menawarkan posisi pekerjaan sebagai <strong>{{ $offerLetter->position_title }}</strong> di perusahaan kami.
+        Sehubungan dengan proses seleksi dan wawancara yang telah Anda jalani, kami dari&nbsp;<strong>{{ $application->job->company_name }}</strong>&nbsp;merasa sangat terkesan dengan kualifikasi dan potensi yang Anda miliki. Oleh karena itu, kami dengan bangga menawarkan posisi pekerjaan sebagai&nbsp;<strong>{{ $offerLetter->position_title }}</strong>&nbsp;di perusahaan kami.
     </p>
+
+    @php
+        $isInternship = Str::contains(strtolower($application->job->work_type ?? ''), ['intern', 'magang']) || Str::contains(strtolower($offerLetter->position_title ?? ''), ['intern', 'magang']);
+        $rawSal = trim((string)$offerLetter->offered_salary);
+        
+        if (str_contains($rawSal, '-') || str_contains(strtolower($rawSal), 's/d') || str_contains(strtolower($rawSal), 'sampai')) {
+            $parts = preg_split('/(-|s\/d|sampai)/i', $rawSal);
+            $formattedParts = [];
+            foreach ($parts as $p) {
+                $pClean = preg_replace('/[^0-9]/', '', $p);
+                if ($pClean && is_numeric($pClean)) {
+                    $formattedParts[] = 'Rp ' . number_format((float)$pClean, 0, ',', '.');
+                } else {
+                    $formattedParts[] = trim($p);
+                }
+            }
+            $salaryFormatted = implode(' - ', $formattedParts);
+        } else {
+            $pClean = preg_replace('/[^0-9]/', '', $rawSal);
+            if ($pClean && is_numeric($pClean) && strlen($pClean) >= 4) {
+                $salaryFormatted = 'Rp ' . number_format((float)$pClean, 0, ',', '.');
+            } else {
+                $salaryFormatted = $rawSal;
+                if (!str_starts_with(strtoupper($salaryFormatted), 'RP')) {
+                    $salaryFormatted = 'Rp ' . $salaryFormatted;
+                }
+            }
+        }
+
+        if (!Str::contains(strtolower($salaryFormatted), ['bulan', 'hari', 'jam', 'proyek', 'tahun', 'bln'])) {
+            $salaryFormatted .= ' / bulan';
+        }
+    @endphp
 
     <div class="section-title">RINCIAN PENAWARAN PEKERJAAN</div>
     <div class="info-box">
         <table class="info-table">
             <tr>
-                <td class="info-label">Posisi / Jabatan:</td>
+                <td class="info-label">{{ $isInternship ? 'Posisi / Program Magang:' : 'Posisi / Jabatan:' }}</td>
                 <td><strong>{{ $offerLetter->position_title }}</strong></td>
             </tr>
             <tr>
-                <td class="info-label">Gaji Yang Ditawarkan:</td>
-                <td><strong style="color: #15803d; font-size: 15px;">Rp {{ number_format((float) preg_replace('/[^0-9]/', '', $offerLetter->offered_salary), 0, ',', '.') }} / bulan</strong></td>
+                <td class="info-label">{{ $isInternship ? 'Uang Saku (Stipend) Ditawarkan:' : 'Gaji Yang Ditawarkan:' }}</td>
+                <td><strong style="color: #15803d; font-size: 15px;">{{ $salaryFormatted }}</strong></td>
             </tr>
             <tr>
-                <td class="info-label">Tanggal Mulai Bekerja:</td>
-                <td><strong>{{ $offerLetter->start_date ? $offerLetter->start_date->format('d F Y') : '-' }}</strong></td>
+                <td class="info-label">{{ $isInternship ? 'Tanggal Mulai Magang:' : 'Tanggal Mulai Bekerja:' }}</td>
+                <td><strong>{{ $offerLetter->start_date ? \Carbon\Carbon::parse($offerLetter->start_date)->locale('id')->translatedFormat('d F Y') : '-' }}</strong></td>
             </tr>
             <tr>
                 <td class="info-label">Lokasi Penempatan:</td>

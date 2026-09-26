@@ -130,7 +130,7 @@ class AttendanceReminderService
             if ($isWorking && $isWithinPeriod) {
                 if (isset($logbooks[$dStr])) {
                     $log = $logbooks[$dStr];
-                    if ($log->status === 'approved') {
+                    if (in_array($log->status, ['approved', 'pending'])) {
                         if (in_array($log->attendance_type, ['Hadir', 'present', 'wfo', 'wfh', 'Hadir Tepat Waktu', 'Terlambat'])) {
                             $presentDays++;
                         } elseif (in_array($log->attendance_type, ['Tidak Hadir Dengan Keterangan', 'Izin', 'Sakit'])) {
@@ -138,10 +138,16 @@ class AttendanceReminderService
                         } elseif ($log->attendance_type === 'Tidak Hadir Tanpa Keterangan') {
                             $unexcusedDays++;
                         }
-                    } elseif ($log->status === 'pending') {
-                        $pendingDays++;
                     } elseif (in_array($log->status, ['action_required', 'rejected'])) {
                         $revisionDays++;
+                        if ($cursor->lt($today)) {
+                            // Rejected or unrevised past date counts as unexcused until resolved
+                            $unexcusedDays++;
+                        }
+                    }
+
+                    if ($log->status === 'pending') {
+                        $pendingDays++;
                     }
                 } else {
                     // No logbook submitted for this working day
@@ -245,25 +251,34 @@ class AttendanceReminderService
         }
 
         // -------------------------------------------------------------
-        // REMINDER B: Afternoon / Evening Logbook Activities (After 15:30 WIB)
+        // REMINDER B: Afternoon / Evening Logbook Activities (16:00 & 17:00 WIB)
         // -------------------------------------------------------------
-        if ($now->hour >= 15) {
+        if ($now->hour >= 16) {
             $isLogbookIncomplete = !$todayLogbook 
                 || empty($todayLogbook->tasks) 
                 || (float) $todayLogbook->work_hours <= 0 
                 || strlen(trim($todayLogbook->tasks ?? '')) < 10;
 
             if ($isLogbookIncomplete) {
-                $hasEveningNotifToday = UserNotification::where('user_id', $user->id)
-                    ->where('title', 'like', '%Logbook Sore%')
+                $isPost17 = $now->hour >= 17;
+                $slotKeyword = $isPost17 ? '17.00 WIB' : '16.00 WIB';
+                $notifTitle = $isPost17
+                    ? '📝 Pengingat Logbook (17.00 WIB): Waktu Pulang Kerja, Lengkapi Logbook Hari Ini'
+                    : '📝 Pengingat Logbook Sore (16.00 WIB): Menjelang Pulang, Lengkapi Aktivitas Harian';
+                $notifMessage = $isPost17
+                    ? 'Waktu kerja hari ini telah berakhir (17.00 WIB). Pastikan Anda telah melengkapi presensi dan catatan aktivitas logbook harian agar dapat diverifikasi oleh Mentor.'
+                    : 'Waktu kerja hari ini hampir berakhir (16.00 WIB). Jangan lupa melengkapi ringkasan tugas & jam kerja pada logbook harian sebelum pulang.';
+
+                $hasNotifForSlot = UserNotification::where('user_id', $user->id)
+                    ->where('title', 'like', '%' . $slotKeyword . '%')
                     ->whereDate('created_at', $today->format('Y-m-d'))
                     ->exists();
 
-                if (!$hasEveningNotifToday) {
+                if (!$hasNotifForSlot) {
                     UserNotification::send(
                         $user->id,
-                        '📝 Pengingat Logbook Sore: Lengkapi Catatan Aktivitas Harian',
-                        'Waktu kerja hari ini hampir berakhir. Jangan lupa melengkapi ringkasan tugas & jam kerja pada logbook harian agar dapat diverifikasi oleh Mentor.',
+                        $notifTitle,
+                        $notifMessage,
                         route('candidate.logbook.show', $today->format('Y-m-d')),
                         'info'
                     );

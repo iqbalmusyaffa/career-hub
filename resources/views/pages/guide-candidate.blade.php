@@ -153,7 +153,7 @@
                                     <span><strong>Tipe Kontrak:</strong> Pilih antara Full-Time, Magang / Internship, Kontrak, atau Part-Time.</span>
                                 </li>
                                 <li class="flex items-start gap-2">
-                                    <i class="fa-solid fa-shield-check text-emerald-600 mt-0.5"></i>
+                                    <i class="fa-solid fa-shield-halved text-emerald-600 mt-0.5"></i>
                                     <span><strong>Lencana Terverifikasi:</strong> Prioritaskan penyelenggara dengan tanda centang biru untuk memastikan lowongan resmi bebas pungutan biaya.</span>
                                 </li>
                             </ul>

@@ -195,4 +195,23 @@ class User extends Authenticatable
     {
         return $this->getInternshipBlockReason() !== null;
     }
+
+    /**
+     * Check if user is an active/accepted intern (has configured period or accepted internship application).
+     */
+    public function isIntern(): bool
+    {
+        if ($this->internshipPeriod) {
+            return true;
+        }
+
+        return $this->applications()
+            ->whereIn('status', ['accepted', 'hired'])
+            ->whereHas('job', function($q) {
+                $q->where('work_type', 'like', '%Intern%')
+                  ->orWhere('work_type', 'like', '%Magang%')
+                  ->orWhereNotNull('batch');
+            })
+            ->exists();
+    }
 }

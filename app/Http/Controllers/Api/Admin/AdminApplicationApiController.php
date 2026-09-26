@@ -120,7 +120,7 @@ class AdminApplicationApiController extends Controller
     public function show(Request $request, $id)
     {
         $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
-        $application = Application::with(['user.candidateProfile', 'user.candidateDocuments', 'job', 'evaluations', 'internalNotes', 'interviews', 'offerLetter'])
+        $application = Application::with(['user.candidateProfile', 'user.candidateDocuments', 'job', 'evaluations', 'internalNotes', 'interview', 'offerLetter', 'certificates', 'transcripts', 'agreements', 'terminations', 'onboarding'])
             ->find($realId);
 
         if (!$application) {

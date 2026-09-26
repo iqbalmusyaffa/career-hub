@@ -169,8 +169,19 @@
 <body>
 
 @php
-    $verificationUrl = route('candidate.agreements.show', $agreement);
-    $qrCodeBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(75)->generate($verificationUrl));
+    $downloadUrl = route('agreements.download', $agreement);
+    $qrDownloadBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(75)->generate($downloadUrl));
+
+    $companyName = $agreement->application->job->company_name ?? 'PT TalentFlow Tech';
+    $qrHrData = "DOKUMEN SAH HRD\nPerusahaan: " . $companyName . "\nHR Manager: " . ($agreement->hr_signer_name ?? 'HR Manager') . "\nNo. Perjanjian: " . $agreement->contract_number . "\nStatus: SAH TERVERIFIKASI HR\nUnduh Dokumen: " . $downloadUrl;
+    $qrHrBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(65)->generate($qrHrData));
+
+    $qrOwnerData = "DOKUMEN SAH DIREKSI / OWNER\nPerusahaan: " . $companyName . "\nDirektur Utama: " . ($agreement->owner_signer_name ?? 'Direktur Utama') . "\nNo. Perjanjian: " . $agreement->contract_number . "\nStatus: DISETUJUI & DISAHKAN DIREKSI\nUnduh Dokumen: " . $downloadUrl;
+    $qrOwnerBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(65)->generate($qrOwnerData));
+
+    $candidateSignedTime = $agreement->signed_at ? $agreement->signed_at->format('d/m/Y H:i:s') : 'Menunggu TTD';
+    $qrCandidateData = "TANDA TANGAN DIGITAL KANDIDAT\nNama: " . ($agreement->signer_name ?? $agreement->user->name) . "\nEmail: " . $agreement->user->email . "\nIP: " . ($agreement->signer_ip ?? '127.0.0.1') . "\nWaktu: " . $candidateSignedTime . " WIB\nStatus: SAH DIGITAL (OTP VERIFIED)\nUnduh Dokumen: " . $downloadUrl;
+    $qrCandidateBase64 = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(65)->generate($qrCandidateData));
 @endphp
 
     <div class="top-bar"></div>
@@ -182,9 +193,9 @@
                     <h2>{{ $agreement->title }}</h2>
                     <div class="doc-badge">Nomor Perjanjian: {{ $agreement->contract_number }}</div>
                 </td>
-                <td style="width: 80px; text-align: right; vertical-align: middle;">
-                    <img src="data:image/svg+xml;base64,{{ $qrCodeBase64 }}" style="width: 65px; height: 65px; border: 1px solid #cbd5e1; padding: 2px; background: #fff; border-radius: 6px;">
-                    <div style="font-size: 6pt; color: #475569; font-weight: bold; text-align: center; margin-top: 2px; letter-spacing: 0.3px;">SCAN UNTUK VERIFIKASI</div>
+                <td style="width: 85px; text-align: right; vertical-align: middle;">
+                    <img src="data:image/svg+xml;base64,{{ $qrDownloadBase64 }}" style="width: 65px; height: 65px; border: 1px solid #cbd5e1; padding: 2px; background: #fff; border-radius: 6px;">
+                    <div style="font-size: 5.5pt; color: #475569; font-weight: bold; text-align: center; margin-top: 2px; letter-spacing: 0.3px;">SCAN UNTUK UNDUH</div>
                 </td>
             </tr>
         </table>
@@ -194,7 +205,7 @@
         <table class="meta-table">
             <tr>
                 <td class="meta-label">Pihak Pertama (Kantor):</td>
-                <td class="meta-val">{{ $agreement->application->job->company_name ?? 'PT TalentFlow Tech' }}</td>
+                <td class="meta-val">{{ $companyName }}</td>
             </tr>
             <tr>
                 <td class="meta-label">Pihak Kedua (Kandidat):</td>
@@ -227,39 +238,46 @@
     <div class="signatures">
         <!-- SIGNATORY 1: HR MANAGER -->
         <div class="sig-card">
-            <div class="signature-title">1. HR MANAGER</div>
+            <div class="signature-title">1. TTD DIGITAL HRD</div>
+            <div style="text-align: center; margin: 4px auto;">
+                <img src="data:image/svg+xml;base64,{{ $qrHrBase64 }}" style="width: 55px; height: 55px; border: 1px solid #cbd5e1; padding: 2px; background: #fff; border-radius: 6px;">
+            </div>
             @if($agreement->company_signature_path)
-                <img src="{{ public_path('storage/' . $agreement->company_signature_path) }}" class="signature-img">
-            @else
-                <div class="sig-placeholder">[TERVERIFIKASI HR]</div>
+                <img src="{{ public_path('storage/' . $agreement->company_signature_path) }}" class="signature-img" style="max-height: 40px;">
             @endif
             <div class="sig-name">{{ $agreement->hr_signer_name ?? 'HR Manager' }}</div>
-            <div class="sig-role">Pihak HR Perusahaan</div>
+            <div class="sig-role">Head of HR &bull; ✅ Terverifikasi</div>
         </div>
 
         <!-- SIGNATORY 2: OWNER / DIREKTUR -->
         <div class="sig-card sig-card-mid">
-            <div class="signature-title">2. OWNER / DIREKTUR</div>
+            <div class="signature-title">2. TTD DIGITAL DIREKSI</div>
+            <div style="text-align: center; margin: 4px auto;">
+                <img src="data:image/svg+xml;base64,{{ $qrOwnerBase64 }}" style="width: 55px; height: 55px; border: 1px solid #cbd5e1; padding: 2px; background: #fff; border-radius: 6px;">
+            </div>
             @if($agreement->owner_signature_path)
-                <img src="{{ public_path('storage/' . $agreement->owner_signature_path) }}" class="signature-img">
-            @else
-                <div class="sig-placeholder">[TERVERIFIKASI OWNER]</div>
+                <img src="{{ public_path('storage/' . $agreement->owner_signature_path) }}" class="signature-img" style="max-height: 40px;">
             @endif
             <div class="sig-name">{{ $agreement->owner_signer_name ?? 'Owner / Direktur Utama' }}</div>
-            <div class="sig-role">Pimpinan Perusahaan</div>
+            <div class="sig-role">Direktur Utama &bull; ✅ Terverifikasi</div>
         </div>
 
         <!-- SIGNATORY 3: PESERTA / KANDIDAT -->
         <div class="sig-card">
-            <div class="signature-title">3. PESERTA / KARYAWAN</div>
+            <div class="signature-title">3. TTD DIGITAL KANDIDAT</div>
+            <div style="text-align: center; margin: 4px auto;">
+                <img src="data:image/svg+xml;base64,{{ $qrCandidateBase64 }}" style="width: 55px; height: 55px; border: 1px solid #cbd5e1; padding: 2px; background: #fff; border-radius: 6px;">
+            </div>
             @if($agreement->signature_data)
-                <img src="{{ $agreement->signature_data }}" class="signature-img">
-            @else
-                <div class="sig-placeholder">[Belum Ditandatangani]</div>
+                <img src="{{ $agreement->signature_data }}" class="signature-img" style="max-height: 35px;">
             @endif
             <div class="sig-name">{{ $agreement->signer_name ?? $agreement->user->name }}</div>
             <div class="sig-role">
-                Tgl TTD: {{ $agreement->signed_at ? $agreement->signed_at->format('d M Y') : '-' }}
+                @if($agreement->status === 'signed')
+                    ✅ Sah OTP ({{ $agreement->signed_at ? $agreement->signed_at->format('d/m/Y') : '' }})
+                @else
+                    <span style="color: #b45309; font-style: italic;">[Menunggu TTD]</span>
+                @endif
             </div>
         </div>
         <div class="clear"></div>
@@ -267,12 +285,12 @@
 
     <div class="security-footer">
         <div style="font-weight: 800; color: #0f172a; margin-bottom: 2px;">
-            🔐 DOKUMEN RESMI TERVERIFIKASI KODE OTP EMAIL & TERARSIP DIGITAL
+            🔐 DOKUMEN RESMI TERVERIFIKASI 3 TANDA TANGAN DIGITAL QR CODE & KODE OTP EMAIL
         </div>
         Status Otentikasi: <strong>✅ Terverifikasi OTP Email: {{ $agreement->user->email }}</strong> &bull; IP: <code>{{ $agreement->signer_ip ?? '127.0.0.1' }}</code> &bull; Tanggal Pengesahan: {{ $agreement->signed_at ? $agreement->signed_at->format('d M Y, H:i') : '-' }} WIB
         
         <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed #cbd5e1; font-size: 7pt; color: #94a3b8; text-align: left;">
-            * Dokumen ini sah secara hukum digital dan dapat dicetak (hardcopy) untuk pengarsipan fisik kantor. Stempel basah atau tanda tangan fisik tambahan dapat dibubuhkan jika diperlukan oleh departemen Legal/HR.
+            * Dokumen digital ini sah dan mengikat secara hukum digital (UU ITE). Pihak ketiga dapat memverifikasi dan mengunduh berkas otentik ini secara langsung dengan memindai (scan) QR Code yang tercantum pada dokumen ini.
         </div>
     </div>
 

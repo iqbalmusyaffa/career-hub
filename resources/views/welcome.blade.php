@@ -56,7 +56,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left pt-6 border-t border-slate-200/80">
                 <div class="flex items-start gap-3.5 p-3.5 rounded-xl bg-white border border-slate-100 shadow-2xs">
                     <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                        <i class="fa-solid fa-shield-check text-base"></i>
+                        <i class="fa-solid fa-shield-halved text-base"></i>
                     </div>
                     <div>
                         <div class="text-xs font-bold text-slate-900">Perusahaan Terverifikasi</div>

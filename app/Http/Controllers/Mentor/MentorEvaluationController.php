@@ -17,7 +17,9 @@ class MentorEvaluationController extends Controller
             'user_id' => $intern->id,
         ]);
 
-        return view('mentor.evaluations.create', compact('intern', 'evaluation'));
+        $survey = \App\Models\InternshipSurvey::where('user_id', $intern->id)->first();
+
+        return view('mentor.evaluations.create', compact('intern', 'evaluation', 'survey'));
     }
 
     public function store(Request $request)

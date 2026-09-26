@@ -49,9 +49,12 @@ class ApplicationAgreementController extends Controller
             $prefix = 'SPK/';
         }
 
-        $contractNumber = $prefix . date('Y/m/') . sprintf('%03d', rand(1, 999));
+        $companyId = $application->job?->companyProfile?->id ?? auth()->user()->currentCompanyProfile()?->id ?? 1;
+        $leavePolicy = \App\Models\CompanyLeavePolicy::getForCompany($companyId);
 
-        return view('admin.agreements.create', compact('application', 'isInternship', 'isRemote', 'isHybrid', 'isPermanent', 'defaultType', 'defaultTitle', 'contractNumber'));
+        $contractNumber = $prefix . date('Y/m/') . sprintf('APP%04d-U%04d', $application->id, $application->user_id);
+
+        return view('admin.agreements.create', compact('application', 'isInternship', 'isRemote', 'isHybrid', 'isPermanent', 'defaultType', 'defaultTitle', 'contractNumber', 'leavePolicy'));
     }
 
     /**
@@ -111,6 +114,31 @@ class ApplicationAgreementController extends Controller
             route('candidate.agreements.show', $agreement),
             'info'
         );
+
+        // Send Official Email to candidate
+        try {
+            $candUser = $application->user;
+            $signingUrl = route('candidate.agreements.show', $agreement);
+            \Illuminate\Support\Facades\Mail::raw(
+                "Halo {$candUser->name},\n\n" .
+                "Perusahaan telah menerbitkan Surat Perjanjian Digital resmi untuk Anda:\n\n" .
+                "📄 Dokumen: {$agreement->title}\n" .
+                "🔢 Nomor Dokumen: {$agreement->contract_number}\n" .
+                "💼 Posisi: " . ($application->job->title ?? '-') . "\n" .
+                "🏢 Perusahaan: " . ($application->job->company_name ?? 'PT TalentFlow Tech') . "\n" .
+                "💵 Gaji / Insentif: {$agreement->stipend_or_salary}\n\n" .
+                "Silakan buka tautan berikut untuk memeriksa pasal-pasal dan menandatangani dokumen secara digital (dilengkapi QR Code & Kode OTP Keamanan Email):\n" .
+                "👉 {$signingUrl}\n\n" .
+                "Dokumen PDF ini memiliki 3 Tanda Tangan Digital QR Code (HR, Direktur Utama, dan Kandidat) serta QR Code untuk unduh instan.\n\n" .
+                "Salam hangat,\nTim Human Resources TalentFlow",
+                function ($mail) use ($candUser, $agreement) {
+                    $mail->to($candUser->email)
+                        ->subject("📄 Surat Perjanjian Digital Resmi: {$agreement->contract_number}");
+                }
+            );
+        } catch (\Exception $e) {
+            // Silently ignore mail transport errors in local dev
+        }
 
         AuditLog::record('agreement_created', "HR " . Auth::user()->name . " menerbitkan perjanjian digital {$agreement->title} untuk " . $application->user->name);
 
@@ -231,6 +259,30 @@ class ApplicationAgreementController extends Controller
 
         $agreement->signed_pdf_path = $pdfFilePath;
         $agreement->save();
+
+        // Send Email Confirmation to candidate with download link
+        try {
+            $candUser = $agreement->user;
+            $downloadUrl = route('agreements.download', $agreement);
+            \Illuminate\Support\Facades\Mail::raw(
+                "Halo {$candUser->name},\n\n" .
+                "🎉 Selamat! Dokumen Perjanjian Digital Anda telah BERHASIL DITANDATANGANI SECARA SAH SECARA HUKUM DIGITAL (OTP VERIFIED).\n\n" .
+                "📄 Dokumen: {$agreement->title}\n" .
+                "🔢 Nomor Dokumen: {$agreement->contract_number}\n" .
+                "⏰ Waktu TTD: " . $agreement->signed_at->format('d/m/Y H:i') . " WIB\n" .
+                "🌐 IP Address: {$agreement->signer_ip}\n" .
+                "🔐 Otentikasi: 3 Tanda Tangan Digital QR Code (HR Manager, Direktur Utama, dan Kandidat)\n\n" .
+                "Anda dapat mengunduh berkas PDF resmi lengkap ber-QR Code kapan saja melalui tautan berikut:\n" .
+                "📥 Unduh PDF Resmi: {$downloadUrl}\n\n" .
+                "Salam sukses,\nTim Rekrutmen TalentFlow",
+                function ($mail) use ($candUser, $agreement) {
+                    $mail->to($candUser->email)
+                        ->subject("🎉 Salinan Sah Surat Perjanjian Digital: {$agreement->contract_number}");
+                }
+            );
+        } catch (\Exception $e) {
+            // Silently ignore mail transport errors in local dev
+        }
 
         AuditLog::record('agreement_signed', "Kandidat " . Auth::user()->name . " telah menandatangani secara digital " . $agreement->title);
 

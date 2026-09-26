@@ -145,14 +145,35 @@
         <tr>
             <!-- Left Dark Sidebar Column -->
             <td class="sidebar">
-                <div class="avatar-initial">
-                    {{ strtoupper(substr($user->name, 0, 1)) }}
-                </div>
+                @php
+                    $avatarImg = null;
+                    if (!empty($user->avatar)) {
+                        if (str_starts_with($user->avatar, 'http://') || str_starts_with($user->avatar, 'https://')) {
+                            $avatarImg = $user->avatar;
+                        } elseif (file_exists(public_path('storage/' . $user->avatar))) {
+                            $avatarImg = public_path('storage/' . $user->avatar);
+                        } elseif (file_exists(storage_path('app/public/' . $user->avatar))) {
+                            $avatarImg = storage_path('app/public/' . $user->avatar);
+                        }
+                    }
+                @endphp
+
+                @if($avatarImg)
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <img src="{{ $avatarImg }}" alt="{{ $user->name }}" style="width: 68px; height: 68px; border-radius: 50%; object-fit: cover; border: 2.5px solid #60a5fa;">
+                    </div>
+                @else
+                    <div class="avatar-initial" style="background-color: {{ $accentColor ?? '#2563eb' }};">
+                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                    </div>
+                @endif
 
                 <div class="sidebar-title">Kontak</div>
                 <div class="contact-item">📧 {{ $user->email }}</div>
-                @if($profile->phone) <div class="contact-item">📞 {{ $profile->phone }}</div> @endif
-                @if($profile->address) <div class="contact-item">📍 {{ $profile->address }}</div> @endif
+                @if(!empty($profile->phone)) <div class="contact-item">📞 {{ $profile->phone }}</div> @endif
+                @if(!empty($profile->address)) <div class="contact-item">📍 {{ $profile->address }}</div> @endif
+                @if(!empty($profile->social_links['linkedin'])) <div class="contact-item">🔗 {{ $profile->social_links['linkedin'] }}</div> @endif
+                @if(!empty($profile->social_links['portfolio'])) <div class="contact-item">🌐 {{ $profile->social_links['portfolio'] }}</div> @endif
 
                 <!-- Keahlian Sidebar -->
                 @if(!empty($profile->skills) && is_array($profile->skills))
@@ -193,16 +214,16 @@
             <!-- Right Main Content Column -->
             <td class="main-content">
                 <div class="header-name">{{ $user->name }}</div>
-                <div class="header-position">{{ $profile->current_position ?? 'Kandidat Profesional' }}</div>
+                <div class="header-position" style="color: {{ $accentColor ?? '#2563eb' }};">{{ $profile->current_position ?? 'Kandidat Profesional' }}</div>
 
                 @if($profile->summary)
-                    <div class="summary-box">
+                    <div class="summary-box" style="border-left-color: {{ $accentColor ?? '#2563eb' }};">
                         {{ $profile->summary }}
                     </div>
                 @endif
 
                 <!-- Pengalaman Kerja -->
-                @if(!empty($profile->experiences) && is_array($profile->experiences))
+                @if(!empty($profile->experiences) && is_array($profile->experiences) && count($profile->experiences) > 0)
                     <div class="main-section-heading">Pengalaman Kerja</div>
                     @foreach($profile->experiences as $exp)
                         <div class="exp-card">
@@ -210,7 +231,7 @@
                                 <tr>
                                     <td>
                                         <div class="exp-title">{{ $exp['title'] ?? ($exp['position'] ?? 'Posisi Pekerjaan') }}</div>
-                                        <div class="exp-company">{{ $exp['company'] ?? '' }}</div>
+                                        <div class="exp-company" style="color: {{ $accentColor ?? '#2563eb' }};">{{ $exp['company'] ?? '' }}</div>
                                     </td>
                                     <td class="exp-date" style="vertical-align: top;">
                                         {{ $exp['start_date'] ?? '' }} - {{ (!empty($exp['is_current']) && $exp['is_current']) ? 'Sekarang' : ($exp['end_date'] ?? 'Selesai') }}
@@ -225,7 +246,7 @@
                 @endif
 
                 <!-- Pengalaman Organisasi -->
-                @if(!empty($profile->organizations) && is_array($profile->organizations))
+                @if(!empty($profile->organizations) && is_array($profile->organizations) && count($profile->organizations) > 0)
                     <div class="main-section-heading">Pengalaman Organisasi & Komunitas</div>
                     @foreach($profile->organizations as $org)
                         <div class="exp-card">
@@ -233,11 +254,11 @@
                                 <tr>
                                     <td>
                                         <div class="exp-title">{{ $org['position'] ?? 'Anggota' }}</div>
-                                        <div class="exp-company">{{ $org['name'] ?? 'Organisasi' }} @if(!empty($org['level'])) <span style="font-size: 8.5px; color: #64748b;">({{ $org['level'] }})</span> @endif</div>
+                                        <div class="exp-company" style="color: {{ $accentColor ?? '#2563eb' }};">{{ $org['name'] ?? 'Organisasi' }} @if(!empty($org['level'])) <span style="font-size: 8.5px; color: #64748b;">({{ $org['level'] }})</span> @endif</div>
                                     </td>
                                     <td class="exp-date" style="vertical-align: top;">
                                         @if(!empty($org['start_date']))
-                                            {{ \Carbon\Carbon::parse($org['start_date'])->format('M Y') }} - {{ (!empty($org['is_current']) && $org['is_current']) ? 'Sekarang' : (!empty($org['end_date']) ? \Carbon\Carbon::parse($org['end_date'])->format('M Y') : 'Selesai') }}
+                                             {{ \Carbon\Carbon::parse($org['start_date'])->format('M Y') }} - {{ (!empty($org['is_current']) && $org['is_current']) ? 'Sekarang' : (!empty($org['end_date']) ? \Carbon\Carbon::parse($org['end_date'])->format('M Y') : 'Selesai') }}
                                         @else
                                             {{ $org['period'] ?? '' }}
                                         @endif
@@ -250,6 +271,20 @@
                             @if(!empty($org['description']))
                                 <div class="exp-desc">{{ $org['description'] }}</div>
                             @endif
+                        </div>
+                    @endforeach
+                @endif
+
+                <!-- Sertifikasi & Pelatihan -->
+                @if(!empty($profile->certificates) && is_array($profile->certificates) && count($profile->certificates) > 0)
+                    <div class="main-section-heading">Sertifikasi & Lisensi</div>
+                    @foreach($profile->certificates as $cert)
+                        <div class="exp-card" style="margin-bottom: 8px;">
+                            <div class="exp-title">• {{ is_array($cert) ? ($cert['name'] ?? '') : $cert }}</div>
+                            <div style="font-size: 9.5px; color: #64748b;">
+                                @if(is_array($cert) && !empty($cert['issuer'])) Penerbit: {{ $cert['issuer'] }} @endif
+                                @if(is_array($cert) && !empty($cert['year'])) ({{ $cert['year'] }}) @endif
+                            </div>
                         </div>
                     @endforeach
                 @endif

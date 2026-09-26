@@ -7,14 +7,16 @@
 
     <div class="py-6 sm:py-10 bg-slate-50/80 dark:bg-slate-900 min-h-screen transition-colors">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-            <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                 <div>
                     <h1 class="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Bangun Profil Profesional Anda</h1>
-                    <p class="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">Isi secara lengkap untuk meningkatkan visibilitas profil dan lamaran Anda.</p>
+                    <p class="mt-0.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">Isi secara lengkap untuk meningkatkan visibilitas profil dan lamaran Anda.</p>
                 </div>
                 
-                <a href="{{ route('profile.candidate.documents.index') }}" class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-xs rounded-xl shadow-2xs transition border border-slate-900 dark:border-slate-700">
-                    <i class="fa-solid fa-folder-closed text-slate-400"></i> Buka Vault Dokumen &rarr;
+                <a href="{{ route('profile.candidate.documents.index') }}" class="shrink-0 self-start sm:self-auto inline-flex items-center gap-2 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-xs rounded-xl shadow-2xs transition border border-slate-900 dark:border-slate-700">
+                    <i class="fa-solid fa-folder-closed text-slate-400"></i>
+                    <span>Buka Vault Dokumen</span>
+                    <i class="fa-solid fa-arrow-right text-[10px] text-slate-400"></i>
                 </a>
             </div>
 
@@ -91,10 +93,10 @@
                 </div>
             </div>
 
-            <div x-data="resumeForm()" class="pb-12 space-y-6">
+            <div x-data="resumeForm()" class="pb-12 space-y-5">
                 <!-- TOP ANIMATED CLEAN STEP NUMBER WIZARD -->
                 <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-2xs border border-slate-200 dark:border-slate-700 relative overflow-hidden transition-colors">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-5">
                         <div class="flex items-center gap-3">
                             <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900 dark:bg-slate-700 text-white font-black text-base sm:text-lg flex items-center justify-center shadow-2xs shrink-0">
                                 <span x-text="currentStepIndex + 1"></span>
@@ -112,8 +114,8 @@
                     </div>
 
                     <!-- Clean Horizontal Step Timeline (Numbers Only 1..11) Scrollable on Mobile -->
-                    <div class="overflow-x-auto scrollbar-none -mx-2 px-2 pb-1">
-                        <div class="relative flex items-center justify-between px-2 sm:px-4 py-2 min-w-[520px] sm:min-w-0">
+                    <div class="overflow-x-auto scrollbar-none -mx-2 px-2 pb-1 scroll-smooth">
+                        <div class="relative flex items-center justify-between px-2 sm:px-4 py-2 min-w-[540px] sm:min-w-0">
                             <!-- Background Line -->
                             <div class="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-slate-100 dark:bg-slate-700 rounded-full z-0"></div>
                             <!-- Progress Active Line -->
@@ -121,7 +123,7 @@
                                  :style="`width: max(0%, min(calc(100% - 3rem), ${liveCompletionPercentage}%))`"></div>
 
                             <template x-for="(t, idx) in tabs" :key="idx">
-                                <button type="button" @click="activeTab = t.id" class="relative z-10 flex flex-col items-center shrink-0 cursor-pointer select-none focus:outline-none transition-transform hover:scale-110">
+                                <button type="button" @click="activeTab = t.id" :data-timeline-step="t.id" class="relative z-10 flex flex-col items-center shrink-0 cursor-pointer select-none focus:outline-none transition-transform hover:scale-110">
                                     <div :class="{
                                             'w-9 h-9 bg-blue-600 text-white font-bold shadow-2xs ring-4 ring-blue-100 dark:ring-blue-900/60 scale-105': activeTab === t.id,
                                             'w-8 h-8 bg-emerald-600 text-white font-bold shadow-2xs': activeTab !== t.id && isStepCompleted(idx),
@@ -137,14 +139,15 @@
                 </div>
 
                 <!-- Responsive Step Pills for Mobile & Tablet (Horizontal Scroll) -->
-                <div class="lg:hidden w-full space-y-2">
-                    <div class="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none snap-x">
+                <div class="lg:hidden w-full">
+                    <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none snap-x -mx-1 px-1 scroll-smooth">
                         <template x-for="(tab, index) in tabs" :key="index">
                             <button type="button" @click="activeTab = tab.id; window.scrollTo({ top: 120, behavior: 'smooth' });"
+                                :data-pill-step="tab.id"
                                 :class="activeTab === tab.id 
                                     ? 'bg-blue-600 text-white shadow-xs font-bold border-blue-600' 
                                     : (isStepCompleted(index) ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700')"
-                                class="shrink-0 snap-start px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
+                                class="shrink-0 snap-center px-3.5 py-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-2xs">
                                 <span class="w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0"
                                       :class="activeTab === tab.id ? 'bg-white/20 text-white' : (isStepCompleted(index) ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200' : 'bg-slate-100 dark:bg-slate-700 text-slate-500')"
                                       x-text="isStepCompleted(index) && activeTab !== tab.id ? '✓' : (index + 1)"></span>
@@ -638,7 +641,22 @@
                                         </div>
                                         <div>
                                             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Gaji Terakhir (Opsional)</label>
-                                            <input type="text" x-model="item.last_salary" :name="`experiences[${index}][last_salary]`" placeholder="Contoh: Rp 8.500.000 / Bulan" class="mt-1 block w-full border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl focus:ring-slate-800 focus:border-slate-800 text-xs">
+                                            <div class="mt-1 flex rounded-xl shadow-2xs">
+                                                <select x-model="item.salary_currency" :name="`experiences[${index}][salary_currency]`" class="rounded-l-xl border-r-0 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold focus:ring-slate-800 focus:border-slate-800 py-2.5 pl-3 pr-7 shrink-0 cursor-pointer">
+                                                    <option value="IDR">IDR (Rp)</option>
+                                                    <option value="USD">USD ($)</option>
+                                                    <option value="SGD">SGD (S$)</option>
+                                                    <option value="EUR">EUR (€)</option>
+                                                    <option value="JPY">JPY (¥)</option>
+                                                    <option value="MYR">MYR (RM)</option>
+                                                    <option value="AUD">AUD (A$)</option>
+                                                    <option value="GBP">GBP (£)</option>
+                                                    <option value="Lainnya">Lainnya</option>
+                                                </select>
+                                                <input type="text" x-model="item.last_salary" :name="`experiences[${index}][last_salary]`" 
+                                                       :placeholder="item.salary_currency === 'USD' ? 'Contoh: 1,500 / Bulan' : (item.salary_currency === 'EUR' ? 'Contoh: 1,200 / Bulan' : (item.salary_currency === 'SGD' ? 'Contoh: 2,000 / Bulan' : (item.salary_currency === 'JPY' ? 'Contoh: 250,000 / Bulan' : (item.salary_currency === 'MYR' ? 'Contoh: 4,000 / Bulan' : 'Contoh: 8.500.000 / Bulan'))))" 
+                                                       class="block w-full rounded-r-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-slate-800 focus:border-slate-800 text-xs">
+                                            </div>
                                         </div>
                                         <div class="grid grid-cols-2 gap-4">
                                             <div>
@@ -1100,7 +1118,24 @@
                                 
                                 <div>
                                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Gaji Saat Ini / Terakhir (Opsional)</label>
-                                    <input type="text" name="current_salary" value="{{ old('current_salary', $profile->current_salary ?? '') }}" placeholder="Contoh: 5.000.000" class="mt-1 block w-full border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs">
+                                    <div class="mt-1 flex rounded-xl shadow-2xs" x-data="{
+                                        currSalaryCurrency: '{{ old('current_salary_currency', $profile->job_preferences['current_salary_currency'] ?? 'IDR') }}'
+                                    }">
+                                        <select x-model="currSalaryCurrency" name="job_preferences[current_salary_currency]" class="rounded-l-xl border-r-0 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold focus:ring-slate-800 focus:border-slate-800 py-2.5 pl-3 pr-7 shrink-0 cursor-pointer">
+                                            <option value="IDR">IDR (Rp)</option>
+                                            <option value="USD">USD ($)</option>
+                                            <option value="SGD">SGD (S$)</option>
+                                            <option value="EUR">EUR (€)</option>
+                                            <option value="JPY">JPY (¥)</option>
+                                            <option value="MYR">MYR (RM)</option>
+                                            <option value="AUD">AUD (A$)</option>
+                                            <option value="GBP">GBP (£)</option>
+                                            <option value="Lainnya">Lainnya</option>
+                                        </select>
+                                        <input type="text" name="current_salary" value="{{ old('current_salary', $profile->current_salary ?? '') }}" 
+                                               :placeholder="currSalaryCurrency === 'USD' ? 'Contoh: 1,200 / Bulan' : (currSalaryCurrency === 'EUR' ? 'Contoh: 1,000 / Bulan' : (currSalaryCurrency === 'SGD' ? 'Contoh: 1,800 / Bulan' : (currSalaryCurrency === 'JPY' ? 'Contoh: 200,000 / Bulan' : (currSalaryCurrency === 'MYR' ? 'Contoh: 3,500 / Bulan' : 'Contoh: 5.000.000 / Bulan'))))" 
+                                               class="block w-full rounded-r-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-slate-800 focus:border-slate-800 text-xs">
+                                    </div>
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-4">
@@ -1123,7 +1158,25 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div><label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Ekspektasi Gaji (Rp)</label><input type="number" x-model="prefs.expected_salary" name="job_preferences[expected_salary]" class="mt-1 w-full border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs"></div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Ekspektasi Gaji</label>
+                                    <div class="mt-1 flex rounded-xl shadow-2xs">
+                                        <select x-model="prefs.expected_salary_currency" name="job_preferences[expected_salary_currency]" class="rounded-l-xl border-r-0 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold focus:ring-slate-800 focus:border-slate-800 py-2.5 pl-3 pr-7 shrink-0 cursor-pointer">
+                                            <option value="IDR">IDR (Rp)</option>
+                                            <option value="USD">USD ($)</option>
+                                            <option value="SGD">SGD (S$)</option>
+                                            <option value="EUR">EUR (€)</option>
+                                            <option value="JPY">JPY (¥)</option>
+                                            <option value="MYR">MYR (RM)</option>
+                                            <option value="AUD">AUD (A$)</option>
+                                            <option value="GBP">GBP (£)</option>
+                                            <option value="Lainnya">Lainnya</option>
+                                        </select>
+                                        <input type="text" x-model="prefs.expected_salary" name="job_preferences[expected_salary]" 
+                                               :placeholder="prefs.expected_salary_currency === 'USD' ? 'Contoh: 2,000 / Bulan' : (prefs.expected_salary_currency === 'EUR' ? 'Contoh: 1,800 / Bulan' : (prefs.expected_salary_currency === 'SGD' ? 'Contoh: 3,000 / Bulan' : (prefs.expected_salary_currency === 'JPY' ? 'Contoh: 350,000 / Bulan' : (prefs.expected_salary_currency === 'MYR' ? 'Contoh: 5,000 / Bulan' : 'Contoh: 8.000.000 / Bulan'))))" 
+                                               class="block w-full rounded-r-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-slate-800 focus:border-slate-800 text-xs">
+                                    </div>
+                                </div>
                                 <div class="flex gap-6 mt-4">
                                     <label class="flex items-center text-xs font-bold text-slate-700 dark:text-slate-300"><input type="checkbox" x-model="prefs.willing_to_relocate" name="job_preferences[willing_to_relocate]" value="1" class="mr-2 border-slate-300 dark:border-slate-600 text-blue-600 rounded"> Bersedia Relokasi</label>
                                     <label class="flex items-center text-xs font-bold text-slate-700 dark:text-slate-300"><input type="checkbox" x-model="prefs.willing_to_travel" name="job_preferences[willing_to_travel]" value="1" class="mr-2 border-slate-300 dark:border-slate-600 text-blue-600 rounded"> Bersedia Dinas</label>
@@ -1536,7 +1589,24 @@
                     }
                 },
                 universities: [],
+                scrollActiveIntoView() {
+                    this.$nextTick(() => {
+                        const activeTimelineBtn = document.querySelector('[data-timeline-step="' + this.activeTab + '"]');
+                        if (activeTimelineBtn) {
+                            activeTimelineBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                        }
+                        const activePill = document.querySelector('[data-pill-step="' + this.activeTab + '"]');
+                        if (activePill) {
+                            activePill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                        }
+                    });
+                },
                 init() {
+                    this.$watch('activeTab', () => {
+                        this.scrollActiveIntoView();
+                    });
+                    this.scrollActiveIntoView();
+
                     fetch('http://universities.hipolabs.com/search?country=Indonesia')
                         .then(res => res.json())
                         .then(data => {
@@ -1579,7 +1649,7 @@
                 },
 
                 educations: {!! $getOldOrDb('educations', $defaultArray) !!},
-                experiences: {!! $getOldOrDb('experiences', '[]') !!},
+                experiences: ({!! $getOldOrDb('experiences', '[]') !!} || []).map(e => ({ salary_currency: 'IDR', ...e })),
                 organizations: {!! $getOldOrDb('organizations', '[]') !!},
                 skills: {!! $getOldOrDb('skills', '[]') !!},
                 languages: {!! $getOldOrDb('languages', '[]') !!},
@@ -1587,13 +1657,13 @@
                 portfolios: {!! $getOldOrDb('portfolios', '[]') !!},
                 achievements: {!! $getOldOrDb('achievements', '[]') !!},
                 references: {!! $getOldOrDb('references', '[]') !!},
-                prefs: {!! $getOldOrDb('job_preferences', $defaultObject) !!},
+                prefs: Object.assign({ expected_salary_currency: 'IDR' }, {!! $getOldOrDb('job_preferences', $defaultObject) !!}),
                 socials: {!! $getOldOrDb('social_links', $defaultObject) !!},
                 
                 addEdu() { this.educations.push({level:'', institution:'', major:'', degree:'', city:'', start_year:'', end_year:'', is_current:false, gpa:'', thesis_title:'', description:''}); },
                 removeEdu(i) { this.educations.splice(i, 1); },
                 
-                addExp() { this.experiences.push({company:'', position:'', industry:'', type:'', location:'', last_salary:'', start_date:'', end_date:'', is_current:false, supervisor_name:'', supervisor_contact:'', reason_for_leaving:'', description:'', achievements:''}); },
+                addExp() { this.experiences.push({company:'', position:'', industry:'', type:'', location:'', salary_currency:'IDR', last_salary:'', start_date:'', end_date:'', is_current:false, supervisor_name:'', supervisor_contact:'', reason_for_leaving:'', description:'', achievements:''}); },
                 removeExp(i) { this.experiences.splice(i, 1); },
                 
                 addOrg() { this.organizations.push({name:'', position:'', level:'', location:'', start_date:'', end_date:'', is_current:false, period:'', description:''}); },

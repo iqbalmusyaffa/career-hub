@@ -38,10 +38,54 @@
     </x-slot>
 
     <div class="py-6 sm:py-8" x-data="{
-        openModal: null, // 'kurikulum', 'evaluasi', 'uang_saku', 'survei'
-        surveyRatingMentor: 5,
-        surveyRatingProgram: 5,
-    }">
+        openModal: null, // 'kurikulum', 'evaluasi', 'uang_saku', 'survei', 'sertifikat'
+        hasSubmittedSurvey: {{ $hasSubmittedSurvey ? 'true' : 'false' }},
+        hasCertificate: {{ $certificate ? 'true' : 'false' }},
+        openCertModalOnLoad: {{ session('open_certificate_modal') ? 'true' : 'false' }},
+        surveyRatingMentor: 0,
+        hoverRatingMentor: 0,
+        surveyRatingProgram: 0,
+        hoverRatingProgram: 0,
+        surveyRatingEnvironment: 0,
+        hoverRatingEnvironment: 0,
+        surveyRatingCareer: 0,
+        hoverRatingCareer: 0,
+        surveyNps: '',
+        surveyAnonymous: false,
+        surveyFeedback: '',
+        getRatingLabel(score) {
+            switch(score) {
+                case 1: return { text: '1 / 5 - Sangat Kurang', class: 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-900/60' };
+                case 2: return { text: '2 / 5 - Kurang Memuaskan', class: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-900/60' };
+                case 3: return { text: '3 / 5 - Cukup Baik', class: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-900/60' };
+                case 4: return { text: '4 / 5 - Bagus / Memuaskan', class: 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-900/60' };
+                case 5: return { text: '5 / 5 - Sangat Memuaskan', class: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-900/60' };
+                default: return { text: 'Belum Diisi', class: 'text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700' };
+            }
+        },
+        addQuickTag(tag) {
+            if (!this.surveyFeedback.includes(tag)) {
+                this.surveyFeedback = (this.surveyFeedback ? this.surveyFeedback.trim() + ' ' : '') + tag + ' ';
+            }
+        },
+        validateAndSubmitSurvey(e) {
+            if (this.surveyRatingMentor < 1 || this.surveyRatingProgram < 1 || this.surveyRatingEnvironment < 1 || this.surveyRatingCareer < 1) {
+                alert('Mohon lengkapi penilaian bintang (1 - 5) untuk seluruh aspek evaluasi.');
+                return;
+            }
+            if (!this.surveyNps) {
+                alert('Mohon pilih opsi rekomendasi program magang terlebih dahulu.');
+                return;
+            }
+            e.target.submit();
+        }
+    }" x-init="
+        if (openCertModalOnLoad) {
+            openModal = 'sertifikat';
+        } else if (hasCertificate && !hasSubmittedSurvey) {
+            openModal = 'survei';
+        }
+    ">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             <!-- Flash Alert -->
@@ -101,10 +145,6 @@
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 uppercase tracking-wider">
                                         LULUS & TERSERTIFIKASI
                                     </span>
-                                @elseif($isEligibleForCertificate)
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
-                                        MEMENUHI SYARAT KELULUSAN
-                                    </span>
                                 @else
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 uppercase tracking-wider">
                                         SEDANG BERLANGSUNG
@@ -117,7 +157,7 @@
                         </div>
                     </div>
 
-                    <!-- Quick Claim or View Buttons -->
+                    <!-- Quick View Buttons (Only when certificate is issued by mentor) -->
                     @if($certificate)
                         <div class="flex items-center gap-2">
                             <button type="button" @click="openModal = 'sertifikat'" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-2">
@@ -125,14 +165,6 @@
                                 <span>Lihat E-Sertifikat & Transkrip</span>
                             </button>
                         </div>
-                    @elseif($isEligibleForCertificate)
-                        <form method="POST" action="{{ route('candidate.logbook.claim-certificate') }}">
-                            @csrf
-                            <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-2 animate-pulse">
-                                <i class="fa-solid fa-file-circle-check"></i>
-                                <span>Klaim E-Sertifikat & Transkrip</span>
-                            </button>
-                        </form>
                     @endif
                 </div>
 
@@ -169,8 +201,8 @@
                     </div>
                     <div class="p-3 bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800">
                         <span class="text-[10px] text-slate-400 block uppercase font-bold">Status Sertifikat</span>
-                        <span class="text-sm font-bold {{ $certificate ? 'text-amber-500' : ($isEligibleForCertificate ? 'text-emerald-500' : 'text-slate-500') }} mt-0.5 block">
-                            {{ $certificate ? 'Terbit ✓' : ($isEligibleForCertificate ? 'Siap Klaim' : 'Belum Selesai') }}
+                        <span class="text-sm font-bold {{ $certificate ? 'text-amber-500' : 'text-slate-500' }} mt-0.5 block">
+                            {{ $certificate ? 'Terbit ✓' : 'Menunggu Mentor' }}
                         </span>
                     </div>
                 </div>
@@ -182,28 +214,34 @@
                 <!-- Card 0: E-Sertifikat & Transkrip (Featured) -->
                 <button type="button" @click="openModal = 'sertifikat'" class="w-full px-5 py-4 sm:px-6 sm:py-5 flex items-center justify-between hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition text-left group {{ $certificate ? 'bg-amber-50/30 dark:bg-amber-950/10' : '' }}">
                     <div class="flex items-center gap-4">
-                        <div class="w-11 h-11 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg shrink-0 group-hover:scale-105 transition-transform">
+                        <div class="w-11 h-11 rounded-xl {{ $certificate ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500' }} flex items-center justify-center text-lg shrink-0 group-hover:scale-105 transition-transform">
                             <i class="fa-solid fa-award"></i>
                         </div>
                         <div>
                             <div class="flex items-center gap-2">
-                                <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition">
+                                <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white {{ $certificate ? 'group-hover:text-amber-600 dark:group-hover:text-amber-400' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400' }} transition">
                                     E-Sertifikat & Transkrip Nilai
                                 </h4>
                                 @if($certificate)
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300">
                                         Telah Terbit
                                     </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                        Menunggu Mentor
+                                    </span>
                                 @endif
                             </div>
                             <p class="text-xs text-slate-500 dark:text-slate-400 font-normal mt-0.5">
-                                Dokumen kelulusan resmi dengan QR Code Verifikasi Publik
+                                {{ $certificate ? 'Dokumen kelulusan resmi dengan QR Code Verifikasi Publik' : 'Dokumen kelulusan resmi akan diterbitkan oleh Mentor setelah evaluasi akhir selesai' }}
                             </p>
                         </div>
                     </div>
                     <div class="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition pl-2 flex items-center gap-2">
                         @if($certificate)
                             <span class="text-xs text-amber-600 dark:text-amber-400 font-semibold hidden sm:inline">Unduh PDF</span>
+                        @else
+                            <span class="text-xs text-slate-400 dark:text-slate-500 font-medium hidden sm:inline">Lihat Status</span>
                         @endif
                         <i class="fa-solid fa-chevron-right text-xs"></i>
                     </div>
@@ -323,6 +361,24 @@
                 @if($certificate)
                     <!-- Certificate Details & Actions -->
                     <div class="space-y-4">
+                        @if(!$hasSubmittedSurvey)
+                            <div class="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-200">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 text-sm">
+                                        <i class="fa-solid fa-lock"></i>
+                                    </div>
+                                    <div>
+                                        <strong class="font-bold block">Survei Evaluasi Akhir Belum Selesai</strong>
+                                        <span class="text-[11px] text-amber-700 dark:text-amber-300">Mohon isi survei evaluasi pengalaman magang terlebih dahulu untuk membuka unduhan E-Sertifikat resmi.</span>
+                                    </div>
+                                </div>
+                                <button type="button" @click="openModal = 'survei'" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shrink-0 transition text-xs shadow-xs flex items-center gap-1.5 cursor-pointer">
+                                    <span>Isi Survei Sekarang</span>
+                                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                                </button>
+                            </div>
+                        @endif
+
                         <div class="p-5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-slate-900 border border-amber-500/30 space-y-4">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-500/20 pb-3">
                                 <div>
@@ -356,32 +412,62 @@
 
                         <!-- 2 Big Download Buttons -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <a href="{{ route('candidate.certificates.show', $certificate) }}" target="_blank" class="p-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition flex items-center justify-between shadow-xs group">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-lg shrink-0">
-                                        <i class="fa-solid fa-file-pdf"></i>
-                                    </div>
-                                    <div class="text-left">
-                                        <div class="text-xs font-bold">Unduh E-Sertifikat</div>
-                                        <div class="text-[10px] text-blue-200">Format Landscape (A4)</div>
-                                    </div>
-                                </div>
-                                <i class="fa-solid fa-arrow-down text-xs group-hover:translate-y-0.5 transition-transform"></i>
-                            </a>
-
-                            @if($transcript)
-                                <a href="{{ route('candidate.transcripts.show', $transcript) }}" target="_blank" class="p-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition flex items-center justify-between shadow-xs border border-slate-700 group">
+                            @if($hasSubmittedSurvey)
+                                <a href="{{ route('candidate.certificates.show', $certificate) }}" target="_blank" class="p-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition flex items-center justify-between shadow-xs group">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg shrink-0">
-                                            <i class="fa-solid fa-file-lines"></i>
+                                        <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-lg shrink-0">
+                                            <i class="fa-solid fa-file-pdf"></i>
                                         </div>
                                         <div class="text-left">
-                                            <div class="text-xs font-bold">Unduh Transkrip Nilai</div>
-                                            <div class="text-[10px] text-slate-400">Format Portrait (A4)</div>
+                                            <div class="text-xs font-bold">Unduh E-Sertifikat</div>
+                                            <div class="text-[10px] text-blue-200">Format Landscape (A4)</div>
                                         </div>
                                     </div>
                                     <i class="fa-solid fa-arrow-down text-xs group-hover:translate-y-0.5 transition-transform"></i>
                                 </a>
+
+                                @if($transcript)
+                                    <a href="{{ route('candidate.transcripts.show', $transcript) }}" target="_blank" class="p-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition flex items-center justify-between shadow-xs border border-slate-700 group">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg shrink-0">
+                                                <i class="fa-solid fa-file-lines"></i>
+                                            </div>
+                                            <div class="text-left">
+                                                <div class="text-xs font-bold">Unduh Transkrip Nilai</div>
+                                                <div class="text-[10px] text-slate-400">Format Portrait (A4)</div>
+                                            </div>
+                                        </div>
+                                        <i class="fa-solid fa-arrow-down text-xs group-hover:translate-y-0.5 transition-transform"></i>
+                                    </a>
+                                @endif
+                            @else
+                                <button type="button" @click="openModal = 'survei'" class="p-4 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-amber-600 text-slate-700 dark:text-slate-300 hover:text-white transition flex items-center justify-between shadow-xs group cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-slate-300/60 dark:bg-slate-700/60 flex items-center justify-center text-lg shrink-0">
+                                            <i class="fa-solid fa-lock"></i>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="text-xs font-bold">E-Sertifikat (Terkunci)</div>
+                                            <div class="text-[10px] opacity-80">Isi survei untuk membuka</div>
+                                        </div>
+                                    </div>
+                                    <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-0.5 transition-transform"></i>
+                                </button>
+
+                                @if($transcript)
+                                    <button type="button" @click="openModal = 'survei'" class="p-4 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-amber-600 text-slate-700 dark:text-slate-300 hover:text-white transition flex items-center justify-between shadow-xs group cursor-pointer">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-slate-300/60 dark:bg-slate-700/60 flex items-center justify-center text-lg shrink-0">
+                                                <i class="fa-solid fa-lock"></i>
+                                            </div>
+                                            <div class="text-left">
+                                                <div class="text-xs font-bold">Transkrip Nilai (Terkunci)</div>
+                                                <div class="text-[10px] opacity-80">Isi survei untuk membuka</div>
+                                            </div>
+                                        </div>
+                                        <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-0.5 transition-transform"></i>
+                                    </button>
+                                @endif
                             @endif
                         </div>
 
@@ -389,7 +475,7 @@
                         <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-500 flex items-center justify-center text-sm shrink-0">
-                                    <i class="fa-solid fa-shield-check"></i>
+                                    <i class="fa-solid fa-shield-halved"></i>
                                 </div>
                                 <div>
                                     <span class="font-bold text-slate-900 dark:text-white block">Tautan Verifikasi Keaslian Publik</span>
@@ -409,46 +495,29 @@
                 @else
                     <!-- Not yet issued view -->
                     <div class="p-6 text-center bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200/80 dark:border-slate-800 space-y-4">
-                        <div class="w-14 h-14 rounded-2xl {{ $isEligibleForCertificate ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400' }} mx-auto flex items-center justify-center text-2xl shadow-xs">
+                        <div class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center text-2xl shadow-xs">
                             <i class="fa-solid fa-award"></i>
                         </div>
                         
-                        @if($isEligibleForCertificate)
-                            <div class="space-y-1">
-                                <h4 class="text-base font-bold text-slate-900 dark:text-white">Syarat Kelulusan Terpenuhi! 🎉</h4>
-                                <p class="text-xs text-slate-600 dark:text-slate-300 max-w-md mx-auto leading-relaxed">
-                                    Akumulasi jam kerja Anda telah mencapai target ({{ $totalApprovedHours }}/{{ $targetHours }} Jam). Anda dapat langsung menerbitkan E-Sertifikat dan Transkrip Nilai digital resmi sekarang.
-                                </p>
-                            </div>
+                        <div class="space-y-1.5">
+                            <h4 class="text-base font-bold text-slate-900 dark:text-white">E-Sertifikat Belum Diterbitkan</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                                E-Sertifikat Kelulusan dan Transkrip Nilai Akademik resmi diterbitkan secara eksklusif oleh Mentor Pembimbing setelah evaluasi kinerja akhir diselesaikan. Anda dapat melihat dan mengunduh berkas resmi langsung di sini setelah diterbitkan.
+                            </p>
+                        </div>
 
-                            <form method="POST" action="{{ route('candidate.logbook.claim-certificate') }}" class="pt-2">
-                                @csrf
-                                <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-2 mx-auto">
-                                    <i class="fa-solid fa-file-circle-check"></i>
-                                    <span>Klaim & Terbitkan E-Sertifikat Sekarang</span>
-                                </button>
-                            </form>
-                        @else
-                            <div class="space-y-1">
-                                <h4 class="text-base font-bold text-slate-900 dark:text-white">E-Sertifikat Belum Tersedia</h4>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-                                    E-Sertifikat dan Transkrip Nilai Akademik akan otomatis tersedia setelah Anda menyelesaikan target jam magang ({{ $targetHours }} Jam) atau telah menerima evaluasi akhir dari Mentor.
-                                </p>
+                        <div class="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 text-xs text-left max-w-sm mx-auto space-y-2">
+                            <div class="flex justify-between font-semibold">
+                                <span class="text-slate-500">Realisasi Jam Kerja:</span>
+                                <span class="text-slate-900 dark:text-white">{{ $totalApprovedHours }} / {{ $targetHours }} Jam</span>
                             </div>
-
-                            <div class="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 text-xs text-left max-w-sm mx-auto space-y-2">
-                                <div class="flex justify-between font-semibold">
-                                    <span class="text-slate-500">Realisasi Jam Kerja:</span>
-                                    <span class="text-slate-900 dark:text-white">{{ $totalApprovedHours }} / {{ $targetHours }} Jam</span>
-                                </div>
-                                <div class="flex justify-between font-semibold">
-                                    <span class="text-slate-500">Evaluasi Akhir Mentor:</span>
-                                    <span class="{{ $finalEvaluation ? 'text-emerald-500' : 'text-amber-500' }}">
-                                        {{ $finalEvaluation ? 'Selesai' : 'Menunggu' }}
-                                    </span>
-                                </div>
+                            <div class="flex justify-between font-semibold">
+                                <span class="text-slate-500">Evaluasi Akhir Mentor:</span>
+                                <span class="{{ $finalEvaluation ? 'text-emerald-500' : 'text-amber-500' }}">
+                                    {{ $finalEvaluation ? 'Telah Dinilai (Menunggu Sertifikat Terbit)' : 'Menunggu Penilaian Mentor' }}
+                                </span>
                             </div>
-                        @endif
+                        </div>
                     </div>
                 @endif
 
@@ -661,15 +730,25 @@
 
                 <!-- Rekening Bank Section (KTP Matched) -->
                 <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3">
-                    <div class="flex items-center justify-between">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div class="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
                             <i class="fa-solid fa-building-columns text-emerald-600 dark:text-emerald-400"></i>
                             <span>Rekening Bank Pencairan Uang Saku</span>
                         </div>
-                        <button type="button" @click="showBankForm = !showBankForm" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
-                            <i class="fa-solid fa-pen-to-square text-[10px]"></i>
-                            <span x-text="showBankForm ? 'Tutup Form' : 'Ubah / Lengkapi Rekening'"></span>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            @if($onboarding && $onboarding->bank_account_number)
+                                <a href="{{ route('candidate.internship.bank-account.statement-pdf') }}" 
+                                   class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/80 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-bold transition shadow-2xs"
+                                   title="Unduh Surat Pernyataan Kebenaran Data & Validasi Rekening Bank Resmi (PDF)">
+                                    <i class="fa-solid fa-file-pdf text-rose-500"></i>
+                                    <span>Surat Pernyataan (PDF)</span>
+                                </a>
+                            @endif
+                            <button type="button" @click="showBankForm = !showBankForm" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                                <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+                                <span x-text="showBankForm ? 'Tutup Form' : 'Ubah / Lengkapi Rekening'"></span>
+                            </button>
+                        </div>
                     </div>
 
                     @if($onboarding && $onboarding->bank_account_number)
@@ -706,9 +785,16 @@
                     <div x-show="showBankForm" x-cloak class="pt-3 border-t border-slate-200 dark:border-slate-700 animate-fade-in">
                         <form method="POST" action="{{ route('candidate.internship.bank-account.store') }}" enctype="multipart/form-data" class="space-y-3">
                             @csrf
-                            <div class="p-2.5 rounded-lg bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-[11px] text-blue-800 dark:text-blue-300">
-                                <i class="fa-solid fa-circle-info mr-1"></i>
-                                <strong>Ketentuan Wajib:</strong> Nama pemilik rekening bank <u>HARUS PERSIS SESUAI DENGAN NAMA KTP / AKUN ANDA</u> (<strong>{{ $user->name }}</strong>). Rekening atas nama orang lain / pihak ketiga akan ditolak oleh sistem.
+                            <div class="p-2.5 rounded-lg bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-[11px] text-blue-800 dark:text-blue-300 space-y-1">
+                                <div class="font-bold flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span>Ketentuan Validasi & Pergantian Rekening:</span>
+                                </div>
+                                <ul class="list-disc list-inside text-[10.5px] space-y-0.5 text-blue-900/90 dark:text-blue-200">
+                                    <li>Nama pemilik rekening <u>HARUS PERSIS SESUAI DENGAN KTP / AKUN ANDA</u> (<strong>{{ $user->name }}</strong>). Rekening pihak ketiga tidak diizinkan.</li>
+                                    <li><strong>Jika Ganti Rekening:</strong> Anda dapat mengubah data ini kapan saja. Rekening baru otomatis berlaku untuk seluruh periode pencairan berikutnya yang belum ditransfer.</li>
+                                    <li>Sistem akan otomatis memperbarui <strong>Surat Pernyataan Rekening (PDF)</strong> resmi Anda setelah data tersimpan.</li>
+                                </ul>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -769,44 +855,69 @@
 
                 <!-- Stipend Periods Ledger Table -->
                 <div class="space-y-3">
-                    <span class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">Riwayat Periode Bulanan</span>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">Riwayat Periode Bulanan</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                {{ count($stipendPeriods) }} Bulan
+                            </span>
+                        </div>
+                        <span class="text-[11px] text-slate-400 dark:text-slate-500 font-medium hidden sm:inline-flex items-center gap-1">
+                            <i class="fa-solid fa-arrows-up-down text-[9px]"></i> Scroll untuk melihat seluruh periode
+                        </span>
+                    </div>
                     
-                    <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-                        <table class="w-full text-xs text-left">
-                            <thead class="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
+                    <div class="max-h-[320px] overflow-y-auto overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs custom-scrollbar dx-scrollbar relative">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead class="sticky top-0 z-10 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xs text-slate-600 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800 shadow-xs">
                                 <tr>
-                                    <th class="p-3">Periode</th>
-                                    <th class="p-3 text-center">Hadir</th>
-                                    <th class="p-3 text-center">Izin/Sakit</th>
-                                    <th class="p-3 text-right">Potongan</th>
-                                    <th class="p-3 text-right">Nominal Bersih</th>
-                                    <th class="p-3 text-center">Status</th>
-                                    <th class="p-3 text-center">Dokumen</th>
+                                    <th class="p-3 whitespace-nowrap bg-slate-50 dark:bg-slate-900">Periode</th>
+                                    <th class="p-3 text-center whitespace-nowrap bg-slate-50 dark:bg-slate-900">Hadir</th>
+                                    <th class="p-3 text-center whitespace-nowrap bg-slate-50 dark:bg-slate-900">Izin / Sakit</th>
+                                    <th class="p-3 text-center whitespace-nowrap bg-slate-50 dark:bg-slate-900">Tidak Hadir</th>
+                                    <th class="p-3 text-right whitespace-nowrap bg-slate-50 dark:bg-slate-900">Potongan</th>
+                                    <th class="p-3 text-right whitespace-nowrap bg-slate-50 dark:bg-slate-900">Nominal Bersih</th>
+                                    <th class="p-3 text-center whitespace-nowrap bg-slate-50 dark:bg-slate-900">Status</th>
+                                    <th class="p-3 text-center whitespace-nowrap bg-slate-50 dark:bg-slate-900">Dokumen</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900 font-normal text-slate-700 dark:text-slate-200">
                                 @foreach($stipendPeriods as $stipend)
-                                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                                        <td class="p-3 font-semibold text-slate-900 dark:text-white">
+                                    <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors">
+                                        <td class="p-3 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                                             <div>{{ $stipend['period_label'] }}</div>
                                             <div class="text-[10px] font-normal text-slate-400">Est. Cair: {{ $stipend['payment_date'] }}</div>
                                         </td>
-                                        <td class="p-3 text-center">{{ $stipend['present_days'] }} Hari</td>
-                                        <td class="p-3 text-center">
-                                            <span class="{{ $stipend['excused_days'] > 4 ? 'text-rose-600 dark:text-rose-400 font-bold' : '' }}">
+                                        <td class="p-3 text-center whitespace-nowrap">
+                                            <span class="font-bold {{ $stipend['present_days'] > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500' }}">
+                                                {{ $stipend['present_days'] }} Hari
+                                            </span>
+                                        </td>
+                                        <td class="p-3 text-center whitespace-nowrap">
+                                            <span class="{{ $stipend['excused_days'] > 4 ? 'text-rose-600 dark:text-rose-400 font-bold' : ($stipend['excused_days'] > 0 ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500') }}">
                                                 {{ $stipend['excused_days'] }} Hari
                                             </span>
                                             @if($stipend['excused_days'] > 4)
-                                                <span class="block text-[10px] text-rose-500">(+{{ $stipend['excused_days'] - 4 }} melebihi kuota)</span>
+                                                <span class="block text-[9px] text-rose-500 font-semibold">(+{{ $stipend['excused_days'] - 4 }} potong kuota)</span>
+                                            @elseif($stipend['excused_days'] > 0)
+                                                <span class="block text-[9px] text-emerald-500 font-medium">(Bebas Potong)</span>
                                             @endif
                                         </td>
-                                        <td class="p-3 text-right text-rose-600 dark:text-rose-400 font-medium">
+                                        <td class="p-3 text-center whitespace-nowrap">
+                                            <span class="{{ $stipend['unexcused_days'] > 0 ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-500' }}">
+                                                {{ $stipend['unexcused_days'] }} Hari
+                                            </span>
+                                            @if($stipend['unexcused_days'] > 0)
+                                                <span class="block text-[9px] text-rose-500 font-medium">(-{{ $stipend['unexcused_days'] }} hr alpa)</span>
+                                            @endif
+                                        </td>
+                                        <td class="p-3 text-right text-rose-600 dark:text-rose-400 font-medium whitespace-nowrap">
                                             {{ $stipend['deduction'] > 0 ? '-Rp ' . number_format($stipend['deduction'], 0, ',', '.') : 'Rp 0' }}
                                         </td>
-                                        <td class="p-3 text-right font-bold text-slate-900 dark:text-white">
+                                        <td class="p-3 text-right font-bold text-slate-900 dark:text-white whitespace-nowrap">
                                             Rp {{ number_format($stipend['net_nominal'], 0, ',', '.') }}
                                         </td>
-                                        <td class="p-3 text-center">
+                                        <td class="p-3 text-center whitespace-nowrap">
                                             @if($stipend['status'] === 'transferred' || $stipend['status'] === 'paid')
                                                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold">
                                                     <i class="fa-solid fa-circle-check text-[10px]"></i> Telah Ditransfer
@@ -834,7 +945,7 @@
                                                 </div>
                                             @endif
                                         </td>
-                                        <td class="p-3 text-center">
+                                        <td class="p-3 text-center whitespace-nowrap">
                                             @if(($stipend['status'] === 'transferred' || $stipend['status'] === 'paid') && !empty($stipend['id']))
                                                 <a href="{{ route('candidate.internship.stipends.slip', $stipend['id']) }}" class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/80 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 rounded-lg text-[10px] font-bold transition shadow-2xs">
                                                     <i class="fa-solid fa-file-pdf"></i>
@@ -868,17 +979,17 @@
              x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+             class="fixed inset-0 z-50 overflow-y-auto bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
             
-            <div @click.away="openModal = null" class="bg-white dark:bg-slate-900 rounded-2xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6 max-h-[90vh] overflow-y-auto">
+            <div @click.away="openModal = null" class="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 max-h-[92vh] overflow-y-auto scrollbar-thin">
                 <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg shrink-0">
-                            <i class="fa-solid fa-square-check"></i>
+                            <i class="fa-solid fa-square-poll-vertical"></i>
                         </div>
                         <div>
-                            <h3 class="text-base font-bold text-slate-900 dark:text-white">Survei Program Magang</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 font-normal">Evaluasi akhir pengalaman magang Anda</p>
+                            <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Survei Pengalaman Magang</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 font-normal">Evaluasi komprehensif mutu bimbingan, kurikulum, dan lingkungan kerja</p>
                         </div>
                     </div>
                     <button type="button" @click="openModal = null" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center text-xs transition">
@@ -887,62 +998,238 @@
                 </div>
 
                 @if($hasSubmittedSurvey)
-                    <div class="p-6 text-center bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 space-y-2">
-                        <div class="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-300 mx-auto flex items-center justify-center text-xl">
-                            <i class="fa-solid fa-check"></i>
+                    <div class="p-8 text-center bg-emerald-50/70 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200 dark:border-emerald-800/80 space-y-3">
+                        <div class="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-300 mx-auto flex items-center justify-center text-2xl shadow-xs">
+                            <i class="fa-solid fa-check-double"></i>
                         </div>
-                        <h4 class="text-sm font-bold text-emerald-900 dark:text-emerald-200">Survei Telah Dikirim</h4>
-                        <p class="text-xs text-emerald-700 dark:text-emerald-300 max-w-sm mx-auto">
-                            Terima kasih atas partisipasi dan masukan berharga Anda untuk pengembangan program magang selanjutnya.
+                        <h4 class="text-base font-bold text-emerald-900 dark:text-emerald-200">Survei Berhasil Dikirim</h4>
+                        <p class="text-xs sm:text-sm text-emerald-700 dark:text-emerald-300 max-w-md mx-auto leading-relaxed">
+                            Terima kasih atas partisipasi dan masukan objektif Anda. Jawaban Anda tersimpan untuk perbaikan mutu bimbingan mentor dan kurikulum magang perusahaan.
                         </p>
                     </div>
                 @else
-                    <form method="POST" action="{{ route('candidate.logbook.survey.store') }}" class="space-y-4">
+                    @if($certificate)
+                        <div class="p-4 bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-transparent border border-amber-500/30 rounded-xl flex items-start gap-3 text-xs text-amber-900 dark:text-amber-200">
+                            <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 text-sm mt-0.5">
+                                <i class="fa-solid fa-award"></i>
+                            </div>
+                            <div class="space-y-0.5">
+                                <strong class="font-bold text-sm block text-amber-950 dark:text-amber-100">🎓 E-Sertifikat Kelulusan Anda Telah Diterbitkan Mentor!</strong>
+                                <p class="text-[11px] text-amber-800 dark:text-amber-300">
+                                    Lengkapi survei evaluasi akhir ini terlebih dahulu. Setelah dikirim, dokumen E-Sertifikat dan Transkrip Nilai resmi Anda akan langsung terbuka otomatis untuk diunduh.
+                                </p>
+                            </div>
+                        </div>
+                    @else
+                        <!-- Info Notice Box -->
+                        <div class="p-3.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200/80 dark:border-blue-900/60 flex items-start gap-2.5 text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
+                            <i class="fa-solid fa-circle-info text-blue-600 dark:text-blue-400 text-sm mt-0.5 shrink-0"></i>
+                            <div class="space-y-0.5">
+                                <span class="font-bold">Masukan Berharga Anda</span>
+                                <p class="text-[11px] text-blue-700/90 dark:text-blue-400 font-normal">
+                                    Berikan penilaian sejujurnya untuk membantu pengembangan mentor, suasana magang, serta kurikulum penugasan di masa mendatang.
+                                </p>
+                            </div>
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('candidate.logbook.survey.store') }}" @submit.prevent="validateAndSubmitSurvey($event)" class="space-y-5">
                         @csrf
                         
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                                1. Penilaian Kualitas Bimbingan Mentor (Skala 1 - 5)
-                            </label>
-                            <div class="flex items-center gap-3">
+                        <!-- 1. Bimbingan Mentor -->
+                        <div class="p-4 bg-slate-50/80 dark:bg-slate-800/50 rounded-xl border border-slate-200/70 dark:border-slate-800 space-y-2.5">
+                            <div class="flex items-center justify-between gap-2 flex-wrap">
+                                <label class="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">1</span>
+                                    <span>Kualitas Bimbingan Mentor & Pembimbing</span>
+                                </label>
+                                <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-md border transition-all"
+                                      :class="getRatingLabel(hoverRatingMentor || surveyRatingMentor).class"
+                                      x-text="getRatingLabel(hoverRatingMentor || surveyRatingMentor).text">
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2 pt-0.5">
                                 <template x-for="star in [1, 2, 3, 4, 5]" :key="star">
-                                    <button type="button" @click="surveyRatingMentor = star" class="text-2xl transition" :class="star <= surveyRatingMentor ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'">
-                                        ★
+                                    <button type="button" 
+                                            @click="surveyRatingMentor = star" 
+                                            @mouseenter="hoverRatingMentor = star" 
+                                            @mouseleave="hoverRatingMentor = 0"
+                                            class="text-2xl sm:text-3xl transition-transform hover:scale-125 focus:outline-none p-1 cursor-pointer" 
+                                            :class="star <= (hoverRatingMentor || surveyRatingMentor) ? 'text-amber-400 drop-shadow-xs' : 'text-slate-300 dark:text-slate-600'">
+                                        <i class="fa-solid fa-star"></i>
                                     </button>
                                 </template>
-                                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 ml-2" x-text="`${surveyRatingMentor} / 5 Bintang`"></span>
                             </div>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Kemudahan komunikasi, keterbukaan diskusi, dan arahan tugas dari mentor.</p>
                             <input type="hidden" name="mentor_rating" :value="surveyRatingMentor">
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                                2. Penilaian Relevansi Materi & Program Magang (Skala 1 - 5)
-                            </label>
-                            <div class="flex items-center gap-3">
+                        <!-- 2. Relevansi Materi & Kurikulum -->
+                        <div class="p-4 bg-slate-50/80 dark:bg-slate-800/50 rounded-xl border border-slate-200/70 dark:border-slate-800 space-y-2.5">
+                            <div class="flex items-center justify-between gap-2 flex-wrap">
+                                <label class="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">2</span>
+                                    <span>Relevansi Materi & Kurikulum Magang</span>
+                                </label>
+                                <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-md border transition-all"
+                                      :class="getRatingLabel(hoverRatingProgram || surveyRatingProgram).class"
+                                      x-text="getRatingLabel(hoverRatingProgram || surveyRatingProgram).text">
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2 pt-0.5">
                                 <template x-for="star in [1, 2, 3, 4, 5]" :key="star">
-                                    <button type="button" @click="surveyRatingProgram = star" class="text-2xl transition" :class="star <= surveyRatingProgram ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'">
-                                        ★
+                                    <button type="button" 
+                                            @click="surveyRatingProgram = star" 
+                                            @mouseenter="hoverRatingProgram = star" 
+                                            @mouseleave="hoverRatingProgram = 0"
+                                            class="text-2xl sm:text-3xl transition-transform hover:scale-125 focus:outline-none p-1 cursor-pointer" 
+                                            :class="star <= (hoverRatingProgram || surveyRatingProgram) ? 'text-amber-400 drop-shadow-xs' : 'text-slate-300 dark:text-slate-600'">
+                                        <i class="fa-solid fa-star"></i>
                                     </button>
                                 </template>
-                                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 ml-2" x-text="`${surveyRatingProgram} / 5 Bintang`"></span>
                             </div>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Kesesuaian tugas kerja harian dengan kompetensi dan industri profesional.</p>
                             <input type="hidden" name="program_rating" :value="surveyRatingProgram">
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                                3. Kritik, Saran, & Kesan Selama Magang <span class="text-rose-500">*</span>
-                            </label>
-                            <textarea name="feedback" rows="4" required placeholder="Tuliskan saran atau hal yang paling berkesan selama menjalani program magang di sini..." class="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 text-slate-800 dark:text-slate-200 p-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"></textarea>
+                        <!-- 3. Lingkungan & Fasilitas Kerja -->
+                        <div class="p-4 bg-slate-50/80 dark:bg-slate-800/50 rounded-xl border border-slate-200/70 dark:border-slate-800 space-y-2.5">
+                            <div class="flex items-center justify-between gap-2 flex-wrap">
+                                <label class="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">3</span>
+                                    <span>Fasilitas & Lingkungan Kerja Perusahaan</span>
+                                </label>
+                                <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-md border transition-all"
+                                      :class="getRatingLabel(hoverRatingEnvironment || surveyRatingEnvironment).class"
+                                      x-text="getRatingLabel(hoverRatingEnvironment || surveyRatingEnvironment).text">
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2 pt-0.5">
+                                <template x-for="star in [1, 2, 3, 4, 5]" :key="star">
+                                    <button type="button" 
+                                            @click="surveyRatingEnvironment = star" 
+                                            @mouseenter="hoverRatingEnvironment = star" 
+                                            @mouseleave="hoverRatingEnvironment = 0"
+                                            class="text-2xl sm:text-3xl transition-transform hover:scale-125 focus:outline-none p-1 cursor-pointer" 
+                                            :class="star <= (hoverRatingEnvironment || surveyRatingEnvironment) ? 'text-amber-400 drop-shadow-xs' : 'text-slate-300 dark:text-slate-600'">
+                                        <i class="fa-solid fa-star"></i>
+                                    </button>
+                                </template>
+                            </div>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Kenyamanan suasana kerja, peralatan penunjang, dan keramahan tim kerja.</p>
+                            <input type="hidden" name="environment_rating" :value="surveyRatingEnvironment">
                         </div>
 
-                        <div class="pt-2 flex items-center gap-3">
-                            <button type="submit" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition shadow-xs">
-                                Kirim Survei
-                            </button>
-                            <button type="button" @click="openModal = null" class="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-medium transition border border-slate-200 dark:border-slate-700">
+                        <!-- 4. Peningkatan Kesiapan Karir -->
+                        <div class="p-4 bg-slate-50/80 dark:bg-slate-800/50 rounded-xl border border-slate-200/70 dark:border-slate-800 space-y-2.5">
+                            <div class="flex items-center justify-between gap-2 flex-wrap">
+                                <label class="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">4</span>
+                                    <span>Peningkatan Keterampilan & Kesiapan Karir</span>
+                                </label>
+                                <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-md border transition-all"
+                                      :class="getRatingLabel(hoverRatingCareer || surveyRatingCareer).class"
+                                      x-text="getRatingLabel(hoverRatingCareer || surveyRatingCareer).text">
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2 pt-0.5">
+                                <template x-for="star in [1, 2, 3, 4, 5]" :key="star">
+                                    <button type="button" 
+                                            @click="surveyRatingCareer = star" 
+                                            @mouseenter="hoverRatingCareer = star" 
+                                            @mouseleave="hoverRatingCareer = 0"
+                                            class="text-2xl sm:text-3xl transition-transform hover:scale-125 focus:outline-none p-1 cursor-pointer" 
+                                            :class="star <= (hoverRatingCareer || surveyRatingCareer) ? 'text-amber-400 drop-shadow-xs' : 'text-slate-300 dark:text-slate-600'">
+                                        <i class="fa-solid fa-star"></i>
+                                    </button>
+                                </template>
+                            </div>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Dampak nyata magang terhadap kesiapan Anda memasuki dunia kerja profesional.</p>
+                            <input type="hidden" name="career_readiness_rating" :value="surveyRatingCareer">
+                        </div>
+
+                        <!-- 5. Net Promoter Score (Rekomendasi) -->
+                        <div class="p-4 bg-slate-50/80 dark:bg-slate-800/50 rounded-xl border border-slate-200/70 dark:border-slate-800 space-y-2.5">
+                            <label class="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">5</span>
+                                <span>Apakah Anda Merekomendasikan Magang di Sini ke Rekan Lain?</span>
+                            </label>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                                <label class="flex items-center gap-2.5 p-2.5 rounded-xl border cursor-pointer transition text-xs font-semibold"
+                                       :class="surveyNps === 'highly_recommended' ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-500 text-emerald-700 dark:text-emerald-300 shadow-2xs' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-300'">
+                                    <input type="radio" name="recommendation_nps" value="highly_recommended" x-model="surveyNps" class="text-emerald-600 focus:ring-emerald-500">
+                                    <span>🌟 Sangat Direkomendasikan</span>
+                                </label>
+
+                                <label class="flex items-center gap-2.5 p-2.5 rounded-xl border cursor-pointer transition text-xs font-semibold"
+                                       :class="surveyNps === 'neutral' ? 'bg-blue-50 dark:bg-blue-950/50 border-blue-500 text-blue-700 dark:text-blue-300 shadow-2xs' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-300'">
+                                    <input type="radio" name="recommendation_nps" value="neutral" x-model="surveyNps" class="text-blue-600 focus:ring-blue-500">
+                                    <span>😐 Cukup / Netral</span>
+                                </label>
+
+                                <label class="flex items-center gap-2.5 p-2.5 rounded-xl border cursor-pointer transition text-xs font-semibold"
+                                       :class="surveyNps === 'not_recommended' ? 'bg-rose-50 dark:bg-rose-950/50 border-rose-500 text-rose-700 dark:text-rose-300 shadow-2xs' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-300'">
+                                    <input type="radio" name="recommendation_nps" value="not_recommended" x-model="surveyNps" class="text-rose-600 focus:ring-rose-500">
+                                    <span>👎 Kurang Direkomendasikan</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 6. Kritik, Saran, & Kesan -->
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">6</span>
+                                    <span>Kritik, Saran, & Kesan Selama Magang <span class="text-rose-500">*</span></span>
+                                </label>
+                                <span class="text-[11px] text-slate-400 font-mono">
+                                    <span x-text="surveyFeedback.length"></span> / 2000 Karakter
+                                </span>
+                            </div>
+
+                            <!-- Quick Chips / Tags -->
+                            <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Tag Cepat:</span>
+                                <button type="button" @click="addQuickTag('#MentorSangatMembantu')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 text-slate-600 dark:text-slate-300 hover:text-emerald-600 text-[10px] font-medium border border-slate-200 dark:border-slate-700 transition">
+                                    + #MentorSangatMembantu
+                                </button>
+                                <button type="button" @click="addQuickTag('#ProyekBermanfaat')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 text-slate-600 dark:text-slate-300 hover:text-emerald-600 text-[10px] font-medium border border-slate-200 dark:border-slate-700 transition">
+                                    + #ProyekBermanfaat
+                                </button>
+                                <button type="button" @click="addQuickTag('#LingkunganSuportif')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 text-slate-600 dark:text-slate-300 hover:text-emerald-600 text-[10px] font-medium border border-slate-200 dark:border-slate-700 transition">
+                                    + #LingkunganSuportif
+                                </button>
+                                <button type="button" @click="addQuickTag('#PerluLebihBanyakDiskusi')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 text-slate-600 dark:text-slate-300 hover:text-emerald-600 text-[10px] font-medium border border-slate-200 dark:border-slate-700 transition">
+                                    + #PerluLebihBanyakDiskusi
+                                </button>
+                            </div>
+
+                            <textarea name="feedback" 
+                                      rows="3" 
+                                      required 
+                                      x-model="surveyFeedback"
+                                      placeholder="Tuliskan saran perbaikan, pengalaman paling berkesan, atau harapan Anda setelah menyelesaikan program magang..." 
+                                      class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"></textarea>
+                        </div>
+
+                        <!-- Opsi Pengiriman Anonim -->
+                        <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between gap-3">
+                            <label class="flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                <input type="checkbox" name="is_anonymous" value="1" x-model="surveyAnonymous" class="rounded text-emerald-600 focus:ring-emerald-500">
+                                <span>Kirim sebagai Survei Anonim</span>
+                            </label>
+                            <span class="text-[11px] text-slate-400">Identitas disamarkan dari mentor</span>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="pt-2 flex items-center justify-end gap-2.5">
+                            <button type="button" @click="openModal = null" class="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition border border-slate-200 dark:border-slate-700">
                                 Batal
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition shadow-xs flex items-center gap-1.5 cursor-pointer">
+                                <i class="fa-solid fa-paper-plane text-xs"></i>
+                                <span>Kirim Survei Evaluasi</span>
                             </button>
                         </div>
                     </form>
