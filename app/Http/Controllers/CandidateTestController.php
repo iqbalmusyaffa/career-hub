@@ -27,7 +27,13 @@ class CandidateTestController extends Controller
 
         $user = Auth::user();
 
-        // Check if candidate already completed this test
+        // 1. Candidate must have an existing application for this job
+        $application = \App\Models\Application::where('user_id', $user->id)->where('job_id', $job->id)->first();
+        if (!$application) {
+            return redirect()->route('jobs.show', $job)->with('error', 'Anda belum melamar posisi ini. Silakan ajukan lamaran terlebih dahulu untuk mengikuti seleksi.');
+        }
+
+        // 2. Check if candidate already completed this test
         $existingResult = CandidateTestResult::where('user_id', $user->id)
             ->where('job_id', $job->id)
             ->where('job_test_id', $test->id)
@@ -37,7 +43,7 @@ class CandidateTestController extends Controller
             return view('candidate.tests.result', compact('job', 'test', 'existingResult'));
         }
 
-        // Check Schedule Access Window (Starts At & Deadline At)
+        // 3. Check Schedule Access Window (Starts At & Deadline At)
         if ($test->isUpcoming()) {
             return view('candidate.tests.schedule_locked', ['job' => $job, 'test' => $test, 'status' => 'upcoming']);
         }
@@ -46,13 +52,15 @@ class CandidateTestController extends Controller
             return view('candidate.tests.schedule_locked', ['job' => $job, 'test' => $test, 'status' => 'expired']);
         }
 
-        // Check Access Token Verification (if application has test_token assigned)
-        $application = \App\Models\Application::where('user_id', $user->id)->where('job_id', $job->id)->first();
-        if ($application && $application->test_token) {
-            $verifiedToken = session('verified_test_token_' . $job->id);
-            if ($verifiedToken !== $application->test_token) {
-                return view('candidate.tests.verify_token', compact('job', 'test', 'application'));
-            }
+        // 4. Strict Access Token Verification - Candidate CANNOT view/fill questions without inputting token
+        if (empty($application->test_token)) {
+            $application->test_token = 'TK-' . strtoupper(\Illuminate\Support\Str::random(6));
+            $application->save();
+        }
+
+        $verifiedToken = session('verified_test_token_' . $job->id);
+        if ($verifiedToken !== $application->test_token) {
+            return view('candidate.tests.verify_token', compact('job', 'test', 'application'));
         }
 
         if ($test->test_mode === 'external') {
@@ -116,6 +124,16 @@ class CandidateTestController extends Controller
         }
 
         $user = Auth::user();
+        $application = \App\Models\Application::where('user_id', $user->id)->where('job_id', $job->id)->first();
+        if (!$application) {
+            return redirect()->route('jobs.show', $job)->with('error', 'Anda belum melamar lowongan ini.');
+        }
+
+        // Strict token verification before submission
+        $verifiedToken = session('verified_test_token_' . $job->id);
+        if (empty($application->test_token) || $verifiedToken !== $application->test_token) {
+            return redirect()->route('candidate.tests.show', $job)->with('error', 'Akses Ditolak: Anda wajib memasukkan kode token ujian terlebih dahulu.');
+        }
 
         $answers = $request->input('answers', []);
         $totalQuestions = $test->questions->count();
@@ -156,8 +174,9 @@ class CandidateTestController extends Controller
             ]
         );
 
-        // Clear session randomized question order
+        // Clear session randomized question order & verified token
         session()->forget('test_question_order_' . $user->id . '_' . $test->id);
+        session()->forget('verified_test_token_' . $job->id);
 
         // Auto-advance application status if candidate passes and currently in 'test' stage
         $application = \App\Models\Application::where('user_id', $user->id)->where('job_id', $job->id)->first();
@@ -222,6 +241,17 @@ class CandidateTestController extends Controller
         $test = $job->test()->firstOrFail();
         $user = Auth::user();
 
+        $application = \App\Models\Application::where('user_id', $user->id)->where('job_id', $job->id)->first();
+        if (!$application) {
+            return redirect()->route('jobs.show', $job)->with('error', 'Anda belum melamar lowongan ini.');
+        }
+
+        // Strict token verification before external submission
+        $verifiedToken = session('verified_test_token_' . $job->id);
+        if (empty($application->test_token) || $verifiedToken !== $application->test_token) {
+            return redirect()->route('candidate.tests.show', $job)->with('error', 'Akses Ditolak: Anda wajib memasukkan kode token ujian terlebih dahulu.');
+        }
+
         $answerFilePath = null;
         if ($request->hasFile('answer_pdf')) {
             $request->validate([
@@ -246,6 +276,9 @@ class CandidateTestController extends Controller
                 'completed_at' => now(),
             ]
         );
+
+        // Clear session verified token
+        session()->forget('verified_test_token_' . $job->id);
 
         \App\Models\UserNotification::send(
             $user->id,
