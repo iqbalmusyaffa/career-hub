@@ -91,22 +91,109 @@ class ApplicationController extends Controller
     public function resetTest($id)
     {
         $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
-        $application = \App\Models\Application::findOrFail($realId);
+        $application = \App\Models\Application::with(['user', 'job.test'])->findOrFail($realId);
 
         \App\Models\CandidateTestResult::where('user_id', $application->user_id)
             ->where('job_id', $application->job_id)
             ->delete();
 
-        $application->update(['status' => \App\Enums\ApplicationStatus::TEST]);
+        // Generate fresh test token for retake session
+        $newToken = 'TK-' . strtoupper(\Illuminate\Support\Str::random(6));
+        $application->update([
+            'status' => \App\Enums\ApplicationStatus::TEST,
+            'test_token' => $newToken,
+        ]);
 
+        $jobTest = $application->job ? $application->job->test : null;
+        if (!$jobTest && $application->job) {
+            $jobTest = \App\Models\JobTest::firstOrCreate(
+                ['job_id' => $application->job_id],
+                [
+                    'title' => 'Tes Psikotes & Seleksi: ' . ($application->job->title ?? 'Pekerjaan'),
+                    'category' => 'psikotes',
+                    'duration_minutes' => 60,
+                    'passing_score' => 70,
+                    'is_active' => true,
+                ]
+            );
+        }
+
+        // In-app Notification
         \App\Models\UserNotification::send(
             $application->user_id,
             "🔄 Kesempatan Ujian Online Direset",
-            "HR telah memberikan kesempatan ujian ulang untuk posisi {$application->job->title}. Silakan kerjakan kembali tes online Anda.",
+            "HR telah memberikan kesempatan ujian ulang untuk posisi {$application->job->title}. Token Baru Anda: {$newToken}. Silakan periksa email Anda.",
             route('candidate.tests.show', $application->job_id),
             'info'
         );
 
-        return redirect()->back()->with('success', 'Kesempatan ujian online kandidat berhasil direset! Pelamar kini dapat mengerjakan kembali tes.');
+        // Dispatch Retake Email with New Token & Summary
+        if ($application->user && $application->user->email) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($application->user->email)
+                    ->send(new \App\Mail\CandidateTestRetakeMail($application, $jobTest, $newToken));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to send retake email to candidate {$application->user->email}: " . $e->getMessage());
+            }
+        }
+
+        return redirect()->back()->with('success', 'Kesempatan ujian online berhasil direset! Token baru (' . $newToken . ') dan email undangan ujian ulang telah otomatis dikirimkan ke kandidat.');
+    }
+
+    /**
+     * Resend candidate test token and schedule details via email & in-app notification.
+     */
+    public function resendTestToken($id)
+    {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = \App\Models\Application::with(['user', 'job.test'])->findOrFail($realId);
+
+        if (!$application->test_token) {
+            $application->test_token = 'TK-' . strtoupper(\Illuminate\Support\Str::random(6));
+            $application->save();
+        }
+
+        $jobTest = $application->job ? $application->job->test : null;
+        if (!$jobTest && $application->job) {
+            $jobTest = \App\Models\JobTest::firstOrCreate(
+                ['job_id' => $application->job_id],
+                [
+                    'title' => 'Tes Psikotes & Seleksi: ' . ($application->job->title ?? 'Pekerjaan'),
+                    'category' => 'psikotes',
+                    'duration_minutes' => 60,
+                    'passing_score' => 70,
+                    'is_active' => true,
+                ]
+            );
+        }
+
+        if ($application->user && $application->user->email) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($application->user->email)
+                    ->send(new \App\Mail\CandidateTestInvitationMail($application, $jobTest, $application->test_token));
+
+                $scheduleInfo = "Token Akses Ujian Anda: {$application->test_token}.";
+                if ($jobTest->starts_at) {
+                    $scheduleInfo .= " Mulai: " . $jobTest->starts_at->format('d/m/Y H:i') . " WIB.";
+                }
+                if ($jobTest->deadline_at) {
+                    $scheduleInfo .= " Batas Akhir: " . $jobTest->deadline_at->format('d/m/Y H:i') . " WIB.";
+                }
+
+                \App\Models\UserNotification::send(
+                    $application->user_id,
+                    '📝 Token & Jadwal Ujian Online: ' . ($application->job->title ?? 'Pekerjaan'),
+                    "{$scheduleInfo} Silakan cek email Anda untuk informasi lengkap ujian.",
+                    route('candidate.tests.show', $application->job_id),
+                    'info'
+                );
+
+                return redirect()->back()->with('success', 'Kode token dan rangkuman jadwal ujian berhasil dikirimkan ke email ' . $application->user->email . '!');
+            } catch (\Throwable $e) {
+                return redirect()->back()->with('error', 'Gagal mengirim email: ' . $e->getMessage());
+            }
+        }
+
+        return redirect()->back()->with('error', 'Kandidat tidak memiliki alamat email yang valid.');
     }
 }

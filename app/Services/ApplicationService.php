@@ -133,18 +133,40 @@ class ApplicationService
             $application->update(['test_token' => $token]);
 
             $jobTest = $application->job ? $application->job->test : null;
+            if (!$jobTest && $application->job) {
+                $jobTest = \App\Models\JobTest::firstOrCreate(
+                    ['job_id' => $application->job_id],
+                    [
+                        'title' => 'Tes Psikotes & Seleksi: ' . ($application->job->title ?? 'Pekerjaan'),
+                        'category' => 'psikotes',
+                        'description' => 'Petunjuk: Pilihlah satu jawaban yang paling tepat untuk setiap butir soal.',
+                        'duration_minutes' => 60,
+                        'passing_score' => 70,
+                        'is_active' => true,
+                    ]
+                );
+            }
 
             if ($jobTest) {
-                // Send in-app notification with token
+                $scheduleSummary = "Token Akses Ujian Anda: {$token}.";
+                if ($jobTest->starts_at) {
+                    $scheduleSummary .= " Mulai: " . $jobTest->starts_at->format('d/m/Y H:i') . " WIB.";
+                }
+                if ($jobTest->deadline_at) {
+                    $scheduleSummary .= " Batas Akhir: " . $jobTest->deadline_at->format('d/m/Y H:i') . " WIB.";
+                }
+                $scheduleSummary .= " Klik untuk membuka ujian.";
+
+                // Send in-app notification with token & schedule
                 \App\Models\UserNotification::send(
                     $application->user_id,
-                    '📝 Undangan Tes Seleksi: ' . ($application->job->title ?? 'Pekerjaan'),
-                    "Anda diundang untuk mengerjakan tes online. Token Akses Ujian Anda: {$token}. Klik di sini untuk membuka ujian.",
+                    '📝 Undangan & Token Tes Seleksi: ' . ($application->job->title ?? 'Pekerjaan'),
+                    $scheduleSummary,
                     route('candidate.tests.show', $application->job_id),
                     'info'
                 );
 
-                // Dispatch Email with unique token
+                // Dispatch Email with unique token & full test summary
                 try {
                     if ($application->user && $application->user->email) {
                         \Illuminate\Support\Facades\Mail::to($application->user->email)

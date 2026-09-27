@@ -347,6 +347,7 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
     Route::get('/applications/{id}', [ApplicationController::class, 'show'])->name('applications.show');
     Route::patch('/applications/{id}/status', [ApplicationController::class, 'updateStatus'])->name('applications.updateStatus');
     Route::post('/applications/{id}/reset-test', [ApplicationController::class, 'resetTest'])->name('applications.reset-test');
+    Route::post('/applications/{id}/resend-test-token', [ApplicationController::class, 'resendTestToken'])->name('applications.resend-test-token');
     Route::post('/applications/{id}/schedule-interview', [\App\Http\Controllers\Admin\InterviewController::class, 'store'])->name('applications.schedule-interview');
 
     // Offer Letter Builder for HR

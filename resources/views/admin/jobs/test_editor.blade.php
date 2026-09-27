@@ -188,6 +188,16 @@
                                     <span class="text-3xs text-slate-500 dark:text-slate-400 mt-1 block">Akses ujian otomatis ditutup setelah tanggal/jam ini. (Kosongkan jika tanpa deadline).</span>
                                 </div>
                             </div>
+
+                            <div class="mt-2 pt-3 border-t border-slate-200/80 dark:border-slate-700 flex items-start sm:items-center justify-between gap-3 flex-col sm:flex-row bg-blue-50/60 dark:bg-blue-950/30 p-3 rounded-lg">
+                                <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-blue-900 dark:text-blue-200 select-none">
+                                    <input type="checkbox" name="notify_candidates" value="1" checked class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300">
+                                    <span>Otomatis kirim/perbarui kode token & rangkuman jadwal ke email seluruh kandidat</span>
+                                </label>
+                                <span class="text-3xs font-semibold px-2.5 py-1 rounded-full bg-blue-200/70 dark:bg-blue-900 text-blue-800 dark:text-blue-200 shrink-0">
+                                    <i class="fa-solid fa-users text-3xs mr-1"></i> {{ $candidatesInTestCount ?? 0 }} Kandidat di Tahap Ujian
+                                </span>
+                            </div>
                         </div>
 
                         <div class="md:col-span-2">

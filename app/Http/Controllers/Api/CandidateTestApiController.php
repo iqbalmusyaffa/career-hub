@@ -162,18 +162,30 @@ class CandidateTestApiController extends Controller
         $result = CandidateTestResult::updateOrCreate(
             ['job_test_id' => $test->id, 'user_id' => $user->id],
             [
+                'job_id' => $test->job_id,
                 'score' => $score,
+                'passed' => $passed,
                 'status' => $passed ? 'passed' : 'failed',
                 'answers_data' => json_encode($userAnswers),
                 'project_link' => $request->project_link,
+                'completed_at' => now(),
             ]
         );
+
+        if ($user && $user->email && $test->job) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($user->email)
+                    ->send(new \App\Mail\CandidateTestResultMail($user, $test->job, $test, $result));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("API submit test result email failed: " . $e->getMessage());
+            }
+        }
 
         return $this->successResponse([
             'score' => $score,
             'status' => $result->status,
             'passed' => $passed,
-        ], 'Jawaban tes berhasil dikirim!');
+        ], 'Jawaban tes berhasil dikirim dan hasil telah dikirimkan ke email Anda!');
     }
 
     #[OA\Post(

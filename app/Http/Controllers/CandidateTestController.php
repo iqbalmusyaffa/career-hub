@@ -187,6 +187,16 @@ class CandidateTestController extends Controller
             );
         }
 
+        // Dispatch Email Notification with detailed scorecard & status to Candidate
+        if ($user && $user->email) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($user->email)
+                    ->send(new \App\Mail\CandidateTestResultMail($user, $job, $test, $result));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to send test result email to candidate {$user->email}: " . $e->getMessage());
+            }
+        }
+
         // Notify Job Owner / HR Recruiter if available
         if ($job->company_user_id) {
             \App\Models\UserNotification::send(
@@ -201,7 +211,7 @@ class CandidateTestController extends Controller
         \App\Models\AuditLog::record('test_completed', "Kandidat {$user->name} menyelesaikan tes online {$job->title} (Skor: {$score}%, Status: " . ($passed ? 'Lolos' : 'Gagal') . ")");
 
         return redirect()->route('candidate.tests.show', $job)
-            ->with('success', 'Tes Online Berhasil Diselesaikan!');
+            ->with('success', 'Tes Online Berhasil Diselesaikan! Rangkuman hasil tes telah dikirimkan ke email Anda.');
     }
 
     /**
@@ -244,6 +254,15 @@ class CandidateTestController extends Controller
             route('candidate.tests.show', $job),
             'success'
         );
+
+        if ($user && $user->email) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($user->email)
+                    ->send(new \App\Mail\CandidateTestResultMail($user, $job, $test, $result));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to send external test result email: " . $e->getMessage());
+            }
+        }
 
         return redirect()->route('candidate.tests.show', $job)
             ->with('success', 'Konfirmasi Pengerjaan Tes Psikotes Eksternal Berhasil Disimpan!');

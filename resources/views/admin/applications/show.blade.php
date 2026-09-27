@@ -251,12 +251,20 @@
 
                         <!-- Active Test Token Widget (Before Test Completed) -->
                         @if($application->test_token && !$candidateTestResult)
-                            <div class="bg-indigo-50 dark:bg-indigo-950/40 rounded-3xl p-5 shadow-2xs border border-indigo-200 dark:border-indigo-800 text-center space-y-2">
+                            <div class="bg-indigo-50 dark:bg-indigo-950/40 rounded-3xl p-5 shadow-2xs border border-indigo-200 dark:border-indigo-800 text-center space-y-2.5">
                                 <span class="text-3xs font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300 block">🔑 Token Akses Ujian Online</span>
                                 <div class="text-xl sm:text-2xl font-mono font-black text-indigo-900 dark:text-indigo-100 tracking-widest bg-white dark:bg-slate-900 py-2 px-3 rounded-xl border border-indigo-200 dark:border-indigo-700 shadow-inner">
                                     {{ $application->test_token }}
                                 </div>
                                 <p class="text-3xs text-indigo-600 dark:text-indigo-400">Token ini telah dikirim ke email kandidat ({{ $application->user->email }}).</p>
+                                
+                                <form action="{{ route('admin.applications.resend-test-token', $application->id) }}" method="POST" class="pt-1">
+                                    @csrf
+                                    <button type="submit" class="w-full py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-3xs rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                                        <i class="fa-solid fa-paper-plane text-3xs"></i>
+                                        <span>Kirim Ulang Token & Jadwal ke Email</span>
+                                    </button>
+                                </form>
                             </div>
                         @endif
 

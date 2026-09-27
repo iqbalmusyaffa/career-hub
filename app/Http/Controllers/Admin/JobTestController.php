@@ -52,7 +52,12 @@ class JobTestController extends Controller
             'pass_rate' => $passRate,
         ];
 
-        return view('admin.jobs.test_editor', compact('job', 'test', 'analytics'));
+        // Count candidates currently in test stage
+        $candidatesInTestCount = $job->applications()
+            ->whereIn('status', ['test', \App\Enums\ApplicationStatus::TEST->value])
+            ->count();
+
+        return view('admin.jobs.test_editor', compact('job', 'test', 'analytics', 'candidatesInTestCount'));
     }
 
     /**
@@ -130,7 +135,68 @@ class JobTestController extends Controller
             }
         }
 
-        return back()->with('success', 'Tes Psikotes & Soal Seleksi berhasil disimpan!');
+        // Auto-notify all candidates in 'test' stage if test is active and notify checkbox is enabled
+        $notifiedCount = 0;
+        $shouldNotify = $request->input('notify_candidates', '1') === '1' && $test->is_active;
+
+        if ($shouldNotify) {
+            $testApplications = \App\Models\Application::with(['user', 'job'])
+                ->where('job_id', $job->id)
+                ->whereIn('status', ['test', \App\Enums\ApplicationStatus::TEST->value])
+                ->get();
+
+            foreach ($testApplications as $app) {
+                $hasCompleted = \App\Models\CandidateTestResult::where('user_id', $app->user_id)
+                    ->where('job_id', $job->id)
+                    ->where('job_test_id', $test->id)
+                    ->exists();
+
+                if (!$hasCompleted) {
+                    // Generate token if not yet assigned
+                    if (empty($app->test_token)) {
+                        $app->test_token = 'TK-' . strtoupper(\Illuminate\Support\Str::random(6));
+                        $app->save();
+                    }
+
+                    // Format message
+                    $scheduleSummary = "Token Akses Ujian Anda: {$app->test_token}.";
+                    if ($test->starts_at) {
+                        $scheduleSummary .= " Mulai: " . $test->starts_at->format('d/m/Y H:i') . " WIB.";
+                    }
+                    if ($test->deadline_at) {
+                        $scheduleSummary .= " Batas Akhir: " . $test->deadline_at->format('d/m/Y H:i') . " WIB.";
+                    }
+                    $scheduleSummary .= " Silakan periksa email atau klik notifikasi ini untuk memulai ujian.";
+
+                    // In-app Notification
+                    \App\Models\UserNotification::send(
+                        $app->user_id,
+                        '📝 Jadwal & Token Ujian Online: ' . ($job->title ?? 'Pekerjaan'),
+                        $scheduleSummary,
+                        route('candidate.tests.show', $job->id),
+                        'info'
+                    );
+
+                    // Email dispatch
+                    if ($app->user && $app->user->email) {
+                        try {
+                            \Illuminate\Support\Facades\Mail::to($app->user->email)
+                                ->send(new \App\Mail\CandidateTestInvitationMail($app, $test, $app->test_token));
+                            $notifiedCount++;
+                        } catch (\Throwable $e) {
+                            \Illuminate\Support\Facades\Log::error("Failed to send test invitation to {$app->user->email}: " . $e->getMessage());
+                        }
+                    }
+                }
+            }
+        }
+
+        $message = 'Pengaturan Tes & Bank Soal berhasil disimpan!';
+        if ($notifiedCount > 0) {
+            $message .= " Kode token dan rangkuman jadwal ujian otomatis dikirimkan ke {$notifiedCount} email kandidat di tahap tes.";
+        }
+
+        return back()->with('success', $message);
     }
 
     /**
