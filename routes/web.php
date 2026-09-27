@@ -204,8 +204,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/candidate/cv-builder', [\App\Http\Controllers\CvController::class, 'builder'])->name('candidate.cv-builder');
     Route::post('/candidate/cv-builder/save', [\App\Http\Controllers\CvController::class, 'saveProfile'])->name('candidate.cv-builder.save');
 
+    // Candidate Application Tracking Routes
+    Route::get('/candidate/applications', [\App\Http\Controllers\Candidate\CandidateApplicationController::class, 'index'])->name('candidate.applications.index');
+    Route::get('/candidate/applications/{id}', [\App\Http\Controllers\Candidate\CandidateApplicationController::class, 'show'])->name('candidate.applications.show');
+
     // Candidate Online Test routes
     Route::get('/candidate/tests/{job}', [\App\Http\Controllers\CandidateTestController::class, 'show'])->name('candidate.tests.show');
+    Route::post('/candidate/tests/{job}/verify-token', [\App\Http\Controllers\CandidateTestController::class, 'verifyToken'])->name('candidate.tests.verify-token');
     Route::post('/candidate/tests/{job}/submit', [\App\Http\Controllers\CandidateTestController::class, 'submit'])->name('candidate.tests.submit');
     Route::post('/candidate/tests/{job}/submit-external', [\App\Http\Controllers\CandidateTestController::class, 'submitExternal'])->name('candidate.tests.submit-external');
 
@@ -341,6 +346,7 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
     Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index');
     Route::get('/applications/{id}', [ApplicationController::class, 'show'])->name('applications.show');
     Route::patch('/applications/{id}/status', [ApplicationController::class, 'updateStatus'])->name('applications.updateStatus');
+    Route::post('/applications/{id}/reset-test', [ApplicationController::class, 'resetTest'])->name('applications.reset-test');
     Route::post('/applications/{id}/schedule-interview', [\App\Http\Controllers\Admin\InterviewController::class, 'store'])->name('applications.schedule-interview');
 
     // Offer Letter Builder for HR
@@ -385,6 +391,7 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
     Route::post('/jobs/{job}/test', [\App\Http\Controllers\Admin\JobTestController::class, 'update'])->name('jobs.test.update');
     Route::get('/jobs/{job}/test/export', [\App\Http\Controllers\Admin\JobTestController::class, 'export'])->name('jobs.test.export');
     Route::post('/jobs/{job}/test/import', [\App\Http\Controllers\Admin\JobTestController::class, 'import'])->name('jobs.test.import');
+    Route::post('/jobs/{job}/test/send-reminders', [\App\Http\Controllers\Admin\JobTestController::class, 'sendReminders'])->name('jobs.test.send-reminders');
 
     // Candidate Evaluation & HR Scoring Sheet
     Route::post('/applications/{application}/evaluations', [\App\Http\Controllers\Admin\CandidateEvaluationController::class, 'store'])->name('applications.evaluations.store');
@@ -538,11 +545,24 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
         // FITUR C: Dashboard Monitoring Magang Lintas Mitra
         Route::get('/internship-monitor', [\App\Http\Controllers\Admin\CrossCompanyInternshipMonitorController::class, 'index'])->name('internship-monitor.index');
 
+        // Master Manajemen Kategori Lowongan Kerja
+        Route::get('/categories', [\App\Http\Controllers\Admin\JobCategoryController::class, 'index'])->name('categories.index');
+        Route::post('/categories', [\App\Http\Controllers\Admin\JobCategoryController::class, 'store'])->name('categories.store');
+        Route::put('/categories/{category}', [\App\Http\Controllers\Admin\JobCategoryController::class, 'update'])->name('categories.update');
+        Route::patch('/categories/{category}/toggle', [\App\Http\Controllers\Admin\JobCategoryController::class, 'toggleStatus'])->name('categories.toggle');
+        Route::post('/categories/{category}/approve', [\App\Http\Controllers\Admin\JobCategoryController::class, 'approve'])->name('categories.approve');
+        Route::post('/categories/{category}/reject', [\App\Http\Controllers\Admin\JobCategoryController::class, 'reject'])->name('categories.reject');
+        Route::delete('/categories/{category}', [\App\Http\Controllers\Admin\JobCategoryController::class, 'destroy'])->name('categories.destroy');
+
         // FITUR D: Master Manajemen & Revokasi Sertifikat Magang
         Route::get('/certificates', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'index'])->name('certificates.index');
         Route::post('/certificates/{id}/revoke', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'revoke'])->name('certificates.revoke');
         Route::post('/certificates/{id}/restore', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'restore'])->name('certificates.restore');
     });
+
+    // HR & Company Owner Category Request Routes
+    Route::get('/category-requests', [\App\Http\Controllers\Admin\CategoryRequestController::class, 'index'])->name('category-requests.index');
+    Route::post('/category-requests', [\App\Http\Controllers\Admin\CategoryRequestController::class, 'store'])->name('category-requests.store');
 
     // Public & Authenticated Certificate Verification Portal (FITUR D)
     Route::get('/verify-certificate/{code?}', [\App\Http\Controllers\PublicCertificateVerificationController::class, 'verify'])->name('certificates.verify.public');

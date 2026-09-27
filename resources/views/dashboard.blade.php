@@ -707,8 +707,9 @@
                 @php
                     $userInterviews = \App\Models\Interview::whereHas('application', function($q) {
                         $q->where('user_id', auth()->id());
-                    })->where('scheduled_at', '>=', now())
-                      ->with('application.job')
+                    })->where('scheduled_at', '>=', now()->subDays(1))
+                      ->with(['application.job.companyProfile'])
+                      ->orderBy('scheduled_at', 'asc')
                       ->get();
 
                     $acceptedApps = isset($recentApplications) 
@@ -720,102 +721,175 @@
 
                     $pendingAgreements = \App\Models\ApplicationAgreement::where('user_id', auth()->id())
                         ->where('status', 'sent')
-                        ->with('application.job')
+                        ->with(['application.job.companyProfile'])
+                        ->latest()
                         ->get();
 
-                    $hasActionRequired = $userInterviews->count() > 0 || $acceptedApps->count() > 0 || $pendingAgreements->count() > 0;
+                    $pendingTests = \App\Models\Application::where('user_id', auth()->id())
+                        ->where('status', 'test')
+                        ->whereDoesntHave('testResult')
+                        ->with(['job.test'])
+                        ->get();
+
+                    $totalActionsCount = $userInterviews->count() + $acceptedApps->count() + $pendingAgreements->count() + $pendingTests->count();
+                    $hasActionRequired = $totalActionsCount > 0;
                 @endphp
 
                 @if($hasActionRequired)
-                    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 rounded-2xl shadow-xs space-y-4">
-                        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 rounded-3xl shadow-xs space-y-4">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100 dark:border-slate-800">
                             <div class="flex items-center gap-2.5">
                                 <span class="relative flex h-3 w-3">
                                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                     <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-600"></span>
                                 </span>
-                                <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Pemberitahuan & Tindakan Diperlukan</h3>
+                                <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <span>Pemberitahuan & Tindakan Diperlukan</span>
+                                    <span class="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
+                                        {{ $totalActionsCount }} Perlu Respon
+                                    </span>
+                                </h3>
                             </div>
-                            <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">Perlu Respon</span>
+                            <a href="{{ route('candidate.applications.index') }}" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 inline-flex items-center gap-1.5 transition">
+                                <span>Lihat Semua Lamaran</span>
+                                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </a>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                            {{-- Undangan Wawancara --}}
+                        <!-- Scrollable Responsive Grid Container -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 {{ $totalActionsCount >= 3 ? 'xl:grid-cols-3' : '' }} gap-3.5 {{ $totalActionsCount > 4 ? 'max-h-[520px] overflow-y-auto pr-1 scrollbar-thin' : '' }}">
+                            
+                            {{-- 1. Undangan Wawancara --}}
                             @foreach($userInterviews as $userInt)
-                                <div class="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/70 dark:border-blue-900/60 p-4 rounded-xl flex flex-col justify-between gap-3 hover:border-blue-300 transition">
-                                    <div class="space-y-1.5">
-                                        <div class="flex items-center justify-between gap-2">
-                                            <span class="uppercase font-bold text-[10px] bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded">
-                                                Wawancara {{ $userInt->type }}
+                                <div class="bg-blue-50/60 dark:bg-blue-950/25 border border-blue-200/80 dark:border-blue-900/60 p-4 sm:p-5 rounded-2xl flex flex-col justify-between gap-3 hover:border-blue-400 dark:hover:border-blue-700 transition group shadow-2xs">
+                                    <div class="space-y-2">
+                                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                                            <span class="inline-flex items-center gap-1.5 uppercase font-bold text-3xs bg-blue-100 dark:bg-blue-900/70 text-blue-800 dark:text-blue-200 px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-800">
+                                                <i class="fa-solid fa-video text-[10px] text-blue-600 dark:text-blue-400"></i>
+                                                <span>Wawancara {{ $userInt->type }}</span>
                                             </span>
-                                            <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                                                <i class="fa-regular fa-clock mr-1"></i> {{ $userInt->scheduled_at->format('d M Y, H:i') }} WIB
+                                            <span class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-1">
+                                                <i class="fa-regular fa-clock text-slate-400"></i> {{ $userInt->scheduled_at->format('d M Y, H:i') }} WIB
                                             </span>
                                         </div>
-                                        <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                                            {{ $userInt->application->job->title ?? 'Pekerjaan' }}
-                                        </h4>
-                                        <p class="text-xs text-slate-600 dark:text-slate-400">
-                                            Perusahaan: <strong>{{ $userInt->application->job->company_name ?? '-' }}</strong>
-                                        </p>
+                                        <div>
+                                            <h4 class="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+                                                {{ $userInt->application->job->title ?? 'Posisi Pekerjaan' }}
+                                            </h4>
+                                            <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                                                Perusahaan: <strong class="text-slate-800 dark:text-slate-200">{{ $userInt->application->job->company_name ?? '-' }}</strong>
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div class="pt-1">
+                                    <div class="pt-2 border-t border-blue-100/80 dark:border-blue-900/40">
                                         @if($userInt->location_or_link && Str::startsWith($userInt->location_or_link, 'http'))
-                                            <a href="{{ $userInt->location_or_link }}" target="_blank" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-xs transition flex items-center justify-center gap-1.5">
-                                                <i class="fa-solid fa-video text-xs"></i> Buka Link Wawancara &rarr;
+                                            <a href="{{ $userInt->location_or_link }}" target="_blank" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                                                <i class="fa-solid fa-video text-xs"></i> 
+                                                <span>Buka Link Wawancara &rarr;</span>
                                             </a>
                                         @elseif($userInt->location_or_link)
-                                            <div class="text-xs text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
-                                                <i class="fa-solid fa-location-dot text-slate-400 mr-1"></i> {{ $userInt->location_or_link }}
+                                            <div class="text-xs text-slate-700 dark:text-slate-300 bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-1.5">
+                                                <i class="fa-solid fa-location-dot text-rose-500 mr-1 shrink-0"></i> 
+                                                <span class="truncate">{{ $userInt->location_or_link }}</span>
                                             </div>
                                         @endif
                                     </div>
                                 </div>
                             @endforeach
 
-                            {{-- Diterima Kerja / Onboarding --}}
-                            @foreach($acceptedApps as $acceptedApp)
-                                <div class="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-900/60 p-4 rounded-xl flex flex-col justify-between gap-3 hover:border-emerald-300 transition">
-                                    <div class="space-y-1.5">
-                                        <span class="uppercase font-bold text-[10px] bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded">
-                                            Selamat! Anda Diterima
-                                        </span>
-                                        <h4 class="font-bold text-xs sm:text-sm text-emerald-950 dark:text-emerald-200">
-                                            {{ $acceptedApp->job->title }}
-                                        </h4>
-                                        <p class="text-xs text-emerald-800 dark:text-emerald-400">
-                                            Perusahaan: <strong>{{ $acceptedApp->job->company_name }}</strong>. Silakan lengkapi data onboarding.
-                                        </p>
+                            {{-- 2. Ujian Online (Online Test) --}}
+                            @foreach($pendingTests as $testApp)
+                                <div class="bg-indigo-50/60 dark:bg-indigo-950/25 border border-indigo-200/80 dark:border-indigo-900/60 p-4 sm:p-5 rounded-2xl flex flex-col justify-between gap-3 hover:border-indigo-400 dark:hover:border-indigo-700 transition group shadow-2xs">
+                                    <div class="space-y-2">
+                                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                                            <span class="inline-flex items-center gap-1.5 uppercase font-bold text-3xs bg-indigo-100 dark:bg-indigo-900/70 text-indigo-800 dark:text-indigo-200 px-2.5 py-1 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                                                <i class="fa-solid fa-file-pen text-[10px] text-indigo-600 dark:text-indigo-400"></i>
+                                                <span>Ujian Online</span>
+                                            </span>
+                                            <span class="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold animate-pulse">
+                                                Perlu Dikerjakan
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
+                                                {{ $testApp->job->title ?? 'Ujian Seleksi' }}
+                                            </h4>
+                                            <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                                                Perusahaan: <strong class="text-slate-800 dark:text-slate-200">{{ $testApp->job->company_name ?? '-' }}</strong>
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div class="pt-1">
-                                        <a href="{{ route('candidate.onboarding.create', $acceptedApp) }}" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow-xs transition flex items-center justify-center gap-1.5">
-                                            <i class="fa-solid fa-file-signature text-xs"></i> Lengkapi Onboarding &rarr;
+                                    <div class="pt-2 border-t border-indigo-100/80 dark:border-indigo-900/40">
+                                        <a href="{{ route('candidate.tests.show', $testApp->job) }}" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                                            <i class="fa-solid fa-pen-to-square text-xs"></i> 
+                                            <span>Mulai Ujian Online &rarr;</span>
                                         </a>
                                     </div>
                                 </div>
                             @endforeach
 
-                            {{-- Perjanjian Kerja Menunggu TTD --}}
-                            @foreach($pendingAgreements as $pendingAgreement)
-                                <div class="bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/60 p-4 rounded-xl flex flex-col justify-between gap-3 hover:border-amber-300 transition">
-                                    <div class="space-y-1.5">
-                                        <span class="uppercase font-bold text-[10px] bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded">
-                                            Perjanjian Kerja (Sign Pending)
-                                        </span>
-                                        <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                                            {{ $pendingAgreement->title }}
-                                        </h4>
-                                        <p class="text-xs text-slate-600 dark:text-slate-400">
-                                            Perusahaan: <strong>{{ $pendingAgreement->application->job->company_name }}</strong>
-                                        </p>
+                            {{-- 3. Diterima Kerja / Onboarding --}}
+                            @foreach($acceptedApps as $acceptedApp)
+                                <div class="bg-emerald-50/60 dark:bg-emerald-950/25 border border-emerald-200/80 dark:border-emerald-900/60 p-4 sm:p-5 rounded-2xl flex flex-col justify-between gap-3 hover:border-emerald-400 dark:hover:border-emerald-700 transition group shadow-2xs">
+                                    <div class="space-y-2">
+                                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                                            <span class="inline-flex items-center gap-1.5 uppercase font-bold text-3xs bg-emerald-100 dark:bg-emerald-900/70 text-emerald-800 dark:text-emerald-200 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                                                <i class="fa-solid fa-circle-check text-[10px] text-emerald-600"></i>
+                                                <span>Selamat! Anda Diterima</span>
+                                            </span>
+                                            <span class="text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold">
+                                                Tahap Onboarding
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">
+                                                {{ $acceptedApp->job->title ?? 'Posisi Diterima' }}
+                                            </h4>
+                                            <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                                                Perusahaan: <strong class="text-slate-800 dark:text-slate-200">{{ $acceptedApp->job->company_name ?? '-' }}</strong>
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div class="pt-1">
-                                        <a href="{{ route('candidate.agreements.show', $pendingAgreement) }}" class="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-lg shadow-xs transition flex items-center justify-center gap-1.5">
-                                            <i class="fa-solid fa-signature text-xs"></i> Tanda Tangani Dokumen &rarr;
+                                    <div class="pt-2 border-t border-emerald-100/80 dark:border-emerald-900/40">
+                                        <a href="{{ route('candidate.onboarding.create', $acceptedApp) }}" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                                            <i class="fa-solid fa-file-signature text-xs"></i> 
+                                            <span>Lengkapi Berkas Onboarding &rarr;</span>
                                         </a>
                                     </div>
                                 </div>
                             @endforeach
+
+                            {{-- 4. Perjanjian Kerja Menunggu TTD (E-Signature) --}}
+                            @foreach($pendingAgreements as $pendingAgreement)
+                                <div class="bg-amber-50/60 dark:bg-amber-950/25 border border-amber-200/80 dark:border-amber-900/60 p-4 sm:p-5 rounded-2xl flex flex-col justify-between gap-3 hover:border-amber-400 dark:hover:border-amber-700 transition group shadow-2xs">
+                                    <div class="space-y-2">
+                                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                                            <span class="inline-flex items-center gap-1.5 uppercase font-bold text-3xs bg-amber-100 dark:bg-amber-900/70 text-amber-800 dark:text-amber-200 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800">
+                                                <i class="fa-solid fa-file-contract text-[10px] text-amber-600"></i>
+                                                <span>Perjanjian Kerja</span>
+                                            </span>
+                                            <span class="text-[11px] text-amber-700 dark:text-amber-400 font-semibold animate-pulse">
+                                                Menunggu TTD Digital
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition">
+                                                {{ $pendingAgreement->title }}
+                                            </h4>
+                                            <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                                                Perusahaan: <strong class="text-slate-800 dark:text-slate-200">{{ $pendingAgreement->application->job->company_name ?? '-' }}</strong>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="pt-2 border-t border-amber-100/80 dark:border-amber-900/40">
+                                        <a href="{{ route('candidate.agreements.show', $pendingAgreement) }}" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                                            <i class="fa-solid fa-signature text-xs"></i> 
+                                            <span>Tanda Tangani Dokumen &rarr;</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforeach
+
                         </div>
                     </div>
                 @endif

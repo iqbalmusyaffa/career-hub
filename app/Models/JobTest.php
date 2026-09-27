@@ -11,6 +11,44 @@ class JobTest extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+        'starts_at' => 'datetime',
+        'deadline_at' => 'datetime',
+    ];
+
+    /**
+     * Check if test is currently open based on starts_at and deadline_at.
+     */
+    public function isOpen(): bool
+    {
+        if (!$this->is_active) {
+            return false;
+        }
+
+        $now = now();
+
+        if ($this->starts_at && $now->lt($this->starts_at)) {
+            return false;
+        }
+
+        if ($this->deadline_at && $now->gt($this->deadline_at)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function isUpcoming(): bool
+    {
+        return $this->starts_at && now()->lt($this->starts_at);
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->deadline_at && now()->gt($this->deadline_at);
+    }
+
     public function job()
     {
         return $this->belongsTo(Job::class);

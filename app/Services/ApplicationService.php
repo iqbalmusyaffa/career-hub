@@ -127,14 +127,45 @@ class ApplicationService
             }
         }
 
-        // Dispatch Email Notification to Candidate
-        try {
-            if ($application->user && $application->user->email) {
-                \Illuminate\Support\Facades\Mail::to($application->user->email)
-                    ->send(new \App\Mail\ApplicationStatusUpdatedMail($application));
+        // Auto-generate unique test token and send test invitation email when status is set to 'test'
+        if ($newStatusStr === 'test') {
+            $token = $application->test_token ?: 'TK-' . strtoupper(\Illuminate\Support\Str::random(6));
+            $application->update(['test_token' => $token]);
+
+            $jobTest = $application->job ? $application->job->test : null;
+
+            if ($jobTest) {
+                // Send in-app notification with token
+                \App\Models\UserNotification::send(
+                    $application->user_id,
+                    '📝 Undangan Tes Seleksi: ' . ($application->job->title ?? 'Pekerjaan'),
+                    "Anda diundang untuk mengerjakan tes online. Token Akses Ujian Anda: {$token}. Klik di sini untuk membuka ujian.",
+                    route('candidate.tests.show', $application->job_id),
+                    'info'
+                );
+
+                // Dispatch Email with unique token
+                try {
+                    if ($application->user && $application->user->email) {
+                        \Illuminate\Support\Facades\Mail::to($application->user->email)
+                            ->send(new \App\Mail\CandidateTestInvitationMail($application, $jobTest, $token));
+                    }
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error('Test invitation email failed: ' . $e->getMessage());
+                }
             }
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Email notification failed: ' . $e->getMessage());
+        }
+
+        // Dispatch Email Notification to Candidate (for non-test statuses)
+        if ($newStatusStr !== 'test') {
+            try {
+                if ($application->user && $application->user->email) {
+                    \Illuminate\Support\Facades\Mail::to($application->user->email)
+                        ->send(new \App\Mail\ApplicationStatusUpdatedMail($application));
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Email notification failed: ' . $e->getMessage());
+            }
         }
 
         return $result;

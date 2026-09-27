@@ -21,16 +21,17 @@ enum ApplicationStatus: string
     {
         return match($this) {
             self::PENDING => 'Menunggu Review',
-            self::SCREENING => 'Screening HR',
+            self::SCREENING => 'Screening & Review Berkas',
             self::PROCESSING => 'Diproses',
-            self::REVIEWED => 'Review Berkas',
-            self::TEST => 'Tes Online',
-            self::INTERVIEW, self::INTERVIEW_HR => 'Wawancara HR',
-            self::INTERVIEW_USER => 'Wawancara User',
+            self::REVIEWED => 'Review Berkas Selesai',
+            self::TEST => 'Tes Online / Asesmen',
+            self::INTERVIEW => 'Wawancara HR',
+            self::INTERVIEW_HR => 'Wawancara HR',
+            self::INTERVIEW_USER => 'Wawancara User / Tim Teknis',
             self::BACKGROUND_CHECK => 'Background Check',
-            self::OFFERED => 'Penawaran (Offering)',
-            self::ACCEPTED => 'Diterima (Hired)',
-            self::REJECTED => 'Ditolak',
+            self::OFFERED => 'Surat Penawaran (Offering)',
+            self::ACCEPTED => 'Diterima Bekerja (Hired)',
+            self::REJECTED => 'Tidak Lolos (Ditolak)',
         };
     }
 
@@ -49,6 +50,34 @@ enum ApplicationStatus: string
             self::ACCEPTED => 'Hired',
             self::REJECTED => 'Ditolak',
         };
+    }
+
+    /**
+     * Get organized, grouped statuses for HR selection dropdown without duplicate values.
+     */
+    public static function groupedCases(): array
+    {
+        return [
+            '1. Tahap Masuk & Screening' => [
+                self::PENDING->value => 'Menunggu Review Berkas',
+                self::SCREENING->value => 'Screening & Review Berkas',
+            ],
+            '2. Tahap Asesmen & Ujian' => [
+                self::TEST->value => 'Tes Online / Ujian Asesmen',
+            ],
+            '3. Tahap Wawancara' => [
+                self::INTERVIEW_HR->value => 'Wawancara HR / Rekruter',
+                self::INTERVIEW_USER->value => 'Wawancara User / Tim Teknis',
+            ],
+            '4. Tahap Verifikasi & Penawaran' => [
+                self::BACKGROUND_CHECK->value => 'Background Check & Verifikasi Dokumen',
+                self::OFFERED->value => 'Surat Penawaran Kerja (Offering)',
+            ],
+            '5. Keputusan Akhir' => [
+                self::ACCEPTED->value => 'Diterima Bekerja (Hired)',
+                self::REJECTED->value => 'Tidak Lolos (Ditolak)',
+            ],
+        ];
     }
 
     public function color(): string

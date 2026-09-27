@@ -37,6 +37,7 @@ class QuestionsExport implements FromCollection, WithHeadings, WithMapping, Shou
                 'option_b' => '35',
                 'option_c' => '40',
                 'option_d' => '45',
+                'option_e' => '50',
                 'correct_option' => 'c',
             ]
         ]);
@@ -50,7 +51,8 @@ class QuestionsExport implements FromCollection, WithHeadings, WithMapping, Shou
             'Pilihan B',
             'Pilihan C',
             'Pilihan D',
-            'Kunci Jawaban (a/b/c/d)',
+            'Pilihan E (Opsional)',
+            'Kunci Jawaban (a/b/c/d/e)',
         ];
     }
 
@@ -62,6 +64,7 @@ class QuestionsExport implements FromCollection, WithHeadings, WithMapping, Shou
             $row->option_b,
             $row->option_c,
             $row->option_d,
+            $row->option_e ?? '',
             strtolower($row->correct_option),
         ];
     }

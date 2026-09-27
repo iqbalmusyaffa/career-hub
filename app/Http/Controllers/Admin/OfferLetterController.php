@@ -52,6 +52,20 @@ class OfferLetterController extends Controller
             ]
         );
 
+        // Optionally sync benefits to CompanyProfile if requested
+        if ($request->boolean('save_to_company_profile')) {
+            $companyProfile = $application->job->companyProfile;
+            if ($companyProfile) {
+                $lines = array_values(array_filter(array_map(function($line) {
+                    return trim(preg_replace('/^[•\-\*\d\.\s]+/', '', $line));
+                }, explode("\n", $request->benefits_summary ?? ''))));
+
+                if (!empty($lines)) {
+                    $companyProfile->update(['benefits' => $lines]);
+                }
+            }
+        }
+
         // Render & Save PDF
         $pdf = Pdf::loadView('pdf.offer_letter', compact('offerLetter', 'application'))
             ->setPaper('a4', 'portrait');

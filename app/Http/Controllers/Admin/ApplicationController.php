@@ -84,4 +84,29 @@ class ApplicationController extends Controller
 
         return redirect()->back()->with('success', "Status {$count} pelamar berhasil diperbarui menjadi " . strtoupper($request->status) . '!');
     }
+
+    /**
+     * Reset candidate test result and allow 1x retake in case of technical issues.
+     */
+    public function resetTest($id)
+    {
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+        $application = \App\Models\Application::findOrFail($realId);
+
+        \App\Models\CandidateTestResult::where('user_id', $application->user_id)
+            ->where('job_id', $application->job_id)
+            ->delete();
+
+        $application->update(['status' => \App\Enums\ApplicationStatus::TEST]);
+
+        \App\Models\UserNotification::send(
+            $application->user_id,
+            "🔄 Kesempatan Ujian Online Direset",
+            "HR telah memberikan kesempatan ujian ulang untuk posisi {$application->job->title}. Silakan kerjakan kembali tes online Anda.",
+            route('candidate.tests.show', $application->job_id),
+            'info'
+        );
+
+        return redirect()->back()->with('success', 'Kesempatan ujian online kandidat berhasil direset! Pelamar kini dapat mengerjakan kembali tes.');
+    }
 }

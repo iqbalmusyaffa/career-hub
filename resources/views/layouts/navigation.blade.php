@@ -54,6 +54,9 @@
                                 Kelola Cuti & Izin
                             </x-nav-link>
                             @if(!auth()->user()->hasRole('Super Admin'))
+                                <x-nav-link :href="route('admin.category-requests.index')" :active="request()->routeIs('admin.category-requests.*')">
+                                    Pengajuan Kategori
+                                </x-nav-link>
                                 <x-nav-link :href="route('admin.company.profile.edit')" :active="request()->routeIs('admin.company.profile.*')">
                                     Profil Perusahaan
                                 </x-nav-link>
@@ -73,7 +76,9 @@
                                         </button>
                                     </x-slot>
 
-                                    <x-slot name="content">
+                                         <x-dropdown-link :href="route('admin.categories.index')">
+                                             <i class="fa-solid fa-layer-group text-blue-600 mr-2 w-4"></i> Kelola Kategori Lowongan
+                                         </x-dropdown-link>
                                          <x-dropdown-link :href="route('admin.role-requests.index')">
                                              <i class="fa-solid fa-user-shield text-blue-600 mr-2 w-4"></i> Verifikasi Pengajuan Perusahaan
                                          </x-dropdown-link>
@@ -101,6 +106,9 @@
                         @endif
                         
                         @if(auth()->user()->hasRole('Candidate'))
+                            <x-nav-link :href="route('candidate.applications.index')" :active="request()->routeIs('candidate.applications.*')">
+                                Lamaran Saya
+                            </x-nav-link>
                             <x-nav-link :href="route('jobs.index')" :active="request()->routeIs('jobs.*')">
                                 Cari Lowongan
                             </x-nav-link>
@@ -437,11 +445,17 @@
                 @endif
                 
                 @if(auth()->user()->hasRole('Candidate'))
+                <x-responsive-nav-link :href="route('candidate.applications.index')" :active="request()->routeIs('candidate.applications.*')">
+                    Lamaran Saya
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('jobs.index')" :active="request()->routeIs('jobs.*')">
                     Cari Lowongan
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.*')">
                     Perusahaan
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('saved-jobs.index')" :active="request()->routeIs('saved-jobs.*')">
+                    Lowongan Tersimpan
                 </x-responsive-nav-link>
                 @if(auth()->user()->isIntern())
                 <x-responsive-nav-link :href="route('candidate.logbook.index')" :active="request()->routeIs('candidate.logbook.*')">

@@ -93,4 +93,14 @@ class Application extends Model
     {
         return $this->hasMany(EmployeeTermination::class);
     }
+
+    public function cancellationTickets()
+    {
+        return $this->hasMany(AcceptanceCancellationTicket::class);
+    }
+
+    public function latestCancellationTicket()
+    {
+        return $this->hasOne(AcceptanceCancellationTicket::class)->latestOfMany();
+    }
 }

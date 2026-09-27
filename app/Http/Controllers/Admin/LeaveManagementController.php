@@ -21,7 +21,10 @@ class LeaveManagementController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $companyProfile = $user->currentCompanyProfile() ?? CompanyProfile::firstOrCreate(['user_id' => $user->id]);
+        $companyProfile = $user->currentCompanyProfile() ?? CompanyProfile::firstOrCreate(
+            ['user_id' => $user->id],
+            ['company_name' => $user->name ? 'PT ' . $user->name : 'PT Perusahaan Mitra']
+        );
         $policy = CompanyLeavePolicy::getForCompany($companyProfile->id);
 
         $query = LeaveRequest::with(['user.candidateProfile', 'approver', 'application.job'])
@@ -172,7 +175,10 @@ class LeaveManagementController extends Controller
         ]);
 
         $user = Auth::user();
-        $companyProfile = $user->currentCompanyProfile() ?? CompanyProfile::firstOrCreate(['user_id' => $user->id]);
+        $companyProfile = $user->currentCompanyProfile() ?? CompanyProfile::firstOrCreate(
+            ['user_id' => $user->id],
+            ['company_name' => $user->name ? 'PT ' . $user->name : 'PT Perusahaan Mitra']
+        );
         $policy = CompanyLeavePolicy::getForCompany($companyProfile->id);
 
         $policy->update([

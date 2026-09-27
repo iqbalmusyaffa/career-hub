@@ -12,6 +12,22 @@ class Job extends Model
 
     protected $table = 'job_postings';
 
+    public const DIVISIONS = [
+        'Teknologi & IT',
+        'Keuangan & Akuntansi',
+        'Pemasaran & Penjualan',
+        'Administrasi & SDM',
+        'Kreatif & Desain',
+        'Operasional & Logistik',
+        'Magang & Entry-Level',
+        'Layanan & CS',
+    ];
+
+    public static function getDivisions(): array
+    {
+        return self::DIVISIONS;
+    }
+
     protected $fillable = [
         'title',
         'company_name',

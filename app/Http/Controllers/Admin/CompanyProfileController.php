@@ -60,7 +60,10 @@ class CompanyProfileController extends Controller
         $user = Auth::user();
         $profile = $user->currentCompanyProfile();
         if (!$profile) {
-            $profile = CompanyProfile::create(['user_id' => $user->id]);
+            $profile = CompanyProfile::create([
+                'user_id' => $user->id,
+                'company_name' => $request->company_name ?? ($user->name ? 'PT ' . $user->name : 'PT Perusahaan Mitra'),
+            ]);
         }
 
         $data = [

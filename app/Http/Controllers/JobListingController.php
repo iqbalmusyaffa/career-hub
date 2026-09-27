@@ -111,7 +111,9 @@ class JobListingController extends Controller
         $jobs = $query->paginate(9)->withQueryString();
 
         // Get filter options
-        $divisions = Job::where('status', 'active')->distinct()->pluck('division')->filter();
+        $divisions = \App\Models\JobCategory::active()->orderBy('sort_order')->orderBy('name')->pluck('name')->merge(
+            Job::where('status', 'active')->distinct()->pluck('division')->filter()
+        )->unique()->values();
         $locations = Job::where('status', 'active')->distinct()->pluck('location')->filter();
         $workTypes = Job::where('status', 'active')->distinct()->pluck('work_type')->filter();
         $experienceLevels = ['Magang / Intern', 'Junior (1-2 Tahun)', 'Mid-Level (2-5 Tahun)', 'Senior / Lead (5+ Tahun)'];

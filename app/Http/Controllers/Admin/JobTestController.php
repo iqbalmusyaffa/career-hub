@@ -36,7 +36,23 @@ class JobTestController extends Controller
             $test->load('questions');
         }
 
-        return view('admin.jobs.test_editor', compact('job', 'test'));
+        // Calculate live test analytics for HR / Owner
+        $participants = \App\Models\CandidateTestResult::where('job_test_id', $test->id)->get();
+        $totalParticipants = $participants->count();
+        $passedCount = $participants->where('passed', true)->count();
+        $failedCount = $participants->where('passed', false)->count();
+        $avgScore = $totalParticipants > 0 ? (int) round($participants->avg('score')) : 0;
+        $passRate = $totalParticipants > 0 ? (int) round(($passedCount / $totalParticipants) * 100) : 0;
+
+        $analytics = [
+            'total_participants' => $totalParticipants,
+            'passed_count' => $passedCount,
+            'failed_count' => $failedCount,
+            'avg_score' => $avgScore,
+            'pass_rate' => $passRate,
+        ];
+
+        return view('admin.jobs.test_editor', compact('job', 'test', 'analytics'));
     }
 
     /**
@@ -47,18 +63,22 @@ class JobTestController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'category' => 'required|string|max:100',
+            'session_name' => 'nullable|string|max:100',
             'test_mode' => 'required|in:internal,external',
             'external_url' => 'nullable|url|required_if:test_mode,external',
             'description' => 'nullable|string',
             'duration_minutes' => 'required|integer|min:1|max:180',
             'passing_score' => 'required|integer|min:10|max:100',
+            'starts_at' => 'nullable|date',
+            'deadline_at' => 'nullable|date|after_or_equal:starts_at',
             'questions' => 'nullable|array',
             'questions.*.question_text' => 'nullable|string',
             'questions.*.option_a' => 'nullable|string',
             'questions.*.option_b' => 'nullable|string',
             'questions.*.option_c' => 'nullable|string',
             'questions.*.option_d' => 'nullable|string',
-            'questions.*.correct_option' => 'nullable|in:a,b,c,d',
+            'questions.*.option_e' => 'nullable|string',
+            'questions.*.correct_option' => 'nullable|in:a,b,c,d,e',
         ]);
 
         $test = JobTest::firstOrCreate(['job_id' => $job->id]);
@@ -78,12 +98,15 @@ class JobTestController extends Controller
         $test->update([
             'title' => $request->title,
             'category' => $request->category,
+            'session_name' => $request->filled('session_name') ? $request->session_name : null,
             'test_mode' => $request->test_mode ?? 'internal',
             'external_url' => $request->external_url,
             'file_path' => $filePath,
             'description' => $request->description,
             'duration_minutes' => $request->duration_minutes,
             'passing_score' => $request->passing_score,
+            'starts_at' => $request->filled('starts_at') ? $request->starts_at : null,
+            'deadline_at' => $request->filled('deadline_at') ? $request->deadline_at : null,
             'is_active' => $request->has('is_active'),
         ]);
 
@@ -99,7 +122,8 @@ class JobTestController extends Controller
                         'option_b' => $q['option_b'],
                         'option_c' => $q['option_c'],
                         'option_d' => $q['option_d'],
-                        'correct_option' => strtolower($q['correct_option']),
+                        'option_e' => !empty($q['option_e']) ? $q['option_e'] : null,
+                        'correct_option' => strtolower($q['correct_option'] ?? 'a'),
                         'points' => 10,
                     ]);
                 }
@@ -110,29 +134,49 @@ class JobTestController extends Controller
     }
 
     /**
-     * Export existing questions or template using Maatwebsite Excel.
+     * Export existing questions or template using Maatwebsite Excel (Supports Excel .xlsx & .csv).
      */
-    public function export(Job $job)
+    public function export(Job $job, Request $request)
     {
-        $fileName = 'templat_soal_tes_' . str_replace(' ', '_', strtolower($job->title)) . '.csv';
+        $format = strtolower($request->query('format', 'xlsx'));
+        $cleanTitle = \Illuminate\Support\Str::slug($job->title) ?: 'soal';
 
-        return Excel::download(new QuestionsExport($job->id), $fileName, \Maatwebsite\Excel\Excel::CSV);
+        if ($format === 'csv') {
+            $fileName = 'bank_soal_' . $cleanTitle . '.csv';
+            return Excel::download(new QuestionsExport($job->id), $fileName, \Maatwebsite\Excel\Excel::CSV);
+        }
+
+        $fileName = 'bank_soal_' . $cleanTitle . '.xlsx';
+        return Excel::download(new QuestionsExport($job->id), $fileName, \Maatwebsite\Excel\Excel::XLSX);
     }
 
     /**
-     * Import questions from uploaded file using Maatwebsite Excel.
+     * Import questions from uploaded Excel or CSV file using Maatwebsite Excel.
      */
     public function import(Request $request, Job $job)
     {
         $request->validate([
-            'csv_file' => 'required|file|max:5120',
+            'file' => 'nullable|file|mimes:xlsx,xls,csv,txt|max:10240',
+            'csv_file' => 'nullable|file|max:10240',
         ]);
+
+        $uploadedFile = $request->file('file') ?? $request->file('csv_file');
+
+        if (!$uploadedFile) {
+            return back()->with('error', 'Silakan pilih berkas Excel (.xlsx/.xls) atau CSV yang valid.');
+        }
 
         $test = JobTest::firstOrCreate(['job_id' => $job->id]);
 
         try {
-            Excel::import(new QuestionsImport($test->id), $request->file('csv_file'));
-            return back()->with('success', 'Berhasil mengimpor soal dari file Excel / CSV (Maatwebsite Excel)!');
+            // If replace mode checked, remove old questions first
+            if ($request->has('replace_existing') && $request->replace_existing) {
+                $test->questions()->delete();
+            }
+
+            Excel::import(new QuestionsImport($test->id), $uploadedFile);
+            $newCount = $test->questions()->count();
+            return back()->with('success', "Berhasil mengimpor soal! Saat ini terdapat total {$newCount} butir soal terdaftar.");
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal mengimpor file: ' . $e->getMessage());
         }
@@ -189,5 +233,57 @@ class JobTestController extends Controller
         foreach ($questions as $q) {
             $test->questions()->create($q);
         }
+    }
+
+    /**
+     * Manually send test reminder email & notifications to candidates who haven't completed the test.
+     */
+    public function sendReminders(Job $job)
+    {
+        $test = $job->test;
+        if (!$test || !$test->is_active) {
+            return back()->with('error', 'Ujian pada lowongan ini tidak aktif.');
+        }
+
+        $applications = \App\Models\Application::with(['user', 'job'])
+            ->where('job_id', $job->id)
+            ->where('status', \App\Enums\ApplicationStatus::TEST)
+            ->get();
+
+        if ($applications->isEmpty()) {
+            return back()->with('error', 'Tidak ada pelamar dalam status tes untuk lowongan ini.');
+        }
+
+        $sentCount = 0;
+        foreach ($applications as $app) {
+            $hasCompleted = \App\Models\CandidateTestResult::where('user_id', $app->user_id)
+                ->where('job_id', $job->id)
+                ->where('job_test_id', $test->id)
+                ->exists();
+
+            if (!$hasCompleted && $app->user && $app->user->email) {
+                try {
+                    \Illuminate\Support\Facades\Mail::to($app->user->email)->send(
+                        new \App\Mail\CandidateTestReminderMail($app, $test)
+                    );
+
+                    \App\Models\UserNotification::send(
+                        $app->user_id,
+                        "⏰ Pengingat: Segera Selesaikan Ujian Online",
+                        "Anda belum menyelesaikan tes online {$test->title} untuk posisi {$job->title}. Silakan segera kerjakan sebelum batas waktu berakhir.",
+                        route('candidate.tests.show', $job->id),
+                        'warning'
+                    );
+
+                    $sentCount++;
+                } catch (\Exception $e) {
+                    // Log error if needed
+                }
+            }
+        }
+
+        \App\Models\AuditLog::record('test_reminders_manual_sent', "HR mengirim {$sentCount} pengingat manual untuk ujian lowongan {$job->title}.");
+
+        return back()->with('success', "Berhasil mengirim {$sentCount} email & notifikasi pengingat ujian kepada kandidat yang belum menyelesaikan tes.");
     }
 }

@@ -27,7 +27,18 @@ class QuestionsImport implements ToModel, WithHeadingRow
         $optionB = $row['pilihan_b'] ?? $row['option_b'] ?? $row[2] ?? null;
         $optionC = $row['pilihan_c'] ?? $row['option_c'] ?? $row[3] ?? null;
         $optionD = $row['pilihan_d'] ?? $row['option_d'] ?? $row[4] ?? null;
-        $correctOpt = strtolower($row['kunci_jawaban_abcd'] ?? $row['kunci_jawaban'] ?? $row['correct_option'] ?? $row[5] ?? 'a');
+        $optionE = $row['pilihan_e_opsional'] ?? $row['pilihan_e'] ?? $row['option_e'] ?? $row[5] ?? null;
+        
+        // Correct option key (check 7-column format or 6-column format)
+        $correctOpt = strtolower(
+            $row['kunci_jawaban_abcde'] 
+            ?? $row['kunci_jawaban_abcd'] 
+            ?? $row['kunci_jawaban'] 
+            ?? $row['correct_option'] 
+            ?? $row[6] 
+            ?? $row[5] 
+            ?? 'a'
+        );
 
         if (empty($questionText) || empty($optionA)) {
             return null;
@@ -40,7 +51,8 @@ class QuestionsImport implements ToModel, WithHeadingRow
             'option_b' => trim($optionB),
             'option_c' => trim($optionC),
             'option_d' => trim($optionD),
-            'correct_option' => in_array($correctOpt, ['a', 'b', 'c', 'd']) ? $correctOpt : 'a',
+            'option_e' => !empty($optionE) ? trim($optionE) : null,
+            'correct_option' => in_array($correctOpt, ['a', 'b', 'c', 'd', 'e']) ? $correctOpt : 'a',
             'points' => 10,
         ]);
     }

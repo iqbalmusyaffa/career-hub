@@ -17,7 +17,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolesAndPermissionsSeeder::class,
             UmkReferenceSeeder::class,
+            JobCategorySeeder::class,
+            CompanyHrSeeder::class,
             DummyDataSeeder::class,
+            CandidateFaridProfileSeeder::class,
         ]);
     }
 }

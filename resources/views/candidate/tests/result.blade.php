@@ -13,6 +13,14 @@
                         <i class="fa-solid fa-trophy animate-bounce"></i>
                     </div>
                     <div>
+                        <div class="flex items-center justify-center gap-2 mb-2">
+                            <span class="text-xs font-bold text-gray-500">{{ $test->title }}</span>
+                            @if($test->session_name)
+                                <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-3xs font-bold rounded-md border border-indigo-200">
+                                    <i class="fa-solid fa-layer-group text-3xs mr-1"></i> {{ $test->session_name }}
+                                </span>
+                            @endif
+                        </div>
                         <span class="px-4 py-1.5 bg-emerald-100 text-emerald-800 text-sm font-black rounded-full border border-emerald-200 uppercase tracking-wide">
                             LULUS SELEKSI TES ONLINE
                         </span>
@@ -24,6 +32,14 @@
                         <i class="fa-solid fa-circle-exclamation"></i>
                     </div>
                     <div>
+                        <div class="flex items-center justify-center gap-2 mb-2">
+                            <span class="text-xs font-bold text-gray-500">{{ $test->title }}</span>
+                            @if($test->session_name)
+                                <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-3xs font-bold rounded-md border border-indigo-200">
+                                    <i class="fa-solid fa-layer-group text-3xs mr-1"></i> {{ $test->session_name }}
+                                </span>
+                            @endif
+                        </div>
                         <span class="px-4 py-1.5 bg-amber-100 text-amber-800 text-sm font-black rounded-full border border-amber-200 uppercase tracking-wide">
                             BELUM MEMENUHI PASSING GRADE
                         </span>

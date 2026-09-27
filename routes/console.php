@@ -29,3 +29,10 @@ Schedule::command('attendance:send-reminders')
     ->timezone('Asia/Jakarta')
     ->description('Kirim pengingat logbook sore waktu pulang jam 5');
 
+// Pengingat Batas Waktu (Deadline) Ujian Online Otomatis
+Schedule::command('tests:send-deadline-reminders')
+    ->hourly()
+    ->timezone('Asia/Jakarta')
+    ->description('Kirim pengingat otomatis batas waktu ujian bagi kandidat yang belum mengerjakan');
+
+

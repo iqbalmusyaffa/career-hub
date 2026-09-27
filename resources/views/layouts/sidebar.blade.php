@@ -153,6 +153,11 @@
                         </a>
 
                         @if(!$user->hasRole('Super Admin'))
+                        <a href="{{ route('admin.category-requests.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('admin.category-requests.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <i class="fa-solid fa-tags text-xs w-4 text-center"></i>
+                            <span>Pengajuan Kategori</span>
+                        </a>
+
                         <a href="{{ route('admin.company-team.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('admin.company-team.index') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <i class="fa-solid fa-users-gear text-xs w-4 text-center"></i>
                             <span>Tim HR Perusahaan</span>
@@ -183,6 +188,19 @@
                         <a href="{{ route('admin.companies.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('admin.companies.*') ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <i class="fa-solid fa-building-circle-check text-xs w-4 text-center"></i>
                             <span>Kelola Perusahaan</span>
+                        </a>
+
+                        @php
+                            $sidebarPendingCategoriesCount = \App\Models\JobCategory::where('status', 'pending_approval')->count();
+                        @endphp
+                        <a href="{{ route('admin.categories.index') }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('admin.categories.*') ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-tags text-xs w-4 text-center"></i>
+                                <span>Kelola Kategori Lowongan</span>
+                            </div>
+                            @if($sidebarPendingCategoriesCount > 0)
+                                <span class="px-2 py-0.5 bg-amber-400 text-slate-950 text-[10px] font-extrabold rounded-full animate-pulse">{{ $sidebarPendingCategoriesCount }}</span>
+                            @endif
                         </a>
 
                         @php
@@ -320,6 +338,19 @@
                         <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <i class="fa-solid fa-gauge-high text-xs w-4 text-center"></i>
                             <span>{{ $user->isIntern() ? 'Dashboard Magang' : 'Dashboard Karir' }}</span>
+                        </a>
+
+                        @php
+                            $candidateAppCount = \App\Models\Application::where('user_id', $user->id)->count();
+                        @endphp
+                        <a href="{{ route('candidate.applications.index') }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('candidate.applications.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-paper-plane text-xs w-4 text-center text-blue-400"></i>
+                                <span>Lamaran Saya</span>
+                            </div>
+                            @if($candidateAppCount > 0)
+                                <span class="px-1.5 py-0.5 bg-blue-500/30 text-blue-300 text-[10px] font-bold rounded-md">{{ $candidateAppCount }}</span>
+                            @endif
                         </a>
                     </div>
 

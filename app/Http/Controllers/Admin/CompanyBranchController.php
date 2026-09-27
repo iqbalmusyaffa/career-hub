@@ -16,7 +16,10 @@ class CompanyBranchController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $companyProfile = $user->currentCompanyProfile() ?? CompanyProfile::firstOrCreate(['user_id' => $user->id]);
+        $companyProfile = $user->currentCompanyProfile() ?? CompanyProfile::firstOrCreate(
+            ['user_id' => $user->id],
+            ['company_name' => $user->name ? 'PT ' . $user->name : 'PT Perusahaan Mitra']
+        );
         $branches = CompanyBranch::where('company_profile_id', $companyProfile->id)
             ->withCount('jobs')
             ->latest()
@@ -39,7 +42,10 @@ class CompanyBranchController extends Controller
         ]);
 
         $user = Auth::user();
-        $companyProfile = $user->currentCompanyProfile() ?? CompanyProfile::firstOrCreate(['user_id' => $user->id]);
+        $companyProfile = $user->currentCompanyProfile() ?? CompanyProfile::firstOrCreate(
+            ['user_id' => $user->id],
+            ['company_name' => $user->name ? 'PT ' . $user->name : 'PT Perusahaan Mitra']
+        );
 
         if ($request->has('is_headquarter')) {
             CompanyBranch::where('company_profile_id', $companyProfile->id)->update(['is_headquarter' => false]);

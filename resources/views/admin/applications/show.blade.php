@@ -140,20 +140,31 @@
                             $candidateDocs = \App\Models\CandidateDocument::where('user_id', $application->user_id)->get();
                         @endphp
                         @if($candidateDocs->count() > 0 || optional($application->user->candidateProfile)->cv_path)
-                            <div class="pt-4 border-t border-slate-100 space-y-2">
-                                <label class="block text-3xs font-black uppercase text-slate-400 tracking-wider">📁 Dokumen & Berkas Pendukung Candidate</label>
-                                <div class="space-y-1.5 text-xs">
-                                    @if(optional($application->user->candidateProfile)->cv_path)
-                                        <a href="{{ Storage::url($application->user->candidateProfile->cv_path) }}" target="_blank" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-2 px-3 rounded-xl transition text-3xs flex items-center justify-between shadow-2xs">
-                                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-file-pdf text-amber-400"></i> Curriculum Vitae (CV Asli)</span>
-                                            <span>Unduh &rarr;</span>
+                            <div class="pt-4 border-t border-slate-100 dark:border-slate-700 space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <label class="block text-3xs font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider">📁 Dokumen & Berkas Pendukung</label>
+                                    <span class="text-3xs font-bold text-slate-400 dark:text-slate-500">{{ $candidateDocs->count() }} Berkas</span>
+                                </div>
+                                <div class="space-y-2 text-xs">
+                                    @if(optional($application->user->candidateProfile)->cv_path && !$candidateDocs->contains('document_type', 'cv'))
+                                        <a href="{{ Storage::url($application->user->candidateProfile->cv_path) }}" target="_blank" class="w-full bg-slate-900 dark:bg-slate-800 hover:bg-black dark:hover:bg-slate-700 text-white font-bold py-2.5 px-3 rounded-xl transition text-3xs flex items-center justify-between shadow-2xs border border-slate-800 dark:border-slate-700">
+                                            <span class="flex items-center gap-2">
+                                                <i class="fa-solid fa-file-pdf text-amber-400 text-xs"></i> 
+                                                <span>Curriculum Vitae (CV Asli)</span>
+                                            </span>
+                                            <span class="text-amber-400 font-extrabold flex items-center gap-1">Unduh <i class="fa-solid fa-arrow-down text-[9px]"></i></span>
                                         </a>
                                     @endif
 
                                     @foreach($candidateDocs as $doc)
-                                        <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="w-full bg-slate-50 hover:bg-blue-50 text-slate-800 hover:text-blue-900 font-bold py-2 px-3 rounded-xl border border-slate-200 transition text-3xs flex items-center justify-between shadow-2xs">
-                                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-file-lines text-blue-600"></i> {{ $doc->document_type ?? 'Dokumen Pendukung' }} ({{ $doc->file_name }})</span>
-                                            <span>Lihat &rarr;</span>
+                                        <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="w-full bg-slate-50 dark:bg-slate-900/70 hover:bg-blue-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 hover:text-blue-900 dark:hover:text-white font-semibold py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700/80 transition text-3xs flex items-center justify-between shadow-2xs group">
+                                            <span class="flex items-center gap-2 min-w-0 flex-1 pr-2">
+                                                <span class="truncate font-bold">{{ $doc->type_label }}</span>
+                                            </span>
+                                            <span class="text-blue-600 dark:text-blue-400 shrink-0 font-extrabold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                                                <span>Lihat</span> 
+                                                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                                            </span>
                                         </a>
                                     @endforeach
                                 </div>
@@ -238,14 +249,39 @@
                             <p class="text-3xs text-slate-500">Dihitung otomatis berdasarkan match score skill & kriteria.</p>
                         </div>
 
+                        <!-- Active Test Token Widget (Before Test Completed) -->
+                        @if($application->test_token && !$candidateTestResult)
+                            <div class="bg-indigo-50 dark:bg-indigo-950/40 rounded-3xl p-5 shadow-2xs border border-indigo-200 dark:border-indigo-800 text-center space-y-2">
+                                <span class="text-3xs font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300 block">🔑 Token Akses Ujian Online</span>
+                                <div class="text-xl sm:text-2xl font-mono font-black text-indigo-900 dark:text-indigo-100 tracking-widest bg-white dark:bg-slate-900 py-2 px-3 rounded-xl border border-indigo-200 dark:border-indigo-700 shadow-inner">
+                                    {{ $application->test_token }}
+                                </div>
+                                <p class="text-3xs text-indigo-600 dark:text-indigo-400">Token ini telah dikirim ke email kandidat ({{ $application->user->email }}).</p>
+                            </div>
+                        @endif
+
                         <!-- Test Score Card -->
                         @if($candidateTestResult)
                             <div class="rounded-3xl p-5 shadow-2xs border text-center space-y-3 {{ $candidateTestResult->passed ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900' }}">
                                 <span class="text-3xs font-black uppercase tracking-wider block opacity-75">Hasil Ujian Online Seleksi</span>
                                 <div class="text-3xl font-black">{{ $candidateTestResult->score }}%</div>
-                                <span class="inline-block px-3 py-1 font-black text-3xs rounded-full uppercase {{ $candidateTestResult->passed ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white' }}">
-                                    {{ $candidateTestResult->passed ? '✓ LOLOS KKM' : '✗ TIDAK MEMENUHI KKM' }}
-                                </span>
+                                <div>
+                                    <span class="inline-block px-3 py-1 font-black text-3xs rounded-full uppercase {{ $candidateTestResult->passed ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white' }}">
+                                        {{ $candidateTestResult->passed ? '✓ LOLOS KKM' : '✗ TIDAK MEMENUHI KKM' }}
+                                    </span>
+                                </div>
+                                <div class="text-3xs opacity-80 pt-1 border-t {{ $candidateTestResult->passed ? 'border-emerald-200' : 'border-rose-200' }}">
+                                    <span>Selesai: {{ $candidateTestResult->completed_at ? $candidateTestResult->completed_at->format('d M Y, H:i') . ' WIB' : '-' }}</span>
+                                </div>
+
+                                <!-- HR Action: Reset / Allow Retake -->
+                                <form action="{{ route('admin.applications.reset-test', $application->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin mereset hasil ujian kandidat ini? Pelamar akan mendapatkan 1x kesempatan untuk mengerjakan ulang tes online.');" class="pt-1">
+                                    @csrf
+                                    <button type="submit" class="w-full py-2 px-3 bg-white/90 hover:bg-white text-slate-800 font-bold text-3xs rounded-xl border border-slate-300 shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                                        <i class="fa-solid fa-rotate-left text-amber-600"></i>
+                                        <span>Beri Kesempatan Ujian Ulang (Reset)</span>
+                                    </button>
+                                </form>
                             </div>
                         @endif
                     </div>
@@ -467,21 +503,69 @@
                             $isQuotaFull = $jobQuota && ($currentHired >= $jobQuota) && ($statusStr !== 'accepted');
                         @endphp
 
-                        @if($statusStr === 'accepted')
-                            <div class="bg-rose-50 p-4 rounded-2xl border border-rose-200 space-y-3">
-                                <div class="flex items-center gap-2 text-rose-900 font-bold text-xs">
-                                    <i class="fa-solid fa-lock text-rose-600"></i>
-                                    <span>STATUS DITERIMA TERKUNCI (HIRED LOCK)</span>
+                        @php
+                            $isSuperAdmin = auth()->user()->hasRole('Super Admin');
+                            $latestCancellationTicket = \App\Models\AcceptanceCancellationTicket::where('application_id', $application->id)->latest()->first();
+                        @endphp
+
+                        @if($statusStr === 'accepted' && !$isSuperAdmin)
+                            <div class="bg-rose-50 dark:bg-rose-950/40 p-5 rounded-2xl border border-rose-200 dark:border-rose-800 space-y-4 shadow-2xs">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2 text-rose-900 dark:text-rose-200 font-bold text-xs">
+                                        <i class="fa-solid fa-lock text-rose-600 dark:text-rose-400 text-sm"></i>
+                                        <span>STATUS DITERIMA TERKUNCI (HIRED LOCK)</span>
+                                    </div>
+                                    <span class="px-2 py-0.5 bg-rose-200 dark:bg-rose-900 text-rose-900 dark:text-rose-200 text-3xs font-extrabold rounded-md uppercase">Protected</span>
                                 </div>
-                                <p class="text-3xs text-rose-700 leading-relaxed">
-                                    Status <strong>Diterima</strong> tidak dapat dibatalkan langsung oleh HR untuk melindungi kuota lowongan. Pembatalan memerlukan otorisasi <strong>Super Admin</strong>.
+                                
+                                <p class="text-xs text-rose-700 dark:text-rose-300 leading-relaxed">
+                                    Status <strong>Diterima</strong> tidak dapat diubah langsung oleh akun HR guna melindungi integritas kuota penerimaan lowongan. Untuk membatalkan status kandidat ini, Anda dapat mengajukan <strong>Tiket Otorisasi Pembatalan</strong> ke Super Admin.
                                 </p>
+
+                                @if($latestCancellationTicket && $latestCancellationTicket->status === 'pending')
+                                    <!-- Pending Review Banner -->
+                                    <div class="p-3.5 bg-amber-50 dark:bg-amber-950/50 rounded-xl border border-amber-200 dark:border-amber-800 space-y-1.5 text-xs text-amber-900 dark:text-amber-200">
+                                        <div class="flex items-center justify-between font-bold">
+                                            <span class="flex items-center gap-1.5">
+                                                <i class="fa-solid fa-hourglass-half text-amber-600 animate-spin"></i> Permohonan Sedang Ditinjau Super Admin
+                                            </span>
+                                            <span class="text-3xs px-2 py-0.5 rounded bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 uppercase font-black">Pending</span>
+                                        </div>
+                                        <p class="text-3xs text-slate-600 dark:text-slate-300">
+                                            <strong>Alasan HR:</strong> "{{ $latestCancellationTicket->reason }}"
+                                        </p>
+                                        <span class="text-3xs text-slate-400 dark:text-slate-500 block">Diajukan: {{ $latestCancellationTicket->created_at->format('d M Y, H:i') }} WIB</span>
+                                    </div>
+                                @else
+                                    @if($latestCancellationTicket && $latestCancellationTicket->status === 'rejected')
+                                        <div class="p-3 bg-red-100 dark:bg-red-950/60 rounded-xl border border-red-200 dark:border-red-800 text-3xs text-red-800 dark:text-red-300 space-y-1">
+                                            <strong>❌ Permohonan Sebelumnya Ditolak Super Admin:</strong>
+                                            <p>{{ $latestCancellationTicket->superadmin_note ?? 'Tidak ada catatan tambahan.' }}</p>
+                                        </div>
+                                    @endif
+
+                                    <!-- Button to Open Modal -->
+                                    <div class="pt-1">
+                                        <button type="button" 
+                                                onclick="document.getElementById('cancellationAppealModal').classList.remove('hidden')"
+                                                class="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-xs cursor-pointer">
+                                            <i class="fa-solid fa-ticket"></i>
+                                            <span>Ajukan Permohonan Pembatalan ke Super Admin</span>
+                                        </button>
+                                    </div>
+                                @endif
                             </div>
                         @else
                             @if($isQuotaFull)
-                                <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-3xs text-amber-800 font-bold flex items-center gap-2">
+                                <div class="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800 text-3xs text-amber-800 dark:text-amber-200 font-bold flex items-center gap-2">
                                     <i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm"></i>
                                     <span>KUOTA PENUH ({{ $currentHired }}/{{ $jobQuota }}). Option 'Terima' Ditutup.</span>
+                                </div>
+                            @endif
+
+                            @if($isSuperAdmin && $statusStr === 'accepted')
+                                <div class="mb-3 p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-200 flex items-center justify-between">
+                                    <span class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-shield-halved text-blue-600"></i> Otoritas Penuh Super Admin: Anda dapat mengubah status 'Diterima' secara langsung.</span>
                                 </div>
                             @endif
 
@@ -491,25 +575,58 @@
                                 
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
                                     <div class="sm:col-span-2">
-                                        <label class="block font-bold text-slate-700 mb-1">Pilih Status Baru Pelamar</label>
-                                        <select name="status" class="w-full border-slate-300 rounded-xl text-xs font-bold focus:ring-blue-500 focus:border-blue-500">
-                                            @foreach(\App\Enums\ApplicationStatus::cases() as $st)
-                                                @if($st->value !== 'processing')
-                                                    <option value="{{ $st->value }}" {{ $statusStr == $st->value ? 'selected' : '' }} {{ ($st->value === 'accepted' && $isQuotaFull) ? 'disabled' : '' }}>
-                                                        {{ ($st->value === 'accepted' && $isQuotaFull) ? 'Diterima (DITUTUP - KUOTA PENUH)' : $st->label() }}
-                                                    </option>
-                                                @endif
+                                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Pilih Status Baru Pelamar</label>
+                                        <select name="status" class="w-full border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-bold focus:ring-blue-500 focus:border-blue-500">
+                                            @foreach(\App\Enums\ApplicationStatus::groupedCases() as $groupLabel => $statuses)
+                                                <optgroup label="{{ $groupLabel }}" class="font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800">
+                                                    @foreach($statuses as $stVal => $stLabel)
+                                                        <option value="{{ $stVal }}" {{ $statusStr == $stVal ? 'selected' : '' }} {{ ($stVal === 'accepted' && $isQuotaFull && !$isSuperAdmin) ? 'disabled' : '' }} class="font-semibold text-slate-900 dark:text-white bg-white dark:bg-slate-900">
+                                                            {{ ($stVal === 'accepted' && $isQuotaFull && !$isSuperAdmin) ? 'Diterima (DITUTUP - KUOTA PENUH)' : $stLabel }}
+                                                        </option>
+                                                    @endforeach
+                                                </optgroup>
                                             @endforeach
                                         </select>
                                     </div>
                                     <div class="pt-5 sm:pt-0">
-                                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-2.5 px-4 rounded-xl text-xs transition shadow-2xs border border-blue-600">
+                                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-2.5 px-4 rounded-xl text-xs transition shadow-2xs border border-blue-600 cursor-pointer">
                                             Simpan Perubahan
                                         </button>
                                     </div>
                                 </div>
                             </form>
                         @endif
+                    </div>
+
+                    <!-- Modal Ajukan Pembatalan Penerimaan (Tiket Super Admin) -->
+                    <div id="cancellationAppealModal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+                        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                                <div class="flex items-center gap-2 text-rose-600 dark:text-rose-400">
+                                    <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                                    <h3 class="font-extrabold text-sm text-slate-900 dark:text-white">Ajukan Pembatalan Penerimaan</h3>
+                                </div>
+                                <button type="button" onclick="document.getElementById('cancellationAppealModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-bold cursor-pointer">✕</button>
+                            </div>
+                            
+                            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                Permohonan ini akan diteruskan ke <strong>Super Admin</strong> sebagai tiket persetujuan pembatalan status penerimaan kandidat <strong>{{ $application->user->name }}</strong>.
+                            </p>
+
+                            <form action="{{ route('admin.cancellation-tickets.store', $application->id) }}" method="POST" class="space-y-4">
+                                @csrf
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Alasan Pembatalan Penerimaan <span class="text-rose-500">*</span></label>
+                                    <textarea name="reason" rows="4" required minlength="10" placeholder="Jelaskan alasan pembatalan secara detail (misal: Kandidat menolak offer letter / tidak hadir saat hari pertama orientasi / ketidaksesuaian dokumen asli)..." class="w-full border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white rounded-xl text-xs focus:ring-rose-500 focus:border-rose-500 font-medium p-3"></textarea>
+                                    <span class="text-3xs text-slate-400 mt-1 block">Minimal 10 karakter penjelasan.</span>
+                                </div>
+
+                                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                                    <button type="button" onclick="document.getElementById('cancellationAppealModal').classList.add('hidden')" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer">Batal</button>
+                                    <button type="submit" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-2xs cursor-pointer">Kirim Permohonan ke Super Admin</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
 
                     <!-- DOCUMENT BUILDER CARDS GRID (2 Cols) -->
@@ -713,9 +830,15 @@
                                             <span class="text-3xs text-slate-400 dark:text-slate-500 font-medium">{{ strtoupper($doc->file_extension ?? 'PDF') }} • {{ $doc->formatted_size }}</span>
                                         </div>
 
-                                        <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="p-2 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 rounded-xl border border-slate-200 dark:border-slate-700 transition shrink-0" title="Buka Dokumen">
-                                            <i class="fa-solid fa-download"></i>
-                                        </a>
+                                        <div class="shrink-0 flex items-center gap-1.5">
+                                            <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="px-2.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 rounded-xl border border-slate-200 dark:border-slate-700 text-3xs font-extrabold transition flex items-center gap-1 shadow-2xs" title="Buka Dokumen">
+                                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                                <span>Buka</span>
+                                            </a>
+                                            <a href="{{ Storage::url($doc->file_path) }}" download class="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 transition flex items-center justify-center text-xs shadow-2xs" title="Unduh File">
+                                                <i class="fa-solid fa-download"></i>
+                                            </a>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
