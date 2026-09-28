@@ -30,6 +30,19 @@
                 <form action="{{ route('admin.applications.certificates.store', $application) }}" method="POST" class="space-y-6">
                     @csrf
 
+                    @if ($errors->any())
+                        <div class="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs">
+                            <div class="font-bold flex items-center gap-2 mb-1">
+                                <i class="fa-solid fa-circle-exclamation text-rose-500"></i> Terjadi kesalahan pengisian formulir:
+                            </div>
+                            <ul class="list-disc pl-5 space-y-1">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <div class="flex items-center justify-between mb-1">

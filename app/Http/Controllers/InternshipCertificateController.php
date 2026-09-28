@@ -111,6 +111,29 @@ class InternshipCertificateController extends Controller
             'success'
         );
 
+        // Send Official Email to candidate
+        try {
+            $candUser = $application->user;
+            $downloadUrl = route('candidate.certificates.show', $certificate);
+            \Illuminate\Support\Facades\Mail::raw(
+                "Halo {$candUser->name},\n\n" .
+                "Selamat! Sertifikat Kelulusan Magang resmi Anda telah diterbitkan oleh perusahaan:\n\n" .
+                "🎓 Nomor Sertifikat: {$certificate->certificate_number}\n" .
+                "💼 Posisi Magang: {$certificate->job_title}\n" .
+                "🏢 Perusahaan: " . ($application->job->company_name ?? 'TalentFlow') . "\n" .
+                "⭐ Predikat Evaluasi: {$certificate->performance_grade}\n\n" .
+                "Anda dapat melihat dan mengunduh sertifikat resmi ber-QR Code melalui tautan berikut:\n" .
+                "👉 {$downloadUrl}\n\n" .
+                "Salam hangat,\nTim Human Resources",
+                function ($mail) use ($candUser, $certificate) {
+                    $mail->to($candUser->email)
+                        ->subject("🎓 Sertifikat Kelulusan Magang Resmi: {$certificate->certificate_number}");
+                }
+            );
+        } catch (\Exception $e) {
+            // Silently ignore mail transport errors in local dev
+        }
+
         AuditLog::record('certificate_issued', "HR " . Auth::user()->name . " menerbitkan Sertifikat Magang resmi untuk " . $certificate->participant_name);
 
         return redirect()->route('admin.applications.show', $application)

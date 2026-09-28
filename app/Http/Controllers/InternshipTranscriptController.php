@@ -56,6 +56,19 @@ class InternshipTranscriptController extends Controller
         $realId = \App\Helpers\IdHasher::decode($applicationId) ?? $applicationId;
         $application = Application::with(['user', 'job'])->findOrFail($realId);
 
+        // Normalize decimal scores with comma (e.g. "92,5" -> "92.5")
+        $scoreFields = ['score_discipline', 'score_technical', 'score_communication', 'score_problem_solving', 'score_ethics'];
+        $normalized = [];
+        foreach ($scoreFields as $field) {
+            if ($request->has($field)) {
+                $val = trim((string) $request->input($field));
+                $normalized[$field] = str_replace(',', '.', $val);
+            }
+        }
+        if (!empty($normalized)) {
+            $request->merge($normalized);
+        }
+
         $request->validate([
             'transcript_number' => 'required|string|max:100',
             'participant_name' => 'required|string|max:255',
@@ -146,6 +159,29 @@ class InternshipTranscriptController extends Controller
             route('candidate.transcripts.show', $transcript),
             'success'
         );
+
+        // Send Official Email to candidate
+        try {
+            $candUser = $application->user;
+            $downloadUrl = route('candidate.transcripts.show', $transcript);
+            \Illuminate\Support\Facades\Mail::raw(
+                "Halo {$candUser->name},\n\n" .
+                "Transkrip Evaluasi Nilai Akademik Magang resmi Anda telah diterbitkan:\n\n" .
+                "📊 Nomor Transkrip: {$transcript->transcript_number}\n" .
+                "💼 Posisi Magang: {$transcript->job_title}\n" .
+                "📈 Skor Rata-Rata: {$finalScore} / 100\n" .
+                "🏆 Huruf Mutu: {$gradeLetter}\n\n" .
+                "Silakan buka tautan berikut untuk mengunduh berkas PDF Transkrip Nilai resmi Anda:\n" .
+                "👉 {$downloadUrl}\n\n" .
+                "Salam hangat,\nTim Human Resources",
+                function ($mail) use ($candUser, $transcript) {
+                    $mail->to($candUser->email)
+                        ->subject("📊 Transkrip Nilai Magang Resmi: {$transcript->transcript_number}");
+                }
+            );
+        } catch (\Exception $e) {
+            // Silently ignore mail transport errors in local dev
+        }
 
         AuditLog::record('transcript_issued', "HR " . Auth::user()->name . " menerbitkan Transkrip Nilai Magang resmi untuk " . $transcript->participant_name);
 

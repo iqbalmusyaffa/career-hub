@@ -30,6 +30,19 @@
                 <form action="{{ route('admin.applications.transcripts.store', $application) }}" method="POST" class="space-y-6">
                     @csrf
 
+                    @if ($errors->any())
+                        <div class="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs">
+                            <div class="font-bold flex items-center gap-2 mb-1">
+                                <i class="fa-solid fa-circle-exclamation text-rose-500"></i> Terjadi kesalahan pengisian formulir:
+                            </div>
+                            <ul class="list-disc pl-5 space-y-1">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <div class="flex items-center justify-between mb-1">
@@ -86,35 +99,35 @@
                                     <label class="block text-3xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
                                         1. Kedisiplinan & Presensi (0 - 100) <span class="text-rose-500">*</span>
                                     </label>
-                                    <input type="number" step="0.1" name="score_discipline" value="{{ old('score_discipline', 92.5) }}" min="0" max="100" required class="w-full border-slate-300 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-black py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <input type="text" inputmode="decimal" name="score_discipline" value="{{ old('score_discipline', 92.5) }}" required class="w-full border-slate-300 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-black py-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 </div>
 
                                 <div class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-indigo-100 dark:border-slate-700 shadow-2xs space-y-1.5">
                                     <label class="block text-3xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
                                         2. Keahlian Teknis & Hasil Kerja (0 - 100) <span class="text-rose-500">*</span>
                                     </label>
-                                    <input type="number" step="0.1" name="score_technical" value="{{ old('score_technical', 95.0) }}" min="0" max="100" required class="w-full border-slate-300 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-black py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <input type="text" inputmode="decimal" name="score_technical" value="{{ old('score_technical', 95.0) }}" required class="w-full border-slate-300 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-black py-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 </div>
 
                                 <div class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-indigo-100 dark:border-slate-700 shadow-2xs space-y-1.5">
                                     <label class="block text-3xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
                                         3. Komunikasi & Kerjasama Tim (0 - 100) <span class="text-rose-500">*</span>
                                     </label>
-                                    <input type="number" step="0.1" name="score_communication" value="{{ old('score_communication', 90.0) }}" min="0" max="100" required class="w-full border-slate-300 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-black py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <input type="text" inputmode="decimal" name="score_communication" value="{{ old('score_communication', 90.0) }}" required class="w-full border-slate-300 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-black py-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 </div>
 
                                 <div class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-indigo-100 dark:border-slate-700 shadow-2xs space-y-1.5">
                                     <label class="block text-3xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
                                         4. Inisiatif & Problem Solving (0 - 100) <span class="text-rose-500">*</span>
                                     </label>
-                                    <input type="number" step="0.1" name="score_problem_solving" value="{{ old('score_problem_solving', 93.0) }}" min="0" max="100" required class="w-full border-slate-300 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-black py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <input type="text" inputmode="decimal" name="score_problem_solving" value="{{ old('score_problem_solving', 93.0) }}" required class="w-full border-slate-300 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-black py-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 </div>
 
                                 <div class="sm:col-span-2 bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-indigo-100 dark:border-slate-700 shadow-2xs space-y-1.5">
                                     <label class="block text-3xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
                                         5. Etika & Profesionalisme Kerja (0 - 100) <span class="text-rose-500">*</span>
                                     </label>
-                                    <input type="number" step="0.1" name="score_ethics" value="{{ old('score_ethics', 94.0) }}" min="0" max="100" required class="w-full border-slate-300 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-black py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <input type="text" inputmode="decimal" name="score_ethics" value="{{ old('score_ethics', 94.0) }}" required class="w-full border-slate-300 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-black py-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 </div>
                             </div>
                         </div>

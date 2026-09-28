@@ -115,6 +115,28 @@ class EmployeeTerminationController extends Controller
             'warning'
         );
 
+        // Send Official Email to candidate
+        try {
+            $candUser = $application->user;
+            $docUrl = route('candidate.terminations.show', $termination);
+            \Illuminate\Support\Facades\Mail::raw(
+                "Halo {$candUser->name},\n\n" .
+                "Perusahaan telah menerbitkan dokumen resmi {$docLabel} untuk Anda:\n\n" .
+                "📄 Dokumen: {$docLabel}\n" .
+                "🔢 Nomor Surat: {$termination->document_number}\n" .
+                "💼 Posisi: {$termination->job_title}\n\n" .
+                "Silakan buka tautan berikut untuk memeriksa dan menandatangani dokumen secara digital:\n" .
+                "👉 {$docUrl}\n\n" .
+                "Salam hangat,\nTim Human Resources",
+                function ($mail) use ($candUser, $docLabel, $termination) {
+                    $mail->to($candUser->email)
+                        ->subject("📄 {$docLabel} Resmi: {$termination->document_number}");
+                }
+            );
+        } catch (\Exception $e) {
+            // Silently ignore mail transport errors in local dev
+        }
+
         AuditLog::record('termination_doc_issued', "HR " . Auth::user()->name . " menerbitkan {$docLabel} untuk " . $termination->employee_name);
 
         return redirect()->route('admin.applications.show', $application)

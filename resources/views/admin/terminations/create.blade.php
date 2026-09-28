@@ -30,6 +30,19 @@
                 <form action="{{ route('admin.applications.terminations.store', $application) }}" method="POST" class="space-y-6">
                     @csrf
 
+                    @if ($errors->any())
+                        <div class="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs">
+                            <div class="font-bold flex items-center gap-2 mb-1">
+                                <i class="fa-solid fa-circle-exclamation text-rose-500"></i> Terjadi kesalahan pengisian formulir:
+                            </div>
+                            <ul class="list-disc pl-5 space-y-1">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="sm:col-span-2">
                             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Jenis Dokumen Resmi yang Diterbitkan <span class="text-rose-500">*</span></label>
@@ -83,7 +96,7 @@
                         <!-- RECOMMENDATION & STATEMENT TEXT AREA -->
                         <div class="sm:col-span-2">
                             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Teks Pernyataan Resmi / Ulasan Rekomendasi Karir <span class="text-rose-500">*</span></label>
-                            <textarea id="reasonNotesTextarea" name="reason_or_recommendation_notes" rows="6" required class="w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs focus:ring-indigo-500 focus:border-indigo-500 font-mono p-4 leading-relaxed">{{ old('reason_or_recommendation_notes') }}</textarea>
+                            <textarea id="reasonNotesTextarea" name="reason_or_recommendation_notes" rows="6" required class="w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs focus:ring-indigo-500 focus:border-indigo-500 font-mono p-4 leading-relaxed">{{ old('reason_or_recommendation_notes', "Perusahaan memberikan Surat Rekomendasi & Referensi Kerja ini secara resmi kepada yang bersangkutan.\n\nSelama bertugas sebagai {$jobTitle}, yang bersangkutan telah menunjukkan dedikasi, integritas, dan performa kerja yang sangat baik bagi perkembangan perusahaan.\n\nManajemen Perusahaan dengan bangga memberikan REKOMENDASI TERBAIK bagi yang bersangkutan untuk dapat berkarir dan memberikan kontribusi di perusahaan/instansi manapun di masa mendatang.") }}</textarea>
                         </div>
 
                         <div>

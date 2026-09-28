@@ -65,6 +65,13 @@ class ApplicationAgreementController extends Controller
         $realId = \App\Helpers\IdHasher::decode($applicationId) ?? $applicationId;
         $application = Application::with('user', 'job')->findOrFail($realId);
 
+        // Normalize inputs from form field names
+        $request->merge([
+            'stipend_or_salary' => $request->stipend_or_salary ?? $request->salary_offered,
+            'hr_signer_name' => $request->hr_signer_name ?? $request->hr_name ?? Auth::user()->name,
+            'owner_signer_name' => $request->owner_signer_name ?? $request->owner_name,
+        ]);
+
         $request->validate([
             'agreement_type' => 'required|string|in:employment_contract,permanent_contract,remote_contract,internship_agreement,hybrid_contract',
             'title' => 'required|string|max:255',

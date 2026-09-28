@@ -268,6 +268,19 @@ PASAL 8: PENYELESAIAN PERSELISIHAN
                 <form action="{{ route('admin.applications.agreements.store', $application) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                     @csrf
 
+                    @if ($errors->any())
+                        <div class="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs">
+                            <div class="font-bold flex items-center gap-2 mb-1">
+                                <i class="fa-solid fa-circle-exclamation text-rose-500"></i> Terjadi kesalahan pengisian formulir:
+                            </div>
+                            <ul class="list-disc pl-5 space-y-1">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Tipe Perjanjian <span class="text-rose-500">*</span></label>
@@ -305,7 +318,7 @@ PASAL 8: PENYELESAIAN PERSELISIHAN
                             </h4>
                             <div>
                                 <label class="block text-3xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Nama HRD / Manager <span class="text-rose-500">*</span></label>
-                                <input type="text" name="hr_name" value="{{ old('hr_name', auth()->user()->name) }}" required class="w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-bold py-2">
+                                <input type="text" name="hr_signer_name" value="{{ old('hr_signer_name', old('hr_name', auth()->user()->name)) }}" required class="w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-bold py-2">
                             </div>
                             <div>
                                 <label class="block text-3xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Jabatan Resmi <span class="text-rose-500">*</span></label>
@@ -320,7 +333,7 @@ PASAL 8: PENYELESAIAN PERSELISIHAN
                             </h4>
                             <div>
                                 <label class="block text-3xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Nama Direktur / Owner <span class="text-rose-500">*</span></label>
-                                <input type="text" name="owner_name" value="{{ old('owner_name', $companyOwner->name ?? $application->job->company_name) }}" required class="w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-bold py-2">
+                                <input type="text" name="owner_signer_name" value="{{ old('owner_signer_name', old('owner_name', $companyOwner->name ?? $application->job->company_name)) }}" required class="w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-bold py-2">
                             </div>
                             <div>
                                 <label class="block text-3xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Jabatan Direksi <span class="text-rose-500">*</span></label>
@@ -342,7 +355,7 @@ PASAL 8: PENYELESAIAN PERSELISIHAN
 
                         <div class="sm:col-span-2">
                             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Gaji Pokok / Uang Saku Bulanan <span class="text-rose-500">*</span></label>
-                            <input type="text" name="salary_offered" value="{{ old('salary_offered', $application->job->salary ?? 'Rp 5.000.000 / bulan') }}" required class="w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-bold py-2.5" placeholder="Misal: Rp 4.500.000 (Sesuai UMK 2026)">
+                            <input type="text" name="stipend_or_salary" value="{{ old('stipend_or_salary', old('salary_offered', $application->job->salary ?? 'Rp 5.000.000 / bulan')) }}" required class="w-full border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl text-xs font-bold py-2.5" placeholder="Misal: Rp 4.500.000 (Sesuai UMK 2026)">
                         </div>
 
                         <div class="sm:col-span-2">
