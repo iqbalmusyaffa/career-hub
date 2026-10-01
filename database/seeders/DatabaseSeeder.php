@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             UmkReferenceSeeder::class,
             JobCategorySeeder::class,
             CompanyHrSeeder::class,
+            CompanyMentorSeeder::class,
             DummyDataSeeder::class,
             CandidateFaridProfileSeeder::class,
         ]);

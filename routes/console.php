@@ -35,4 +35,11 @@ Schedule::command('tests:send-deadline-reminders')
     ->timezone('Asia/Jakarta')
     ->description('Kirim pengingat otomatis batas waktu ujian bagi kandidat yang belum mengerjakan');
 
+// Auto-ACC Logbook Presensi Magang yang Pending Lebih Dari 14 Hari (Setiap Pukul 01:00 WIB)
+Schedule::command('logbook:auto-approve --days=14')
+    ->dailyAt('01:00')
+    ->timezone('Asia/Jakarta')
+    ->description('Otomatis setujui (Auto-ACC) logbook presensi magang berstatus pending setelah 14 hari tanpa review mentor');
+
+
 

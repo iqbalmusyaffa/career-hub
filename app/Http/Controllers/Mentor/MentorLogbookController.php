@@ -11,6 +11,9 @@ class MentorLogbookController extends Controller
 {
     public function dashboard(Request $request)
     {
+        // Auto-ACC logbooks older than 14 days
+        \App\Services\AutoApproveLogbookService::process(14);
+
         $mentorId = auth()->id();
         $user = auth()->user();
         $companyId = $user?->companyProfile ? $user->companyProfile->id : null;
@@ -71,6 +74,9 @@ class MentorLogbookController extends Controller
 
     public function index(Request $request)
     {
+        // Auto-ACC logbooks older than 14 days
+        \App\Services\AutoApproveLogbookService::process(14);
+
         $user = auth()->user();
         $companyId = $user?->companyProfile ? $user->companyProfile->id : null;
 

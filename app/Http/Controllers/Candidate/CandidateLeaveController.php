@@ -89,19 +89,27 @@ class CandidateLeaveController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        $isIntern = $user->isIntern();
+
+        $allowedTypes = $isIntern
+            ? 'academic_leave,family_event,sick_leave,internship_permission'
+            : 'annual_leave,sick_leave,academic_leave,family_event,maternity_leave,special_leave';
+
         $request->validate([
-            'leave_type' => 'required|string|in:annual_leave,sick_leave,academic_leave,family_event,maternity_leave,special_leave,internship_permission',
+            'leave_type' => "required|string|in:{$allowedTypes}",
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'required|string|min:5|max:1000',
             'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ], [
+            'leave_type.in' => $isIntern
+                ? 'Peserta magang hanya diperbolehkan mengajukan Izin Akademik/Kampus, Izin Acara Keluarga/Mendesak, Izin Sakit, atau Dispensasi Magang.'
+                : 'Jenis cuti/izin yang dipilih tidak valid.',
             'end_date.after_or_equal' => 'Tanggal selesai cuti harus sama atau setelah tanggal mulai.',
             'reason.min' => 'Alasan cuti/izin minimal harus 5 karakter.',
             'attachment.max' => 'Ukuran berkas lampiran maksimal adalah 5 MB.',
         ]);
-
-        $user = Auth::user();
 
         // Calculate working days (exclude weekends)
         $startDate = Carbon::parse($request->start_date);

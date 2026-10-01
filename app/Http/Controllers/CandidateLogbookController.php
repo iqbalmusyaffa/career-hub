@@ -32,6 +32,9 @@ class CandidateLogbookController extends Controller
             $user = $currentUser;
         }
 
+        // Auto-ACC logbooks older than 14 days for this user
+        \App\Services\AutoApproveLogbookService::process(14, $user->id);
+
         // 1. Determine active period & batch from candidate's applied job or configured period
         $latestApp = $user->applications()->with('job')->latest()->first();
         $periodSetting = \App\Models\InternshipPeriod::where('user_id', $user->id)->first();
@@ -223,6 +226,10 @@ class CandidateLogbookController extends Controller
         } else {
             $user = $currentUser;
         }
+
+        // Auto-ACC logbooks older than 14 days for this user
+        \App\Services\AutoApproveLogbookService::process(14, $user->id);
+
         $carbonDate = Carbon::parse($date)->startOfDay();
         $today = Carbon::today();
 
@@ -507,6 +514,9 @@ class CandidateLogbookController extends Controller
         if ($user->hasRole('Candidate') && !$user->isIntern()) {
             return redirect()->route('dashboard')->with('error', 'Fitur Program Magang & Presensi hanya dapat diakses oleh kandidat yang telah diterima sebagai Peserta Magang.');
         }
+
+        // Auto-ACC logbooks older than 14 days for this user
+        \App\Services\AutoApproveLogbookService::process(14, $user->id);
 
         $latestApp = $user->applications()->with('job.companyProfile')->latest()->first();
         $periodSetting = \App\Models\InternshipPeriod::where('user_id', $user->id)->first();

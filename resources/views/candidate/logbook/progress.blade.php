@@ -132,7 +132,7 @@
             </div>
 
             <!-- Graduation & Target Hours Progress Tracker -->
-            <div class="p-5 sm:p-6 bg-gradient-to-br {{ $certificate ? 'from-amber-500/10 via-amber-500/5 to-slate-900 border-amber-500/30' : ($isEligibleForCertificate ? 'from-emerald-500/10 via-emerald-500/5 to-slate-900 border-emerald-500/30' : 'from-slate-900 to-slate-900 border-slate-200/80 dark:border-slate-800') }} rounded-2xl border shadow-xs space-y-4">
+            <div class="p-5 sm:p-6 bg-gradient-to-br {{ $certificate ? 'from-amber-500/10 via-amber-500/5 to-white dark:to-slate-900 border-amber-500/30' : ($isEligibleForCertificate ? 'from-emerald-500/10 via-emerald-500/5 to-white dark:to-slate-900 border-emerald-500/30' : 'from-blue-50/70 via-slate-50/50 to-white dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 border-slate-200/80 dark:border-slate-800') }} rounded-2xl border shadow-xs space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl {{ $certificate ? 'bg-amber-500/20 text-amber-500' : ($isEligibleForCertificate ? 'bg-emerald-500/20 text-emerald-500' : 'bg-blue-500/20 text-blue-500') }} flex items-center justify-center text-lg shrink-0">
@@ -185,23 +185,23 @@
 
                 <!-- Metrics Grid -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs">
-                    <div class="p-3 bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800">
-                        <span class="text-[10px] text-slate-400 block uppercase font-bold">Presensi Hadir</span>
+                    <div class="p-3 bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 block uppercase font-bold">Presensi Hadir</span>
                         <span class="text-sm font-bold text-slate-900 dark:text-white mt-0.5 block">{{ $totalDaysPresent }} Hari</span>
                     </div>
-                    <div class="p-3 bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800">
-                        <span class="text-[10px] text-slate-400 block uppercase font-bold">Target Jam</span>
+                    <div class="p-3 bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 block uppercase font-bold">Target Jam</span>
                         <span class="text-sm font-bold text-slate-900 dark:text-white mt-0.5 block">{{ $targetHours }} Jam</span>
                     </div>
-                    <div class="p-3 bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800">
-                        <span class="text-[10px] text-slate-400 block uppercase font-bold">Evaluasi Mentor</span>
-                        <span class="text-sm font-bold {{ $finalEvaluation ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500' }} mt-0.5 block">
+                    <div class="p-3 bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 block uppercase font-bold">Evaluasi Mentor</span>
+                        <span class="text-sm font-bold {{ $finalEvaluation ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400' }} mt-0.5 block">
                             {{ $finalEvaluation ? 'Grade ' . $finalEvaluation->final_grade : 'Menunggu' }}
                         </span>
                     </div>
-                    <div class="p-3 bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800">
-                        <span class="text-[10px] text-slate-400 block uppercase font-bold">Status Sertifikat</span>
-                        <span class="text-sm font-bold {{ $certificate ? 'text-amber-500' : 'text-slate-500' }} mt-0.5 block">
+                    <div class="p-3 bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 block uppercase font-bold">Status Sertifikat</span>
+                        <span class="text-sm font-bold {{ $certificate ? 'text-amber-500' : 'text-slate-600 dark:text-slate-400' }} mt-0.5 block">
                             {{ $certificate ? 'Terbit ✓' : 'Menunggu Mentor' }}
                         </span>
                     </div>
@@ -379,7 +379,7 @@
                             </div>
                         @endif
 
-                        <div class="p-5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-slate-900 border border-amber-500/30 space-y-4">
+                        <div class="p-5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-white dark:to-slate-900 border border-amber-500/30 space-y-4">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-500/20 pb-3">
                                 <div>
                                     <span class="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest block">NOMOR SERI SERTIFIKAT</span>

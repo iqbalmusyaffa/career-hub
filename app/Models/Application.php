@@ -74,6 +74,11 @@ class Application extends Model
         return $this->hasMany(InterviewScorecard::class);
     }
 
+    public function agreement()
+    {
+        return $this->hasOne(ApplicationAgreement::class)->latestOfMany();
+    }
+
     public function agreements()
     {
         return $this->hasMany(ApplicationAgreement::class);
