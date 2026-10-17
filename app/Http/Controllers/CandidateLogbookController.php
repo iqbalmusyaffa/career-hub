@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Application;
 use App\Models\InternshipLogbook;
+use App\Models\InternshipPeriod;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 

@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             CompanyMentorSeeder::class,
             DummyDataSeeder::class,
             CandidateFaridProfileSeeder::class,
+            CandidateTaniaLogbookSeeder::class,
         ]);
     }
 }
