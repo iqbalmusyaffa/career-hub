@@ -221,6 +221,7 @@
                                             $todayCarbon = \Carbon\Carbon::today();
                                             $entry = $logbooks[$dateStr] ?? null;
                                             $unlockReq = $unlockRequestsMap[$dateStr] ?? null;
+                                            $leaveReq = $leaveRequestsMap[$dateStr] ?? null;
                                             $isUnlocked = $unlockReq && $unlockReq->unlocked_until && $unlockReq->unlocked_until->isFuture();
                                             $isWeekend = $item['isWeekend'] ?? false;
                                             $isPadding = $item['isPadding'] ?? false;
@@ -238,6 +239,33 @@
                                             $isAfterEnd = $dateCarbon->greaterThan($periodEndDate->copy()->startOfDay());
                                             $isOutsidePeriod = $isBeforeStart || $isAfterEnd;
 
+                                            // Determine if date has approved Leave / Izin
+                                            $isApprovedLeave = false;
+                                            $leaveType = null;
+                                            $leaveLabel = null;
+
+                                            if ($leaveReq) {
+                                                $isApprovedLeave = true;
+                                                $leaveType = $leaveReq->leave_type;
+                                                $leaveLabel = $leaveReq->leave_type_label;
+                                            } elseif ($entry && (
+                                                in_array($entry->attendance_type, ['Tidak Hadir Dengan Keterangan', 'Izin', 'Sakit', 'permission', 'sick', 'Izin Resmi Disetujui']) ||
+                                                str_contains(strtolower($entry->activities ?? ''), 'izin') ||
+                                                str_contains(strtolower($entry->activities ?? ''), 'sakit')
+                                            )) {
+                                                $isApprovedLeave = true;
+                                                if (str_contains(strtolower($entry->attendance_type ?? ''), 'sakit') || str_contains(strtolower($entry->activities ?? ''), 'sakit') || str_contains(strtolower($entry->activities ?? ''), 'dokter')) {
+                                                    $leaveType = 'sick_leave';
+                                                    $leaveLabel = 'Izin Sakit Disetujui';
+                                                } elseif (str_contains(strtolower($entry->activities ?? ''), 'akademik') || str_contains(strtolower($entry->activities ?? ''), 'kampus') || str_contains(strtolower($entry->activities ?? ''), 'sidang') || str_contains(strtolower($entry->activities ?? ''), 'bimbingan')) {
+                                                    $leaveType = 'academic_leave';
+                                                    $leaveLabel = 'Izin Akademik Disetujui';
+                                                } else {
+                                                    $leaveType = 'permission';
+                                                    $leaveLabel = 'Izin Resmi Disetujui';
+                                                }
+                                            }
+
                                             if ($isNationalHoliday) {
                                                 $status = 'national_holiday';
                                             } elseif ($isCutiBersama) {
@@ -246,6 +274,8 @@
                                                 $status = 'company_holiday';
                                             } elseif ($entry) {
                                                 $status = $entry->status;
+                                            } elseif ($isApprovedLeave) {
+                                                $status = 'approved';
                                             } elseif ($isUnlocked) {
                                                 $status = 'unlocked';
                                             } elseif ($isWeekend) {
@@ -267,6 +297,8 @@
                                             if ($holidayObj) {
                                                 $typeStr = $holidayObj->type === 'company_holiday' ? 'Libur Khusus Perusahaan' : ($holidayObj->type === 'cuti_bersama' ? 'Cuti Bersama Pemerintah' : 'Libur Nasional');
                                                 $cellTooltip = $holidayObj->name . ' (' . $typeStr . ') - Klik untuk melihat detail';
+                                            } elseif ($isApprovedLeave && $status === 'approved') {
+                                                $cellTooltip = ($leaveLabel ?? 'Izin Resmi Disetujui') . ' - Klik untuk melihat detail';
                                             } elseif ($isFuture) {
                                                 $cellTooltip = 'Presensi belum dibuka untuk tanggal mendatang (' . $dateCarbon->translatedFormat('d M Y') . ') - Klik untuk melihat detail';
                                             } elseif ($status === 'outside_period') {
@@ -278,28 +310,73 @@
                                             } else {
                                                 $cellTooltip = $dateCarbon->translatedFormat('d F Y') . ' - Klik untuk membuka';
                                             }
+
+                                            $cellBgClass = '';
+                                            if ($isPadding) {
+                                                $cellBgClass = 'opacity-40 bg-slate-50/40 dark:bg-slate-900/20';
+                                            } elseif ($highlight) {
+                                                $cellBgClass = 'bg-blue-50/80 dark:bg-blue-950/50';
+                                            } elseif ($status === 'unlocked') {
+                                                $cellBgClass = 'bg-emerald-50/50 dark:bg-emerald-950/30';
+                                            } elseif ($isNationalHoliday) {
+                                                $cellBgClass = 'bg-rose-50/40 dark:bg-rose-950/30';
+                                            } elseif ($isCutiBersama) {
+                                                $cellBgClass = 'bg-amber-50/40 dark:bg-amber-950/30';
+                                            } elseif ($isCompanyHoliday) {
+                                                $cellBgClass = 'bg-purple-50/40 dark:bg-purple-950/30';
+                                            } elseif ($isApprovedLeave && $status === 'approved') {
+                                                $cellBgClass = $leaveType === 'academic_leave'
+                                                    ? 'bg-sky-50/60 dark:bg-sky-950/30'
+                                                    : ($leaveType === 'sick_leave'
+                                                        ? 'bg-rose-50/60 dark:bg-rose-950/30'
+                                                        : 'bg-amber-50/60 dark:bg-amber-950/30');
+                                            } elseif ($isWeekend) {
+                                                $cellBgClass = 'bg-slate-50/60 dark:bg-slate-900/40';
+                                            } elseif ($status === 'outside_period') {
+                                                $cellBgClass = 'opacity-40 bg-slate-50/40 dark:bg-slate-900/20';
+                                            } elseif ($status === 'absent') {
+                                                $cellBgClass = 'bg-rose-50/20 dark:bg-rose-950/10';
+                                            } elseif ($isFuture) {
+                                                $cellBgClass = 'bg-slate-50/20 dark:bg-slate-900/10';
+                                            }
                                         @endphp
 
                                         <a href="{{ route('candidate.logbook.show', array_filter(['date' => $dateStr, 'candidate_id' => $isAdminOrStaff ? $user->id : null])) }}" 
                                            title="{{ $cellTooltip }}"
-                                           class="py-3 px-1 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 transition flex flex-col items-center justify-center gap-1 min-h-[64px] relative group {{ $isFuture ? 'cursor-not-allowed' : 'cursor-pointer' }} {{ $isPadding ? 'opacity-40 bg-slate-50/40 dark:bg-slate-900/20' : ($highlight ? 'bg-blue-50/80 dark:bg-blue-950/50' : ($status === 'unlocked' ? 'bg-emerald-50/50 dark:bg-emerald-950/30' : ($isNationalHoliday ? 'bg-rose-50/40 dark:bg-rose-950/30' : ($isCutiBersama ? 'bg-amber-50/40 dark:bg-amber-950/30' : ($isCompanyHoliday ? 'bg-purple-50/40 dark:bg-purple-950/30' : ($isWeekend ? 'bg-slate-50/60 dark:bg-slate-900/40' : ($status === 'outside_period' ? 'opacity-40 bg-slate-50/40 dark:bg-slate-900/20' : ($status === 'absent' ? 'bg-rose-50/20 dark:bg-rose-950/10' : ($isFuture ? 'bg-slate-50/20 dark:bg-slate-900/10' : ''))))))))) }}">
+                                           class="py-3 px-1 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 transition flex flex-col items-center justify-center gap-1 min-h-[64px] relative group {{ $isFuture ? 'cursor-not-allowed' : 'cursor-pointer' }} {{ $cellBgClass }}">
                                             
                                             @if($highlight)
                                                 <div class="w-6 h-6 rounded-full border-2 border-blue-600 text-blue-600 dark:text-blue-400 font-bold text-xs flex items-center justify-center bg-white dark:bg-slate-800 shadow-2xs">
                                                     {{ $item['day'] }}
                                                 </div>
                                             @else
-                                                <span class="text-xs font-semibold {{ $isNationalHoliday ? 'text-rose-600 dark:text-rose-400' : ($isCutiBersama ? 'text-amber-600 dark:text-amber-400' : ($isCompanyHoliday ? 'text-purple-600 dark:text-purple-400' : ($status === 'absent' ? 'text-rose-600 dark:text-rose-400' : ($status === 'unlocked' ? 'text-emerald-600 dark:text-emerald-400' : ($status === 'outside_period' ? 'text-slate-400 dark:text-slate-600' : ($isFuture ? 'text-slate-500 dark:text-slate-400' : 'text-slate-700 dark:text-slate-300')))))) }}">{{ $item['day'] }}</span>
+                                                <span class="text-xs font-semibold {{ $isNationalHoliday ? 'text-rose-600 dark:text-rose-400' : ($isCutiBersama ? 'text-amber-600 dark:text-amber-400' : ($isCompanyHoliday ? 'text-purple-600 dark:text-purple-400' : (($isApprovedLeave && $status === 'approved') ? ($leaveType === 'academic_leave' ? 'text-sky-700 dark:text-sky-300 font-bold' : ($leaveType === 'sick_leave' ? 'text-rose-700 dark:text-rose-300 font-bold' : 'text-amber-700 dark:text-amber-300 font-bold')) : ($status === 'absent' ? 'text-rose-600 dark:text-rose-400' : ($status === 'unlocked' ? 'text-emerald-600 dark:text-emerald-400' : ($status === 'outside_period' ? 'text-slate-400 dark:text-slate-600' : ($isFuture ? 'text-slate-500 dark:text-slate-400' : 'text-slate-700 dark:text-slate-300'))))))) }}">{{ $item['day'] }}</span>
                                             @endif
 
                                             @if($status === 'approved')
-                                                <i class="fa-solid fa-check text-emerald-500 text-xs font-bold"></i>
+                                                @if($isApprovedLeave)
+                                                    @if($leaveType === 'academic_leave')
+                                                        <i class="fa-solid fa-graduation-cap text-sky-500 text-xs font-bold" title="{{ $leaveLabel }}"></i>
+                                                    @elseif($leaveType === 'sick_leave')
+                                                        <i class="fa-solid fa-notes-medical text-rose-500 text-xs font-bold" title="{{ $leaveLabel }}"></i>
+                                                    @elseif($leaveType === 'family_event')
+                                                        <i class="fa-solid fa-users text-purple-500 text-xs font-bold" title="{{ $leaveLabel }}"></i>
+                                                    @else
+                                                        <i class="fa-solid fa-envelope-open-text text-amber-500 text-xs font-bold" title="{{ $leaveLabel }}"></i>
+                                                    @endif
+                                                @else
+                                                    <i class="fa-solid fa-check text-emerald-500 text-xs font-bold" title="Hadir Disetujui"></i>
+                                                @endif
                                             @elseif($status === 'pending')
-                                                <span class="w-2 h-2 bg-blue-600 rotate-45 inline-block"></span>
+                                                @if($isApprovedLeave)
+                                                    <i class="fa-solid fa-envelope text-amber-500 text-xs" title="Izin Menunggu Verifikasi"></i>
+                                                @else
+                                                    <span class="w-2 h-2 bg-blue-600 rotate-45 inline-block" title="Menunggu Mentor"></span>
+                                                @endif
                                             @elseif($status === 'action_required')
-                                                <span class="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[8px] border-b-amber-600 inline-block"></span>
+                                                <span class="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[8px] border-b-amber-600 inline-block" title="Perlu Tindakan"></span>
                                             @elseif($status === 'rejected')
-                                                <i class="fa-solid fa-xmark text-red-600 text-xs font-bold"></i>
+                                                <i class="fa-solid fa-xmark text-red-600 text-xs font-bold" title="Ditolak"></i>
                                             @elseif($status === 'unlocked')
                                                 <i class="fa-solid fa-lock-open text-emerald-500 text-xs" title="Dispensasi Disetujui (Buka Kunci)"></i>
                                             @elseif($status === 'national_holiday')
@@ -313,11 +390,11 @@
                                             @elseif($status === 'absent')
                                                 <span class="w-2 h-2 bg-rose-400 rounded-full inline-block opacity-75" title="Terlewat / Lupa Absen (Terkunci)"></span>
                                             @elseif($status === 'weekend')
-                                                <span class="w-2 h-2 bg-slate-800 dark:bg-slate-400 rounded-2xs inline-block"></span>
+                                                <span class="w-2 h-2 bg-slate-800 dark:bg-slate-400 rounded-2xs inline-block" title="Akhir Pekan (Libur)"></span>
                                             @elseif($status === 'padding')
                                                 <span class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700 inline-block opacity-40"></span>
                                             @else
-                                                <span class="w-2 h-2 rounded-full border border-slate-300 dark:border-slate-600 inline-block"></span>
+                                                <span class="w-2 h-2 rounded-full border border-slate-300 dark:border-slate-600 inline-block" title="Belum Diisi"></span>
                                             @endif
                                         </a>
                                     @endforeach
@@ -345,7 +422,28 @@
                                 <div class="w-4 h-4 flex items-center justify-center shrink-0">
                                     <i class="fa-solid fa-check text-emerald-500 text-xs"></i>
                                 </div>
-                                <span class="truncate">Disetujui</span>
+                                <span class="truncate">Hadir Disetujui</span>
+                            </div>
+
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-sky-50/70 dark:bg-sky-950/40 border border-sky-200/60 dark:border-sky-800 text-[11px] font-medium text-sky-800 dark:text-sky-300">
+                                <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-graduation-cap text-sky-500 text-xs"></i>
+                                </div>
+                                <span class="truncate">Izin Akademik</span>
+                            </div>
+
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-rose-50/70 dark:bg-rose-950/40 border border-rose-200/60 dark:border-rose-800 text-[11px] font-medium text-rose-800 dark:text-rose-300">
+                                <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-notes-medical text-rose-500 text-xs"></i>
+                                </div>
+                                <span class="truncate">Izin Sakit</span>
+                            </div>
+
+                            <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800 text-[11px] font-medium text-amber-800 dark:text-amber-300">
+                                <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-envelope-open-text text-amber-500 text-xs"></i>
+                                </div>
+                                <span class="truncate">Izin / Cuti Resmi</span>
                             </div>
 
                             <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300">

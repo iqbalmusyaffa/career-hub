@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Application;
 use App\Models\InternshipLogbook;
 use App\Models\InternshipPeriod;
+use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -142,6 +143,23 @@ class CandidateLogbookController extends Controller
             ->get()
             ->keyBy(fn($u) => $u->target_date->format('Y-m-d'));
 
+        // Query approved Leave Requests for the candidate to display distinct icons on calendar
+        $leaveRequests = LeaveRequest::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->get();
+
+        $leaveRequestsMap = [];
+        foreach ($leaveRequests as $lr) {
+            $cDate = $lr->start_date ? $lr->start_date->copy() : null;
+            $eDate = $lr->end_date ? $lr->end_date->copy() : $cDate;
+            if ($cDate && $eDate) {
+                while ($cDate->lessThanOrEqualTo($eDate)) {
+                    $leaveRequestsMap[$cDate->format('Y-m-d')] = $lr;
+                    $cDate->addDay();
+                }
+            }
+        }
+
         // 6. Calculate synchronized overall metrics
         $allLogbooks = InternshipLogbook::where('user_id', $user->id)->get();
         $approvedCount = $allLogbooks->where('status', 'approved')->count();
@@ -187,6 +205,7 @@ class CandidateLogbookController extends Controller
             'candidateList',
             'logbooks',
             'unlockRequestsMap',
+            'leaveRequestsMap',
             'holidaysMap',
             'overridesMap',
             'startDate',
