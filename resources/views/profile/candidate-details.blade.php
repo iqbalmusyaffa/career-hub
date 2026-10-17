@@ -49,6 +49,10 @@
                     if ($profile && $profile->$field) return json_encode($profile->$field);
                     return $default;
                 };
+
+                $indonesiaUniversities = file_exists(resource_path('json/indonesia_universities.json'))
+                    ? json_decode(file_get_contents(resource_path('json/indonesia_universities.json')), true)
+                    : [];
             @endphp
 
             <!-- GLOBAL PREVIEW POP-UP MODAL (Photos & Documents) -->
@@ -477,8 +481,8 @@
                                             searchSchools() {
                                                 const query = (item.institution || '').trim().toLowerCase();
                                                 
-                                                if (['D3', 'S1', 'S2', 'S3'].includes(item.level)) {
-                                                    this.searchResults = universities.filter(u => u.toLowerCase().includes(query)).slice(0, 30);
+                                                if (!item.level || ['D3', 'S1', 'S2', 'S3'].includes(item.level)) {
+                                                    this.searchResults = (universities || []).filter(u => u.toLowerCase().includes(query)).slice(0, 30);
                                                 } else if (['SMA', 'SMK'].includes(item.level) && query.length >= 3) {
                                                     this.isSearching = true;
                                                     fetch(`https://api-sekolah-indonesia.vercel.app/sekolah/s?sekolah=${encodeURIComponent(query)}`)
@@ -1588,7 +1592,7 @@
                         window.scrollTo({ top: 120, behavior: 'smooth' });
                     }
                 },
-                universities: [],
+                universities: @json($indonesiaUniversities),
                 scrollActiveIntoView() {
                     this.$nextTick(() => {
                         const activeTimelineBtn = document.querySelector('[data-timeline-step="' + this.activeTab + '"]');
@@ -1607,13 +1611,17 @@
                     });
                     this.scrollActiveIntoView();
 
-                    fetch('http://universities.hipolabs.com/search?country=Indonesia')
-                        .then(res => res.json())
-                        .then(data => {
-                            let names = data.map(item => item.name);
-                            this.universities = [...new Set(names)].sort();
-                        })
-                        .catch(err => console.error('Gagal mengambil data universitas:', err));
+                    if (!this.universities || this.universities.length === 0) {
+                        fetch('https://universities.hipolabs.com/search?country=Indonesia')
+                            .then(res => res.json())
+                            .then(data => {
+                                if (Array.isArray(data)) {
+                                    let names = data.map(item => item.name);
+                                    this.universities = [...new Set([...(this.universities || []), ...names])].sort();
+                                }
+                            })
+                            .catch(err => console.warn('Universities API fallback:', err));
+                    }
                 },
                 nickname: '{{ old('nickname', $profile->nickname ?? '') }}',
                 phone: '{{ old('phone', $profile->phone ?? '') }}',
