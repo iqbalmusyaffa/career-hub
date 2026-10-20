@@ -33,9 +33,19 @@ class UmkReference extends Model
 
         $cleanLoc = strtolower(trim($location));
         
-        // Exact or LIKE match
-        return static::whereRaw('LOWER(city_district) = ?', [$cleanLoc])
-            ->orWhereRaw('LOWER(city_district) LIKE ?', ["%{$cleanLoc}%"])
+        // 1. Exact or prefix match (e.g. "Kota Bandung", "Kota Administrasi Jakarta Selatan")
+        $exact = static::whereRaw('LOWER(city_district) = ?', [$cleanLoc])
+            ->orWhereRaw('LOWER(city_district) = ?', ["kota {$cleanLoc}"])
+            ->orWhereRaw('LOWER(city_district) = ?', ["kota administrasi {$cleanLoc}"])
+            ->orWhereRaw('LOWER(city_district) = ?', ["kabupaten {$cleanLoc}"])
+            ->first();
+
+        if ($exact) {
+            return $exact;
+        }
+
+        // 2. Substring match
+        return static::whereRaw('LOWER(city_district) LIKE ?', ["%{$cleanLoc}%"])
             ->orWhereRaw('? LIKE CONCAT("%", LOWER(city_district), "%")', [$cleanLoc])
             ->first();
     }

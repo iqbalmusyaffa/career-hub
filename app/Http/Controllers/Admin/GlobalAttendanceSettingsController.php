@@ -17,6 +17,14 @@ class GlobalAttendanceSettingsController extends Controller
             'anti_fake_gps' => SystemSetting::getByKey('attendance_anti_fake_gps', '1') === '1',
             'target_hours' => (int) SystemSetting::getByKey('attendance_default_target_hours', '400'),
             'min_percentage' => (int) SystemSetting::getByKey('attendance_min_passing_percentage', '80'),
+
+            // Global Notification Reminder Controls
+            'reminder_master_enabled' => SystemSetting::getByKey('attendance_reminder_enabled', '1') === '1',
+            'reminder_email_enabled' => SystemSetting::getByKey('attendance_reminder_email_enabled', '1') === '1',
+            'reminder_inapp_enabled' => SystemSetting::getByKey('attendance_reminder_inapp_enabled', '1') === '1',
+            'reminder_morning_enabled' => SystemSetting::getByKey('attendance_reminder_morning_enabled', '1') === '1',
+            'reminder_afternoon_enabled' => SystemSetting::getByKey('attendance_reminder_afternoon_enabled', '1') === '1',
+            'reminder_mentor_enabled' => SystemSetting::getByKey('attendance_reminder_mentor_enabled', '1') === '1',
         ];
 
         return view('admin.attendance_settings.index', compact('settings'));
@@ -31,20 +39,28 @@ class GlobalAttendanceSettingsController extends Controller
             'min_percentage' => 'required|numeric|min:50|max:100',
         ]);
 
-        SystemSetting::setKey('attendance_cutoff_time', $request->cutoff_time, 'Waktu batas pengisian absensi harian (WIB)');
-        SystemSetting::setKey('attendance_max_gps_accuracy', (string) $request->max_gps_accuracy, 'Batas maksimum toleransi akurasi GPS satelit dalam meter');
-        SystemSetting::setKey('attendance_anti_fake_gps', $request->has('anti_fake_gps') ? '1' : '0', 'Aktifkan filter deteksi Fake GPS & Mock Location otomatis');
-        SystemSetting::setKey('attendance_default_target_hours', (string) $request->target_hours, 'Standar akumulasi jam kerja target magang');
-        SystemSetting::setKey('attendance_min_passing_percentage', (string) $request->min_percentage, 'Persentase minimal kehadiran kelulusan magang');
+        SystemSetting::setKey('attendance_cutoff_time', $request->cutoff_time);
+        SystemSetting::setKey('attendance_max_gps_accuracy', (string) $request->max_gps_accuracy);
+        SystemSetting::setKey('attendance_anti_fake_gps', $request->has('anti_fake_gps') ? '1' : '0');
+        SystemSetting::setKey('attendance_default_target_hours', (string) $request->target_hours);
+        SystemSetting::setKey('attendance_min_passing_percentage', (string) $request->min_percentage);
+
+        // Save Global Reminder Switches
+        SystemSetting::setKey('attendance_reminder_enabled', $request->has('reminder_master_enabled') ? '1' : '0');
+        SystemSetting::setKey('attendance_reminder_email_enabled', $request->has('reminder_email_enabled') ? '1' : '0');
+        SystemSetting::setKey('attendance_reminder_inapp_enabled', $request->has('reminder_inapp_enabled') ? '1' : '0');
+        SystemSetting::setKey('attendance_reminder_morning_enabled', $request->has('reminder_morning_enabled') ? '1' : '0');
+        SystemSetting::setKey('attendance_reminder_afternoon_enabled', $request->has('reminder_afternoon_enabled') ? '1' : '0');
+        SystemSetting::setKey('attendance_reminder_mentor_enabled', $request->has('reminder_mentor_enabled') ? '1' : '0');
 
         $user = auth()->user();
         AuditLog::record(
             'UPDATE_GLOBAL_ATTENDANCE_SETTINGS',
-            "Super Admin {$user->name} memperbarui Master Pengaturan Kebijakan Presensi & GPS [Cutoff: {$request->cutoff_time}, Akurasi GPS: ±{$request->max_gps_accuracy}m, Anti-Fake: " . ($request->has('anti_fake_gps') ? 'ON' : 'OFF') . "]",
+            "Super Admin {$user->name} memperbarui Master Pengaturan Kebijakan Presensi & GPS [Cutoff: {$request->cutoff_time}, Akurasi GPS: ±{$request->max_gps_accuracy}m, Reminders: " . ($request->has('reminder_master_enabled') ? 'ON' : 'OFF') . "]",
             $user
         );
 
         return redirect()->route('admin.attendance-settings.index')
-            ->with('success', 'Master Pengaturan Kebijakan Presensi & GPS Global berhasil disimpan.');
+            ->with('success', 'Master Pengaturan Kebijakan Presensi, GPS, dan Otomatisasi Pengingat berhasil disimpan.');
     }
 }

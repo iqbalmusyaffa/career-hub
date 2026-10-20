@@ -1,4 +1,4 @@
-﻿<x-public-layout>
+<x-public-layout>
     <!-- Breadcrumb & Hero Header -->
     <div class="bg-gradient-to-b from-indigo-50/70 via-blue-50/30 to-white pt-10 pb-12 border-b border-slate-200/80">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -49,11 +49,12 @@
                         <nav class="space-y-1 text-xs">
                             <a href="#aturan-1" class="block px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-indigo-600 hover:bg-white transition">1. Jam Kerja & Presensi Logbook</a>
                             <a href="#aturan-2" class="block px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-indigo-600 hover:bg-white transition">2. Libur Nasional & Cuti Bersama</a>
-                            <a href="#aturan-3" class="block px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-indigo-600 hover:bg-white transition">3. Toleransi Izin & Surat Sakit</a>
-                            <a href="#aturan-4" class="block px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-indigo-600 hover:bg-white transition">4. Skema & Formula Potongan Uang Saku</a>
+                            <a href="#aturan-3" class="block px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-indigo-600 hover:bg-white transition">3. Toleransi Izin 5 Hari & Reset Bulanan</a>
+                            <a href="#aturan-4" class="block px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-indigo-600 hover:bg-white transition">4. Skema UMK, Potongan & Rapel Tutup Buku</a>
                             <a href="#aturan-5" class="block px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-indigo-600 hover:bg-white transition">5. Ketentuan Rekening Bank & KTP Match</a>
                             <a href="#aturan-6" class="block px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-indigo-600 hover:bg-white transition">6. Alur Revisi & Penolakan Laporan</a>
                             <a href="#aturan-7" class="block px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-indigo-600 hover:bg-white transition">7. Syarat Kelulusan & Sertifikat</a>
+                            <a href="#aturan-8" class="block px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-indigo-600 hover:bg-white transition">8. Ketentuan Cuti Karyawan (Reset 1 Jan)</a>
                         </nav>
 
                         <div class="pt-4 border-t border-slate-200">
@@ -128,26 +129,34 @@
                     <section id="aturan-3" class="scroll-mt-24 space-y-4">
                         <div class="flex items-center gap-3">
                             <span class="w-8 h-8 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">3</span>
-                            <h2 class="text-lg sm:text-xl font-bold text-slate-900">Kebijakan Toleransi Izin & Surat Keterangan Sakit</h2>
+                            <h2 class="text-lg sm:text-xl font-bold text-slate-900">Kebijakan Toleransi Izin & Surat Keterangan Sakit (Reset Tiap Bulan)</h2>
                         </div>
                         <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
-                            Perusahaan memberikan hak toleransi ketidakhadiran berizin untuk menjaga fleksibilitas dan kesehatan peserta magang.
+                            Perusahaan memberikan hak toleransi ketidakhadiran berizin untuk menjaga fleksibilitas dan kesehatan peserta magang dengan mekanisme <strong>reset otomatis setiap awal bulan baru</strong>:
                         </p>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
                             <div class="p-4 rounded-2xl border border-slate-200 bg-white space-y-2">
                                 <div class="font-bold text-slate-900 flex items-center gap-2">
-                                    <i class="fa-solid fa-notes-medical text-amber-500"></i> Kuota Toleransi 4 Hari Bebas Potong
+                                    <i class="fa-solid fa-arrows-rotate text-emerald-600"></i> Kuota Toleransi 5 Hari / Bulan (Reset Bulanan)
                                 </div>
                                 <p class="text-slate-600 leading-relaxed text-[11px]">
-                                    Akumulasi izin dan sakit hingga <strong>maksimal 4 hari per periode bulanan</strong> berstatus <strong>Bebas Potongan Uang Saku</strong> (uang saku dibayar penuh).
+                                    Akumulasi izin resmi dan sakit hingga <strong>maksimal 5 hari kerja per periode bulanan</strong> berstatus <strong>Bebas Potongan Uang Saku</strong> (uang saku dibayar penuh). Kuota 5 hari ini otomatis ter-reset kembali setiap awal bulan kalender baru.
                                 </p>
                             </div>
                             <div class="p-4 rounded-2xl border border-slate-200 bg-white space-y-2">
                                 <div class="font-bold text-slate-900 flex items-center gap-2">
-                                    <i class="fa-solid fa-file-waveform text-blue-600"></i> Wajib Unggah Surat Dokter
+                                    <i class="fa-solid fa-file-waveform text-blue-600"></i> Wajib Unggah Surat Bukti / Dokter
                                 </div>
                                 <p class="text-slate-600 leading-relaxed text-[11px]">
-                                    Untuk ketidakhadiran karena sakit &ge; 1 hari, peserta diwajibkan mengunggah foto / scan <strong>Surat Keterangan Dokter</strong> resmi untuk verifikasi Mentor.
+                                    Untuk izin sakit &ge; 1 hari diwajibkan melampirkan <strong>Surat Keterangan Dokter</strong> resmi. Untuk dispensasi kampus (sidang/ujian), wajib melampirkan surat pengantar jurusan melalui menu <em>Portal Cuti & Izin</em>.
+                                </p>
+                            </div>
+                            <div class="p-4 rounded-2xl border border-rose-200 bg-rose-50/40 space-y-2 sm:col-span-2">
+                                <div class="font-bold text-rose-900 flex items-center gap-2">
+                                    <i class="fa-solid fa-circle-xmark text-rose-600"></i> Ketentuan Jika Melebihi Kuota (Status Ditolak & Dicatat Alpa)
+                                </div>
+                                <p class="text-rose-800 leading-relaxed text-[11px]">
+                                    Jika peserta mengajukan izin melebihi batas kuota toleransi 5 hari per bulan, hari kelebihan tersebut <strong>langsung berstatus Ditolak (Rejected)</strong> dan pada logbook kalender presensi otomatis tercatat sebagai <strong>"Tidak Hadir Tanpa Keterangan" (Alpa)</strong> dengan konsekuensi pemotongan uang saku proporsional.
                                 </p>
                             </div>
                         </div>
@@ -157,27 +166,27 @@
                     <section id="aturan-4" class="scroll-mt-24 space-y-4">
                         <div class="flex items-center gap-3">
                             <span class="w-8 h-8 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">4</span>
-                            <h2 class="text-lg sm:text-xl font-bold text-slate-900">Skema & Formula Pemotongan Uang Saku</h2>
+                            <h2 class="text-lg sm:text-xl font-bold text-slate-900">Skema Standar UMK, Formula Pemotongan & Rapel Tutup Buku</h2>
                         </div>
                         <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
-                            Uang saku magang dihitung secara proporsional berdasarkan jumlah Hari Kerja (HK) aktif dalam 1 bulan (standar 22 HK):
+                            Uang saku magang mengacu pada standar Upah Minimum Kota/Kabupaten (UMK) penempatan kerja atau kesepakatan SPK. Pemotongan uang saku dihitung secara proporsional berdasarkan jumlah Hari Kerja (HK) aktif dalam bulan tersebut (rata-rata 20-22 HK):
                         </p>
 
                         <!-- Formula Card Box -->
-                        <div class="p-5 rounded-2xl bg-slate-900 text-white space-y-3">
+                        <div class="p-5 rounded-2xl bg-slate-900 text-white space-y-3.5">
                             <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
                                 <i class="fa-solid fa-calculator"></i> Formula Resmi Pemotongan:
                             </div>
                             <div class="p-3 bg-slate-800/90 rounded-xl font-mono text-xs sm:text-sm text-emerald-400 border border-slate-700">
-                                Potongan = [ Alpa + Max(0, Izin &minus; 4 Hari) ] &times; (Uang Saku Pokok / Total Hari Kerja Aktif)
+                                Potongan = [ Alpa + Max(0, Izin &minus; 5 Hari) ] &times; (Uang Saku Pokok / Total Hari Kerja Aktif)
                             </div>
                             <div class="p-3 bg-slate-800/90 rounded-xl font-mono text-xs sm:text-sm text-white border border-slate-700">
                                 Uang Saku Bersih = Max(0, Uang Saku Pokok &minus; Total Potongan)
                             </div>
-                            <div class="text-[11px] text-slate-400 leading-relaxed">
-                                &bull; Tarif Harian = Rp 2.800.000 / 22 Hari Kerja &asymp; <strong>Rp 127.273 / hari</strong>.<br>
-                                &bull; Jika peserta <strong>tidak hadir sama sekali (0 / 22 HK)</strong>, maka potongan adalah 100% (Rp 2.800.000) sehingga Uang Saku Bersih adalah <strong>Rp 0</strong>.<br>
-                                &bull; Periode bulan yang belum berjalan (misal bulan depan) belum dapat diajukan pencairannya hingga periode kerja berlangsung.
+                            <div class="text-[11px] text-slate-300 leading-relaxed space-y-1.5 pt-1 border-t border-slate-800">
+                                <p>&bull; <strong>Hari Kelebihan Langsung Ditolak & Dicatat Alpa:</strong> Jika peserta mengajukan izin 6 hari dalam satu bulan, 5 hari disetujui (bebas potong), sedangkan <strong>1 hari kelebihannya langsung Ditolak</strong> dan tercatat sebagai <strong>Tidak Hadir (Alpa)</strong> di logbook dengan pemotongan 1 hari kerja.</p>
+                                <p>&bull; <strong>Contoh Kasus September 2026:</strong> UMK Rp 5.729.876 / 22 HK = tarif harian Rp 260.449. Izin 6 hari &rarr; 5 hari disetujui + 1 hari ditolak (Alpa) &rarr; potongan 1 hari (Rp 260.449) &rarr; Net diterima: <strong>Rp 5.469.427</strong>.</p>
+                                <p>&bull; <strong>Ketentuan Rapel Tutup Buku (Desember ke Januari):</strong> Saat penutupan tahun anggaran keuangan di bulan Desember, pencairan uang saku periode Desember dapat dialihkan (<em>rolled over / rapel</em>) untuk ditransfer bersamaan di periode Januari.</p>
                             </div>
                         </div>
                     </section>
@@ -257,6 +266,45 @@
                                 </div>
                                 <p class="text-slate-600 text-[11px] leading-relaxed">Sertifikat dilengkapi QR Code verifikasi publik yang dapat divalidasi keasliannya oleh pihak kampus dan instansi eksternal.</p>
                             </div>
+                        </div>
+                    </section>
+
+                    <!-- Rule 8: Ketentuan Cuti Karyawan (Reset 1 Jan) -->
+                    <section id="aturan-8" class="scroll-mt-24 space-y-4">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">8</span>
+                            <h2 class="text-lg sm:text-xl font-bold text-slate-900">Ketentuan Hak Cuti Karyawan (Reset Tiap 1 Januari)</h2>
+                        </div>
+                        <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                            Bagi pekerja yang telah diangkat sebagai karyawan kontrak (PKWT) maupun karyawan tetap (PKWTT), berlaku sistem alokasi kuota cuti resmi tahunan:
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+                            <div class="p-4 rounded-2xl border border-slate-200 bg-white space-y-2">
+                                <div class="font-bold text-slate-900 flex items-center gap-2">
+                                    <i class="fa-solid fa-briefcase text-indigo-600"></i> Karyawan Kontrak (PKWT): 12 Hari / Tahun
+                                </div>
+                                <p class="text-slate-600 text-[11px] leading-relaxed">
+                                    Mengacu pada UU Ketenagakerjaan No. 13/2003 & UU Cipta Kerja No. 6/2023 Pasal 79, karyawan berhak atas cuti tahunan resmi 12 hari kerja per tahun kalender.
+                                </p>
+                            </div>
+                            <div class="p-4 rounded-2xl border border-slate-200 bg-white space-y-2">
+                                <div class="font-bold text-slate-900 flex items-center gap-2">
+                                    <i class="fa-solid fa-award text-purple-600"></i> Karyawan Tetap (PKWTT): 15 Hari / Tahun
+                                </div>
+                                <p class="text-slate-600 text-[11px] leading-relaxed">
+                                    Karyawan tetap berhak atas alokasi cuti tahunan 15 hari kerja per tahun kalender yang dapat diajukan secara fleksibel.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-indigo-50/70 rounded-2xl border border-indigo-200 text-xs space-y-2 text-indigo-950">
+                            <div class="font-bold flex items-center gap-2 text-indigo-900">
+                                <i class="fa-solid fa-arrows-rotate text-indigo-600"></i> Siklus Reset Tiap 1 Januari:
+                            </div>
+                            <ul class="list-disc pl-5 space-y-1 text-slate-700 text-[11px] leading-relaxed">
+                                <li>Setiap tanggal <strong>1 Januari</strong> pergantian tahun baru, kuota cuti tahunan karyawan akan <strong>ter-reset otomatis kembali penuh</strong> (12 atau 15 hari).</li>
+                                <li>Sisa cuti dari tahun sebelumnya secara default tidak diakumulasikan (hangus), kecuali terdapat dispensasi cuti tunda (<em>carry forward</em>) resmi yang disetujui HR.</li>
+                                <li>Pengajuan cuti dilakukan secara mandiri melalui <em>Portal Cuti & Izin</em> minimal 3 hari sebelum tanggal pelaksanaan.</li>
+                            </ul>
                         </div>
                     </section>
 

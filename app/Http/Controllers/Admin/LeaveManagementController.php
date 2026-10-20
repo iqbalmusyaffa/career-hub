@@ -154,12 +154,38 @@ class LeaveManagementController extends Controller
             'admin_notes' => $request->admin_notes,
         ]);
 
+        // Sync with internship logbook if user is intern: record as Tidak Hadir Tanpa Keterangan (Alpa)
+        if ($leave->user && $leave->user->isIntern()) {
+            $period = CarbonPeriod::create($leave->start_date, $leave->end_date);
+            foreach ($period as $date) {
+                if (!$date->isWeekend()) {
+                    InternshipLogbook::updateOrCreate(
+                        [
+                            'user_id' => $leave->user_id,
+                            'date' => $date->format('Y-m-d'),
+                        ],
+                        [
+                            'company_id' => $leave->company_id,
+                            'application_id' => $leave->application_id,
+                            'attendance_type' => 'Tidak Hadir Tanpa Keterangan',
+                            'activities' => 'Tidak Hadir Tanpa Keterangan (Alpa): Permohonan ' . $leave->leave_type_label . ' ditolak HRD/Mentor. Alasan: ' . $request->admin_notes,
+                            'work_hours' => 0,
+                            'status' => 'rejected',
+                            'approved_at' => null,
+                            'mentor_id' => $approver->id,
+                            'mentor_notes' => 'Permohonan izin ditolak: ' . $request->admin_notes . '. Kehadiran tercatat sebagai Tidak Hadir (Alpa).',
+                        ]
+                    );
+                }
+            }
+        }
+
         AuditLog::record(
             'reject_leave',
             "Menolak permohonan {$leave->leave_type_label} untuk {$leave->user->name}. Alasan: {$request->admin_notes}"
         );
 
-        return redirect()->back()->with('success', "Permohonan cuti/izin untuk {$leave->user->name} telah ditolak dengan catatan.");
+        return redirect()->back()->with('success', "Permohonan cuti/izin untuk {$leave->user->name} telah ditolak dengan catatan dan tercatat sebagai Tidak Hadir (Alpa) pada logbook.");
     }
 
     /**

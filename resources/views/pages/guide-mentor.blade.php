@@ -1,4 +1,4 @@
-﻿<x-public-layout>
+<x-public-layout>
     <!-- Breadcrumb & Hero Header -->
     <div class="bg-gradient-to-b from-purple-50/70 via-indigo-50/30 to-white pt-10 pb-12 border-b border-slate-200/80">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -162,18 +162,19 @@
                             <h2 class="text-lg sm:text-xl font-bold text-slate-900">Pengajuan Rekomendasi Uang Saku ke HR / Finance</h2>
                         </div>
                         <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
-                            Di akhir periode bulan berjalan, Mentor mereview akumulasi kehadiran dan mengajukan nominal payroll ke HR:
+                            Di akhir periode bulan berjalan, Mentor mereview akumulasi kehadiran dan mengajukan nominal payroll ke HR berdasarkan aturan toleransi resmi:
                         </p>
                         <div class="p-4 bg-white rounded-2xl border border-slate-200 space-y-3 text-xs">
                             <div class="font-bold text-slate-900 flex items-center gap-2">
-                                <i class="fa-solid fa-hand-holding-dollar text-purple-600"></i> Alur Rekomendasi Payroll:
+                                <i class="fa-solid fa-hand-holding-dollar text-purple-600"></i> Alur Rekomendasi Payroll & Aturan Toleransi:
                             </div>
-                            <ul class="list-disc pl-5 space-y-1.5 text-slate-600">
+                            <ul class="list-disc pl-5 space-y-1.5 text-slate-600 leading-relaxed text-[11px]">
                                 <li>Buka menu <strong>Rekomendasi Uang Saku</strong> (URL: <code>/mentor/stipends</code>).</li>
                                 <li>Pilih periode bulan berjalan. Periksa rekap Hari Kerja (HK), jumlah izin, dan alpa mentee.</li>
-                                <li>Gunakan fitur <strong>Filter Kehadiran</strong> untuk melihat peserta yang izin, alpa, atau hadir penuh.</li>
-                                <li>Klik tombol <strong>"Ajukan Uang Saku"</strong> secara perorangan atau pilih banyak mentee dan tekan <strong>"Ajukan Semua Terpilih ke HR"</strong>.</li>
-                                <li>Tim HR & Finance akan menerima notifikasi otomatis untuk memproses verifikasi rekening dan transfer uang saku.</li>
+                                <li><strong>Toleransi Izin 5 Hari / Bulan (Reset Bulanan):</strong> Mentee mendapatkan toleransi izin hingga 5 hari kerja per bulan tanpa pemotongan. Hari izin yang melebihi kuota 5 hari langsung berstatus Ditolak dan otomatis tercatat sebagai Tidak Hadir (Alpa) di logbook presensi dengan pemotongan uang saku proporsional.</li>
+                                <li><strong>Standar Nominal UMK:</strong> Besaran uang saku mengacu pada standar UMK lokasi penempatan atau kesepakatan surat perjanjian magang.</li>
+                                <li><strong>Rapel Periode Tutup Buku:</strong> Untuk periode Desember ke Januari saat penutupan tahun buku keuangan perusahaan, status pencairan dapat dirapel untuk ditransfer bersamaan di periode Januari.</li>
+                                <li>Klik tombol <strong>"Ajukan Uang Saku"</strong> secara perorangan atau pilih banyak mentee dan tekan <strong>"Ajukan Semua Terpilih ke HR"</strong>. Tim HR & Finance akan memproses transfer ke rekening bank mentee yang terverifikasi KTP Match.</li>
                             </ul>
                         </div>
                     </section>

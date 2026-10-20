@@ -2,7 +2,7 @@
     $leavePolicy = $leavePolicy ?? \App\Models\CompanyLeavePolicy::getForCompany(1);
     $annualQuota = $leavePolicy->annual_leave_quota ?? 12;
     $permanentQuota = $leavePolicy->permanent_leave_quota ?? 15;
-    $internshipMaxDays = $leavePolicy->internship_max_excused_days ?? 4;
+    $internshipMaxDays = $leavePolicy->internship_max_excused_days ?? 5;
 
     $jobBenefits = array_values(array_filter(array_map('trim', explode(',', $application->job->benefits ?? ''))));
     if (empty($jobBenefits) && !empty($application->job?->companyProfile?->benefits)) {
@@ -50,8 +50,8 @@ PASAL 3: JAM PELATIHAN MAGANG & WAKTU ISTIRAHAT
 PASAL 4: HAK IZIN AKADEMIK, UJIAN KAMPUS, CUTI SAKIT & KETENTUAN DISPENSASI
 1. Izin Akademik: Pihak Pertama memberikan izin dispensasi resmi kepada Pihak Kedua untuk keperluan akademik institusi pendidikan (seperti: Sidang Skripsi/Tugas Akhir, Ujian Tengah/Akhir Semester, Bimbingan Dosen, atau Wisuda) dengan pemberitahuan dan surat pengantar kampus.
 2. Izin Sakit: Pihak Kedua yang berhalangan hadir karena sakit berhak beristirahat dengan memberitahukan kepada Mentor dan melampirkan Surat Keterangan Dokter atau surat pemberitahuan.
-3. Izin Keperluan Mendesak / Duka Cita: Diberikan izin dispensasi maksimal hingga {$internshipMaxDays} hari kerja untuk keperluan mendesak keluarga atau duka cita atas persetujuan tertulis Mentor/HRD.
-4. Batas Maksimal Izin & Pemotongan Uang Saku: Batas toleransi akumulasi izin/dispensasi yang diberikan adalah maksimal {$internshipMaxDays} hari kerja. Apabila Pihak Kedua tidak hadir atau mengajukan izin melebihi batas {$internshipMaxDays} hari kerja tersebut, maka akan diberlakukan pemotongan uang saku (stipend) secara proporsional (prorata) sesuai jumlah hari ketidakhadiran berlebih.
+3. Izin Keperluan Mendesak / Duka Cita: Diberikan izin dispensasi untuk keperluan mendesak keluarga atau duka cita atas persetujuan tertulis Mentor/HRD.
+4. Batas Toleransi Izin & Pemotongan Uang Saku: Batas toleransi izin resmi tanpa pemotongan uang saku adalah maksimal {$internshipMaxDays} hari kerja per periode bulanan dan kuota ini ter-reset otomatis setiap awal bulan baru. Apabila akumulasi izin dalam satu bulan melebihi {$internshipMaxDays} hari kerja, maka hanya hari kelebihannya saja yang diberlakukan pemotongan uang saku (stipend) secara proporsional sesuai nominal UMK/kesepakatan. Pada awal bulan berikutnya, kuota toleransi {$internshipMaxDays} hari kerja akan kembali penuh.
 
 PASAL 5: HAK KEKAYAAN INTELEKTUAL (HAKI) & KERAHASIAAN DATA (NDA STRICT)
 1. Seluruh hasil karya, source code, desain antarmuka (UI/UX), dokumen teknis, dan algoritma yang dibuat Pihak Kedua selama masa magang sepenuhnya menjadi Hak Milik Intelektual Pihak Pertama.
@@ -581,8 +581,8 @@ PASAL 3: JAM PELATIHAN MAGANG & WAKTU ISTIRAHAT
 PASAL 4: HAK IZIN AKADEMIK, UJIAN KAMPUS, CUTI SAKIT & KETENTUAN DISPENSASI
 1. Izin Akademik: Pihak Pertama memberikan izin dispensasi resmi kepada Pihak Kedua untuk keperluan akademik institusi pendidikan (seperti: Sidang Skripsi/Tugas Akhir, Ujian Tengah/Akhir Semester, Bimbingan Dosen, atau Wisuda) dengan pemberitahuan dan surat pengantar kampus.
 2. Izin Sakit: Pihak Kedua yang berhalangan hadir karena sakit berhak beristirahat dengan memberitahukan kepada Mentor dan melampirkan Surat Keterangan Dokter atau surat pemberitahuan.
-3. Izin Keperluan Mendesak / Duka Cita: Diberikan izin dispensasi maksimal hingga {{ $internshipMaxDays }} hari kerja untuk keperluan mendesak keluarga atau duka cita atas persetujuan tertulis Mentor/HRD.
-4. Batas Maksimal Izin & Pemotongan Uang Saku: Batas toleransi akumulasi izin/dispensasi yang diberikan adalah maksimal {{ $internshipMaxDays }} hari kerja. Apabila Pihak Kedua tidak hadir atau mengajukan izin melebihi batas {{ $internshipMaxDays }} hari kerja tersebut, maka akan diberlakukan pemotongan uang saku (stipend) secara proporsional (prorata) sesuai jumlah hari ketidakhadiran berlebih.
+3. Izin Keperluan Mendesak / Duka Cita: Diberikan izin dispensasi untuk keperluan mendesak keluarga atau duka cita atas persetujuan tertulis Mentor/HRD.
+4. Batas Toleransi Izin & Pemotongan Uang Saku: Batas toleransi izin resmi tanpa pemotongan uang saku adalah maksimal {{ $internshipMaxDays }} hari kerja per periode bulanan dan kuota ini ter-reset otomatis setiap awal bulan baru. Apabila akumulasi izin dalam satu bulan melebihi {{ $internshipMaxDays }} hari kerja, maka hanya hari kelebihannya saja yang diberlakukan pemotongan uang saku (stipend) secara proporsional sesuai nominal UMK/kesepakatan. Pada awal bulan berikutnya, kuota toleransi {{ $internshipMaxDays }} hari kerja akan kembali penuh.
 
 PASAL 5: HAK KEKAYAAN INTELEKTUAL (HAKI) & KERAHASIAAN DATA (NDA STRICT)
 1. Seluruh hasil karya, source code, desain antarmuka (UI/UX), dokumen teknis, dan algoritma yang dibuat Pihak Kedua selama masa magang sepenuhnya menjadi Hak Milik Intelektual Pihak Pertama.

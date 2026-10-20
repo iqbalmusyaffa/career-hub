@@ -38,11 +38,106 @@
                 </div>
             @endif
 
-            @if($errors->any())
+            @if(isset($errors) && $errors->any())
                 <div class="p-4 bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 rounded-2xl text-rose-800 dark:text-rose-200 text-xs font-bold space-y-1 shadow-2xs">
                     @foreach($errors->all() as $err)
                         <div class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-rose-500"></i> {{ $err }}</div>
                     @endforeach
+                </div>
+            @endif
+
+            @if($isIntern && count($periodMonths) > 0)
+                <!-- Period Navigation Tabs for Interns -->
+                <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-700/60">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg shrink-0 border border-indigo-200 dark:border-indigo-800/80 shadow-2xs">
+                                <i class="fa-solid fa-calendar-week"></i>
+                            </div>
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h3 class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                                        Periode Kuota Izin Magang
+                                    </h3>
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 whitespace-nowrap shrink-0">
+                                        <i class="fa-solid fa-arrows-rotate text-emerald-500"></i> Reset Otomatis Tiap Awal Bulan
+                                    </span>
+                                </div>
+                                <p class="text-3xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                    Toleransi 5 hari bebas potong berlaku per bulan. Pilih bulan untuk melihat pemakaian & sisa kuota:
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/80 text-xs font-bold text-slate-600 dark:text-slate-300 self-start sm:self-auto shrink-0">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                            <span>Melihat Periode: <strong class="text-indigo-600 dark:text-indigo-400">{{ $periodLabel }}</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Month Buttons (Clean Wrapped Pills, No Scrollbar) -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        @foreach($periodMonths as $pm)
+                            @php
+                                $isActive = ($selectedMonth === $pm['key']);
+                            @endphp
+                            <a href="{{ route('candidate.leaves.index', ['month' => $pm['key'], 'filter_month' => $filterMonth]) }}"
+                               class="group px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all duration-150 flex items-center gap-2 shrink-0 border {{ $isActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs shadow-indigo-500/20 scale-[1.02]' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200/80 dark:bg-slate-900/60 dark:hover:bg-slate-700/60 dark:text-slate-200 dark:border-slate-700/80' }}">
+                                <span>{{ $pm['label'] }}</span>
+                                @if($pm['is_current'])
+                                    <span class="px-1.5 py-0.2 rounded-md text-4xs font-black uppercase tracking-wider {{ $isActive ? 'bg-white/20 text-white' : 'bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400' }}">
+                                        Bulan Ini
+                                    </span>
+                                @endif
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            @if(!$isIntern && count($availableYears ?? []) > 0)
+                <!-- Year Navigation Bar for Employees -->
+                <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-700/60">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg shrink-0 border border-indigo-200 dark:border-indigo-800/80 shadow-2xs">
+                                <i class="fa-solid fa-calendar-days"></i>
+                            </div>
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h3 class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                                        Periode Hak Cuti Tahunan Karyawan
+                                    </h3>
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-3xs font-extrabold bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 whitespace-nowrap shrink-0">
+                                        <i class="fa-solid fa-arrows-rotate text-indigo-500"></i> Reset Otomatis Tiap 1 Januari
+                                    </span>
+                                </div>
+                                <p class="text-3xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                    Hak cuti tahunan resmi berlaku per tahun kalender (Januari - Desember). Pilih tahun:
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/80 text-xs font-bold text-slate-600 dark:text-slate-300 self-start sm:self-auto shrink-0">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                            <span>Melihat Periode: <strong class="text-indigo-600 dark:text-indigo-400">{{ $periodLabel }}</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        @foreach($availableYears as $yr)
+                            @php $isActive = ($selectedYear == $yr); @endphp
+                            <a href="{{ route('candidate.leaves.index', ['year' => $yr, 'filter_month' => $filterMonth]) }}"
+                               class="group px-4 py-2 rounded-xl text-xs font-extrabold transition-all duration-150 flex items-center gap-2 shrink-0 border {{ $isActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs shadow-indigo-500/20 scale-[1.02]' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200/80 dark:bg-slate-900/60 dark:hover:bg-slate-700/60 dark:text-slate-200 dark:border-slate-700/80' }}">
+                                <span>Tahun {{ $yr }}</span>
+                                @if($yr == \Carbon\Carbon::now()->year)
+                                    <span class="px-1.5 py-0.2 rounded-md text-4xs font-black uppercase tracking-wider {{ $isActive ? 'bg-white/20 text-white' : 'bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400' }}">
+                                        Tahun Ini
+                                    </span>
+                                @endif
+                            </a>
+                        @endforeach
+                    </div>
                 </div>
             @endif
 
@@ -54,7 +149,15 @@
                     </div>
                     <div>
                         <div class="text-2xl font-black text-slate-900 dark:text-white">{{ $totalQuota }} <span class="text-xs font-bold text-slate-400">Hari</span></div>
-                        <div class="text-xs font-bold text-slate-500 dark:text-slate-400">{{ $quotaTitle }}</div>
+                        <div class="text-xs font-bold text-slate-500 dark:text-slate-400">
+                            @if($isIntern)
+                                Batas Izin Bebas Potong
+                                <span class="block text-3xs font-extrabold text-indigo-600 dark:text-indigo-400"><i class="fa-solid fa-arrows-rotate mr-1"></i>{{ $periodLabel }} (Reset Bulanan)</span>
+                            @else
+                                {{ $quotaTitle }}
+                                <span class="block text-3xs font-extrabold text-indigo-600 dark:text-indigo-400"><i class="fa-solid fa-arrows-rotate mr-1"></i>Reset Tiap 1 Januari</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
@@ -64,7 +167,14 @@
                     </div>
                     <div>
                         <div class="text-2xl font-black text-slate-900 dark:text-white">{{ $remainingDays }} <span class="text-xs font-bold text-slate-400">Hari</span></div>
-                        <div class="text-xs font-bold text-slate-500 dark:text-slate-400">Sisa Kuota Tersedia</div>
+                        <div class="text-xs font-bold text-slate-500 dark:text-slate-400">
+                            @if($isIntern)
+                                Sisa Kuota Bebas Potong
+                            @else
+                                Sisa Cuti Tahunan Tersedia
+                            @endif
+                            <span class="block text-3xs font-extrabold text-emerald-600 dark:text-emerald-400">Tersedia di {{ $periodLabel }}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -74,7 +184,21 @@
                     </div>
                     <div>
                         <div class="text-2xl font-black text-slate-900 dark:text-white">{{ $usedDays }} <span class="text-xs font-bold text-slate-400">Hari</span></div>
-                        <div class="text-xs font-bold text-slate-500 dark:text-slate-400">Telah Digunakan</div>
+                        <div class="text-xs font-bold text-slate-500 dark:text-slate-400">
+                            @if($isIntern)
+                                Izin Disetujui ({{ $periodLabel }})
+                                @if(($rejectedDays ?? 0) > 0)
+                                    <span class="block text-3xs font-extrabold text-rose-600 dark:text-rose-400"><i class="fa-solid fa-circle-xmark mr-1"></i>{{ $rejectedDays }} Hari Ditolak (Tidak Hadir/Alpa)</span>
+                                @elseif($excessDays > 0)
+                                    <span class="block text-3xs font-extrabold text-rose-600 dark:text-rose-400"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ $excessDays }} Hari Melebihi Kuota</span>
+                                @else
+                                    <span class="block text-3xs font-medium text-slate-400">Bebas Potongan Uang Saku</span>
+                                @endif
+                            @else
+                                Cuti Terpakai ({{ $periodLabel }})
+                                <span class="block text-3xs font-medium text-slate-400">Disetujui HRD (Tahun Kalender)</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
@@ -84,7 +208,10 @@
                     </div>
                     <div>
                         <div class="text-2xl font-black text-slate-900 dark:text-white">{{ $pendingDays }} <span class="text-xs font-bold text-slate-400">Hari</span></div>
-                        <div class="text-xs font-bold text-slate-500 dark:text-slate-400">Menunggu Review HRD</div>
+                        <div class="text-xs font-bold text-slate-500 dark:text-slate-400">
+                            Menunggu Review HRD
+                            <span class="block text-3xs font-extrabold text-amber-600 dark:text-amber-400">Periode {{ $periodLabel }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -96,22 +223,62 @@
                 </div>
                 <div class="text-xs text-indigo-950 dark:text-indigo-200 leading-relaxed">
                     @if($isIntern)
-                        <strong class="font-black text-indigo-900 dark:text-indigo-100">Ketentuan Izin Peserta Magang:</strong>
-                        Peserta magang mendapatkan toleransi izin resmi/mendesak hingga <strong>{{ $policy->internship_max_excused_days }} hari kerja</strong> tanpa pemotongan uang saku. Apabila akumulasi izin melebihi {{ $policy->internship_max_excused_days }} hari, akan diberlakukan pemotongan uang saku (stipend) secara proporsional sesuai perjanjian kerja sama.
+                        <div class="space-y-1.5">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <strong class="font-black text-indigo-900 dark:text-indigo-100">Ketentuan Izin Peserta Magang (Sistem Reset Kuota Bulanan):</strong>
+                                <span class="px-2 py-0.5 rounded-md text-4xs font-black uppercase bg-indigo-200/80 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">
+                                    <i class="fa-solid fa-rotate mr-0.5"></i> Reset Otomatis Tiap Awal Bulan
+                                </span>
+                            </div>
+                            <p>
+                                Peserta magang mendapatkan alokasi toleransi izin resmi/mendesak hingga <strong>{{ $policy->internship_max_excused_days }} hari kerja per periode/bulan</strong> tanpa pemotongan uang saku. Kuota 5 hari ini <strong>ter-reset otomatis setiap awal bulan baru</strong>.
+                            </p>
+                            <p class="text-3xs text-indigo-800/90 dark:text-indigo-300/80">
+                                Apabila peserta mengajukan izin melebihi batas kuota toleransi {{ $policy->internship_max_excused_days }} hari dalam satu bulan (seperti pada bulan September: 5 hari disetujui bebas potong + 1 hari melebihi kuota), <strong>hari kelebihan tersebut langsung berstatus Ditolak</strong> dan pada presensi kalender otomatis tercatat sebagai <strong>Tidak Hadir Tanpa Keterangan (Alpa)</strong> dengan pemotongan uang saku proporsional sesuai nominal UMK. Ketika memasuki bulan berikutnya (Oktober), hak izin bebas potong Anda telah <strong>ter-reset kembali penuh menjadi {{ $policy->internship_max_excused_days }} hari</strong>.
+                            </p>
+                        </div>
                     @else
-                        <strong class="font-black text-indigo-900 dark:text-indigo-100">Ketentuan Cuti Karyawan:</strong>
-                        Alokasi cuti tahunan resmi Anda adalah <strong>{{ $totalQuota }} hari kerja</strong> per tahun. Pengajuan cuti sebaiknya dilakukan minimal 3 hari sebelum tanggal mulai pelaksanaan agar tim HRD dan atasan langsung dapat menyesuaikan jadwal kerja.
+                        <div class="space-y-1.5">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <strong class="font-black text-indigo-900 dark:text-indigo-100">Ketentuan Cuti Karyawan (Sistem Kuota Tahunan):</strong>
+                                <span class="px-2 py-0.5 rounded-md text-4xs font-black uppercase bg-indigo-200/80 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">
+                                    <i class="fa-solid fa-arrows-rotate mr-0.5"></i> Reset Otomatis Tiap 1 Januari
+                                </span>
+                            </div>
+                            <p>
+                                Alokasi hak cuti tahunan resmi Anda adalah <strong>{{ $totalQuota }} hari kerja per tahun kalender</strong> ({{ $isPermanent ? 'Karyawan Tetap / PKWTT: 15 Hari' : 'Karyawan Kontrak / PKWT: 12 Hari' }} sesuai UU No. 13/2003 & UU Cipta Kerja pasal 79).
+                            </p>
+                            <p class="text-3xs text-indigo-800/90 dark:text-indigo-300/80">
+                                Kuota cuti tahunan berlaku untuk <strong>periode 1 tahun berjalan (1 Januari s/d 31 Desember)</strong>. Ketika memasuki tahun baru (1 Januari), hak cuti Anda akan <strong>ter-reset otomatis kembali penuh</strong> sebanyak {{ $totalQuota }} hari kerja. Sisa cuti tahun sebelumnya tidak diakumulasikan ke tahun berikutnya (hangus), kecuali terdapat persetujuan khusus izin cuti tunda (*carry-over*) dari manajemen HRD.
+                            </p>
+                        </div>
                     @endif
                 </div>
             </div>
 
             <!-- Leave Requests History -->
             <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-2xs overflow-hidden">
-                <div class="p-5 border-b border-slate-100 dark:border-slate-700/80 flex items-center justify-between">
+                <div class="p-5 border-b border-slate-100 dark:border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <h3 class="text-sm font-extrabold text-slate-900 dark:text-white">Riwayat Pengajuan Cuti & Izin Anda</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Daftar permohonan yang pernah Anda ajukan</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">
+                            Total izin disetujui seluruh periode: <strong class="text-indigo-600 dark:text-indigo-400">{{ $totalUsedAllTime }} Hari Kerja</strong>
+                        </p>
                     </div>
+                    @if($isIntern && count($periodMonths) > 0)
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-slate-400 font-bold">Filter Tabel:</span>
+                            <form method="GET" action="{{ route('candidate.leaves.index') }}" class="inline">
+                                <input type="hidden" name="month" value="{{ $selectedMonth }}">
+                                <select name="filter_month" onchange="this.form.submit()" class="text-xs font-bold rounded-xl border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 py-1.5 px-3">
+                                    <option value="all" {{ ($filterMonth ?? 'all') === 'all' ? 'selected' : '' }}>Semua Bulan ({{ $totalUsedAllTime }} Hari)</option>
+                                    @foreach($periodMonths as $pm)
+                                        <option value="{{ $pm['key'] }}" {{ ($filterMonth ?? '') === $pm['key'] ? 'selected' : '' }}>{{ $pm['label'] }}</option>
+                                    @endforeach
+                                </select>
+                            </form>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="overflow-x-auto">
@@ -235,6 +402,18 @@
 
             <form action="{{ route('candidate.leaves.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                 @csrf
+
+                @if($isIntern)
+                    <div class="p-3.5 bg-amber-50/80 dark:bg-amber-950/40 rounded-2xl border border-amber-200/80 dark:border-amber-800/80 text-3xs text-amber-900 dark:text-amber-200 space-y-1">
+                        <div class="font-extrabold flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
+                            <i class="fa-solid fa-circle-exclamation text-amber-500"></i> Ketentuan Kuota Izin Magang:
+                        </div>
+                        <p class="leading-relaxed">
+                            Batas toleransi izin bebas potong adalah <strong>{{ $totalQuota }} hari kerja / bulan</strong> (Sisa bulan {{ $periodLabel }}: <strong>{{ $remainingDays }} hari</strong>). Pengajuan yang melebihi batas kuota akan <strong>langsung ditolak</strong> dan dicatat sebagai <strong>Tidak Hadir (Alpa)</strong> di logbook dengan pemotongan uang saku.
+                        </p>
+                    </div>
+                @endif
+
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
                         Tipe Cuti / Izin <span class="text-rose-500">*</span>

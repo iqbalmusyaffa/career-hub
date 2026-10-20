@@ -143,6 +143,93 @@
                     </div>
                 </div>
 
+                <!-- Section 4: Automated Reminders & Notification Master Switch -->
+                <div class="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs p-6 space-y-5" x-data="{ masterEnabled: {{ $settings['reminder_master_enabled'] ? 'true' : 'false' }} }">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/80 pb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/80 dark:border-indigo-800/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm font-semibold">
+                                <i class="fa-solid fa-bell"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white">Otomatisasi Notifikasi & Pengingat Kehadiran (Master Switch)</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Kontrol global pengiriman pengingat presensi pagi, logbook sore, dan verifikasi mentor.</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="reminder_master_enabled" value="1" x-model="masterEnabled" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-indigo-600"></div>
+                            <span class="ml-2.5 text-xs font-bold text-slate-700 dark:text-slate-300" x-text="masterEnabled ? 'AKTIF' : 'NONAKTIF'"></span>
+                        </label>
+                    </div>
+
+                    <div x-show="masterEnabled" x-transition class="space-y-4">
+                        <!-- Jalur Distribusi -->
+                        <div>
+                            <span class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-2.5">
+                                <i class="fa-solid fa-paper-plane text-indigo-500 mr-1"></i> Jalur Pengiriman Notifikasi
+                            </span>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                <label class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-900/50 flex items-start gap-3 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-900 transition">
+                                    <input type="checkbox" name="reminder_email_enabled" value="1" {{ $settings['reminder_email_enabled'] ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <i class="fa-solid fa-envelope text-indigo-500 text-xs"></i>
+                                            <span class="text-xs font-semibold text-slate-900 dark:text-slate-100">Kirim Email Pengingat Otomatis</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Mengirimkan pesan email langsung ke inbox peserta & mentor agar memicu notifikasi di HP.</p>
+                                    </div>
+                                </label>
+
+                                <label class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-900/50 flex items-start gap-3 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-900 transition">
+                                    <input type="checkbox" name="reminder_inapp_enabled" value="1" {{ $settings['reminder_inapp_enabled'] ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <i class="fa-solid fa-bell text-indigo-500 text-xs"></i>
+                                            <span class="text-xs font-semibold text-slate-900 dark:text-slate-100">Notifikasi Lonceng di Website</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Mencatat riwayat pengingat pada menu dropdown lonceng di navbar & sidebar aplikasi.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Kategori Pengingat -->
+                        <div>
+                            <span class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-2.5">
+                                <i class="fa-regular fa-clock text-indigo-500 mr-1"></i> Jenis & Jadwal Pengingat
+                            </span>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                                <label class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-900/50 flex items-start gap-3 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-900 transition">
+                                    <input type="checkbox" name="reminder_morning_enabled" value="1" {{ $settings['reminder_morning_enabled'] ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                    <div>
+                                        <span class="text-xs font-semibold text-slate-900 dark:text-slate-100 block">Presensi Pagi</span>
+                                        <span class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold block">08:00 WIB</span>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Ingatkan peserta yang belum presensi check-in kehadiran.</p>
+                                    </div>
+                                </label>
+
+                                <label class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-900/50 flex items-start gap-3 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-900 transition">
+                                    <input type="checkbox" name="reminder_afternoon_enabled" value="1" {{ $settings['reminder_afternoon_enabled'] ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                    <div>
+                                        <span class="text-xs font-semibold text-slate-900 dark:text-slate-100 block">Logbook Sore & Pulang</span>
+                                        <span class="text-[10px] text-blue-600 dark:text-blue-400 font-semibold block">16:00 & 17:00 WIB</span>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Ingatkan melengkapi ringkasan tugas & jam kerja harian.</p>
+                                    </div>
+                                </label>
+
+                                <label class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-900/50 flex items-start gap-3 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-900 transition">
+                                    <input type="checkbox" name="reminder_mentor_enabled" value="1" {{ $settings['reminder_mentor_enabled'] ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                    <div>
+                                        <span class="text-xs font-semibold text-slate-900 dark:text-slate-100 block">Verifikasi Mentor</span>
+                                        <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold block">Setiap Hari Kerja</span>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Ingatkan mentor yang memiliki antrean logbook pending.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="flex items-center justify-end gap-3 pt-2">
                     <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-xs transition">
                         <i class="fa-solid fa-floppy-disk text-xs"></i>

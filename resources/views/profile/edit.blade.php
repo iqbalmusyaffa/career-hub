@@ -86,7 +86,12 @@
                 @include('profile.partials.update-password-form')
             </div>
 
-            <!-- Card 3: Hapus Akun -->
+            <!-- Card 3: Preferensi Notifikasi & Pengingat Kehadiran -->
+            <div class="bg-white dark:bg-slate-800 p-6 sm:p-7 rounded-2xl shadow-2xs border border-slate-200/80 dark:border-slate-700/80">
+                @include('profile.partials.update-notification-preferences-form')
+            </div>
+
+            <!-- Card 4: Hapus Akun -->
             <div class="bg-white dark:bg-slate-800 p-6 sm:p-7 rounded-2xl shadow-2xs border border-rose-200/60 dark:border-rose-950/60">
                 @include('profile.partials.delete-user-form')
             </div>

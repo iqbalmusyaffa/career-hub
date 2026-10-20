@@ -137,7 +137,7 @@ class InternshipStipendController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:in_review,ready,transferred',
+            'status' => 'required|in:in_review,ready,transferred,rolled_over',
             'notes' => 'nullable|string',
             'proof_file' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:5120',
         ]);
@@ -167,6 +167,14 @@ class InternshipStipendController extends Controller
                 "Uang saku magang periode {$stipend->period_label} sebesar {$stipend->formatted_net_amount} telah berhasil ditransfer ke rekening {$stipend->bank_name} ({$stipend->bank_account_number} a.n {$stipend->bank_account_holder}).",
                 route('candidate.logbook.progress'),
                 'success'
+            );
+        } elseif ($request->status === 'rolled_over') {
+            \App\Models\UserNotification::send(
+                $stipend->user_id,
+                '📅 Uang Saku Dirapel ke Bulan Berikutnya',
+                "Pencairan uang saku magang periode {$stipend->period_label} dirapel dan akan ditransfer bersamaan pada periode berikutnya sehubungan dengan jadwal tutup buku akhir tahun perusahaan.",
+                route('candidate.logbook.progress'),
+                'info'
             );
         } elseif ($request->status === 'in_review' && $request->notes) {
             \App\Models\UserNotification::send(

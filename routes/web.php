@@ -172,6 +172,7 @@ Route::middleware(['auth', 'role:Candidate'])->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile/notifications', [ProfileController::class, 'updateNotificationPreferences'])->name('profile.notifications.update');
     Route::post('/profile/theme', [ProfileController::class, 'updateTheme'])->name('profile.theme.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/candidate', [CandidateProfileController::class, 'update'])->name('profile.candidate.update');
@@ -254,6 +255,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/candidate/leaves', [\App\Http\Controllers\Candidate\CandidateLeaveController::class, 'index'])->name('candidate.leaves.index');
     Route::post('/candidate/leaves', [\App\Http\Controllers\Candidate\CandidateLeaveController::class, 'store'])->name('candidate.leaves.store');
     Route::post('/candidate/leaves/{leave}/cancel', [\App\Http\Controllers\Candidate\CandidateLeaveController::class, 'cancel'])->name('candidate.leaves.cancel');
+
+    // FITUR: Portal Fasilitas & BPJS Perlindungan Magang (Candidate)
+    Route::get('/candidate/internship/benefits', [\App\Http\Controllers\Candidate\CandidateBenefitController::class, 'index'])->name('candidate.internship.benefits');
 
     // Dedicated Mentor Role Workspace, ACC Absensi, & Final Performance Rating Routes
     Route::get('/mentor/dashboard', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'dashboard'])->name('mentor.dashboard');
@@ -472,6 +476,14 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
     Route::post('/leaves/{leave}/approve', [\App\Http\Controllers\Admin\LeaveManagementController::class, 'approve'])->name('leaves.approve');
     Route::post('/leaves/{leave}/reject', [\App\Http\Controllers\Admin\LeaveManagementController::class, 'reject'])->name('leaves.reject');
     Route::post('/leaves/policy', [\App\Http\Controllers\Admin\LeaveManagementController::class, 'updatePolicy'])->name('leaves.policy.update');
+
+    // FITUR: Modul Fasilitas, BPJS & Benefit Magang (Internship Benefits & Insurance Management)
+    Route::get('/internship-benefits', [\App\Http\Controllers\Admin\InternshipBenefitController::class, 'index'])->name('internship-benefits.index');
+    Route::post('/internship-benefits', [\App\Http\Controllers\Admin\InternshipBenefitController::class, 'store'])->name('internship-benefits.store');
+    Route::put('/internship-benefits/{id}', [\App\Http\Controllers\Admin\InternshipBenefitController::class, 'update'])->name('internship-benefits.update');
+    Route::delete('/internship-benefits/{id}', [\App\Http\Controllers\Admin\InternshipBenefitController::class, 'destroy'])->name('internship-benefits.destroy');
+    Route::post('/internship-benefits/assign-user', [\App\Http\Controllers\Admin\InternshipBenefitController::class, 'assignUser'])->name('internship-benefits.assign-user');
+    Route::post('/internship-benefits/user-benefit/{id}/toggle', [\App\Http\Controllers\Admin\InternshipBenefitController::class, 'toggleUserBenefit'])->name('internship-benefits.toggle-user');
 
     // Super Admin Exclusive Control & Moderation
     Route::middleware('role:Super Admin')->group(function () {

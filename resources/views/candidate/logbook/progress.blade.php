@@ -307,6 +307,32 @@
                     </div>
                 </button>
 
+                <!-- Card 3.5: Fasilitas & Jaminan BPJS Magang (Dedicated Module) -->
+                <a href="{{ route('candidate.internship.benefits') }}" class="w-full px-5 py-4 sm:px-6 sm:py-5 flex items-center justify-between hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition text-left group bg-emerald-50/20 dark:bg-emerald-950/10">
+                    <div class="flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+                            <i class="fa-solid fa-shield-heart"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">
+                                    Fasilitas & Jaminan BPJS Magang
+                                </h4>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">
+                                    BPJS TK & Kes (WAJIB)
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 font-normal mt-0.5">
+                                Perlindungan wajib BPJS Ketenagakerjaan (100% Ditanggung Kantor) dan fasilitas operasional magang
+                            </p>
+                        </div>
+                    </div>
+                    <div class="text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition pl-2 flex items-center gap-2">
+                        <span class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold hidden sm:inline">Buka Modul</span>
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </div>
+                </a>
+
                 <!-- Card 4: Survei -->
                 <button type="button" @click="openModal = 'survei'" class="w-full px-5 py-4 sm:px-6 sm:py-5 flex items-center justify-between hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition text-left group">
                     <div class="flex items-center gap-4">
@@ -846,11 +872,29 @@
                         <span>Ketentuan Pemotongan Uang Saku Per Periode</span>
                     </div>
                     <ul class="text-xs text-amber-900 dark:text-amber-200/90 font-normal space-y-1.5 list-disc list-inside">
-                        <li><strong>Toleransi Izin & Sakit:</strong> Izin atau sakit hingga <strong>maksimal 4 hari per periode</strong> <u>TIDAK</u> dipotong uang saku.</li>
-                        <li><strong>Kelebihan Izin (> 4 hari):</strong> Dikenakan pemotongan proporsional harian berdasarkan jumlah hari kerja efektif di bulan bersangkutan.</li>
+                        <li><strong>Toleransi Izin & Sakit:</strong> Izin atau sakit hingga <strong>maksimal 5 hari per periode</strong> <u>TIDAK</u> dipotong uang saku.</li>
+                        <li><strong>Kelebihan Izin (> 5 hari):</strong> Dikenakan pemotongan proporsional harian berdasarkan jumlah hari kerja efektif di bulan bersangkutan.</li>
                         <li><strong>Sakit / Rawat Inap:</strong> Wajib melampirkan surat keterangan dokter / rumah sakit resmi pada logbook harian untuk verifikasi.</li>
                         <li><strong>Tanpa Keterangan (Alpa):</strong> Dikenakan pemotongan langsung per hari ketidakhadiran.</li>
+                        <li><strong>Tutup Buku Akhir Tahun (Desember – Januari):</strong> Khusus periode akhir tahun (Desember), pencairan dapat dirapel dan ditransfer bersamaan pada periode Januari sesuai jadwal penutupan buku kas (*financial year-end closing*) perusahaan.</li>
                     </ul>
+                </div>
+
+                <!-- BPJS & Compensation Transparency Banner -->
+                <div class="p-4 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-shield-heart text-emerald-600 dark:text-emerald-400 text-base mt-0.5 shrink-0"></i>
+                        <div>
+                            <div class="font-bold text-slate-900 dark:text-white">Perlindungan Jaminan Sosial BPJS Ketenagakerjaan & Kesehatan (WAJIB)</div>
+                            <p class="text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">
+                                Iuran BPJS Ketenagakerjaan (JKK & JKM) ditanggung 100% oleh perusahaan mitra (Beban Anda: Rp 0). Seluruh kepesertaan jaminan wajib dan fasilitas penunjang magang tercatat secara transparan pada setiap slip bukti transfer uang saku.
+                            </p>
+                        </div>
+                    </div>
+                    <a href="{{ route('candidate.internship.benefits') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs shrink-0 transition shadow-2xs">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        <span>Lihat Modul Fasilitas</span>
+                    </a>
                 </div>
 
                 <!-- Stipend Periods Ledger Table -->
@@ -894,11 +938,11 @@
                                             </span>
                                         </td>
                                         <td class="p-3 text-center whitespace-nowrap">
-                                            <span class="{{ $stipend['excused_days'] > 4 ? 'text-rose-600 dark:text-rose-400 font-bold' : ($stipend['excused_days'] > 0 ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500') }}">
+                                            <span class="{{ $stipend['excused_days'] > 5 ? 'text-rose-600 dark:text-rose-400 font-bold' : ($stipend['excused_days'] > 0 ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500') }}">
                                                 {{ $stipend['excused_days'] }} Hari
                                             </span>
-                                            @if($stipend['excused_days'] > 4)
-                                                <span class="block text-[9px] text-rose-500 font-semibold">(+{{ $stipend['excused_days'] - 4 }} potong kuota)</span>
+                                            @if($stipend['excused_days'] > 5)
+                                                <span class="block text-[9px] text-rose-500 font-semibold">(+{{ $stipend['excused_days'] - 5 }} potong kuota)</span>
                                             @elseif($stipend['excused_days'] > 0)
                                                 <span class="block text-[9px] text-emerald-500 font-medium">(Bebas Potong)</span>
                                             @endif
@@ -921,6 +965,10 @@
                                             @if($stipend['status'] === 'transferred' || $stipend['status'] === 'paid')
                                                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold">
                                                     <i class="fa-solid fa-circle-check text-[10px]"></i> Telah Ditransfer
+                                                </span>
+                                            @elseif($stipend['status'] === 'rolled_over' || $stipend['status'] === 'rapel')
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 text-[10px] font-bold" title="Uang saku dirapel pencairannya ke periode berikutnya karena tutup buku akhir tahun keuangan">
+                                                    <i class="fa-solid fa-clock-rotate-left text-[10px]"></i> Dirapel (Tutup Buku)
                                                 </span>
                                             @elseif($stipend['status'] === 'ready')
                                                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 text-[10px] font-bold">

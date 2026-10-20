@@ -267,6 +267,40 @@
                     </div>
                 </div>
 
+                <!-- 12. Magang: Kuota Toleransi Izin & Potongan Uang Saku -->
+                <div x-show="(activeCategory === 'all' || activeCategory === 'magang') && ('bagaimana ketentuan kuota izin 5 hari dan pemotongan uang saku magang umk rapel'.includes(search.toLowerCase()) || search === '')"
+                     class="border border-slate-200 rounded-2xl overflow-hidden transition bg-white shadow-2xs">
+                    <button @click="toggle('q12')" 
+                            class="w-full text-left p-4 sm:p-5 bg-white hover:bg-slate-50 flex items-center justify-between gap-4 font-bold text-slate-900 text-xs sm:text-sm transition">
+                        <span class="flex items-center gap-3">
+                            <span class="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs shrink-0 font-bold">12</span>
+                            Bagaimana ketentuan kuota toleransi izin 5 hari dan pemotongan uang saku magang?
+                        </span>
+                        <i class="fa-solid text-xs transition-transform duration-200" :class="activeAccordion === 'q12' ? 'fa-chevron-up text-indigo-600' : 'fa-chevron-down text-slate-400'"></i>
+                    </button>
+                    <div x-show="activeAccordion === 'q12'" x-collapse class="p-5 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/50 space-y-2">
+                        <p>Peserta magang mendapatkan alokasi toleransi izin resmi dan sakit hingga <strong>5 hari kerja per periode/bulan</strong> tanpa adanya pemotongan uang saku (stipend). Kuota 5 hari ini <strong>ter-reset otomatis setiap awal bulan kalender baru</strong>.</p>
+                        <p>Apabila izin yang diajukan melebihi batas kuota 5 hari dalam satu bulan berjalan (misal mengajukan 6 hari), <strong>hari kelebihan tersebut langsung berstatus Ditolak (Rejected)</strong> dan pada logbook kalender presensi otomatis tercatat sebagai <strong>Tidak Hadir Tanpa Keterangan (Alpa)</strong>, sehingga dikenakan pemotongan uang saku secara proporsional sesuai nominal UMK wilayah kerja (Formula: <em>Total Hari Alpa &times; Tarif Harian</em>). Selain itu, untuk periode akhir tahun (Desember ke Januari), sistem mendukung mekanisme rapel tutup buku di mana pencairan dapat ditransfer bersamaan di periode Januari.</p>
+                    </div>
+                </div>
+
+                <!-- 13. Karyawan: Hak Cuti Tahunan & Reset Pergantian Tahun -->
+                <div x-show="(activeCategory === 'all' || activeCategory === 'pelamar' || activeCategory === 'perusahaan') && ('apakah hak cuti tahunan karyawan pkwt tetap ter-reset setiap pergantian tahun 1 januari'.includes(search.toLowerCase()) || search === '')"
+                     class="border border-slate-200 rounded-2xl overflow-hidden transition bg-white shadow-2xs">
+                    <button @click="toggle('q13')" 
+                            class="w-full text-left p-4 sm:p-5 bg-white hover:bg-slate-50 flex items-center justify-between gap-4 font-bold text-slate-900 text-xs sm:text-sm transition">
+                        <span class="flex items-center gap-3">
+                            <span class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs shrink-0 font-bold">13</span>
+                            Apakah hak cuti tahunan karyawan (PKWT & Karyawan Tetap) ter-reset setiap pergantian tahun?
+                        </span>
+                        <i class="fa-solid text-xs transition-transform duration-200" :class="activeAccordion === 'q13' ? 'fa-chevron-up text-blue-600' : 'fa-chevron-down text-slate-400'"></i>
+                    </button>
+                    <div x-show="activeAccordion === 'q13'" x-collapse class="p-5 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/50 space-y-2">
+                        <p><strong>Ya, ter-reset otomatis setiap 1 Januari.</strong> Mengacu pada UU Ketenagakerjaan No. 13/2003 & UU Cipta Kerja Pasal 79, karyawan kontrak (PKWT) berhak atas <strong>12 hari kerja</strong> cuti tahunan dan karyawan tetap (PKWTT) berhak atas <strong>15 hari kerja</strong> per tahun kalender.</p>
+                        <p>Ketika memasuki tanggal 1 Januari tahun baru, kuota cuti tahunan karyawan akan <strong>kembali penuh secara otomatis</strong>. Karyawan dapat memantau saldo cuti serta riwayat pengajuan cuti tahun berjalan maupun tahun sebelumnya secara transparan melalui portal mandiri.</p>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Empty Search State -->
@@ -281,7 +315,9 @@
                 ('bagaimana mengelola funnel pelamar dan mengatur jadwal interview'.includes(search.toLowerCase())) ||
                 ('bagaimana tanda tangan kontrak digital otp logbook harian magang'.includes(search.toLowerCase())) ||
                 ('bagaimana cara mendapatkan sertifikat magang dan transkrip nilai qr code'.includes(search.toLowerCase())) ||
-                ('bagaimana keamanan data cv dan cara melaporkan lowongan red flag penipuan'.includes(search.toLowerCase()))
+                ('bagaimana keamanan data cv dan cara melaporkan lowongan red flag penipuan'.includes(search.toLowerCase())) ||
+                ('bagaimana ketentuan kuota izin 5 hari dan pemotongan uang saku magang umk rapel'.includes(search.toLowerCase())) ||
+                ('apakah hak cuti tahunan karyawan pkwt tetap ter-reset setiap pergantian tahun 1 januari'.includes(search.toLowerCase()))
             )" class="text-center py-12 bg-slate-50 rounded-2xl border border-slate-200">
                 <i class="fa-solid fa-magnifying-glass text-2xl text-slate-400 mb-2"></i>
                 <h4 class="text-sm font-bold text-slate-800">Pertanyaan tidak ditemukan</h4>

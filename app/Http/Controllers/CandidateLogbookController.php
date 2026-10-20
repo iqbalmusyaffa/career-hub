@@ -697,8 +697,9 @@ class CandidateLogbookController extends Controller
 
             $status = $dbDisbursement ? $dbDisbursement->status : ($mEnd->isPast() ? 'in_review' : 'upcoming');
             $statusLabel = match($status) {
-                'transferred' => 'Telah Ditransfer',
+                'transferred', 'paid' => 'Telah Ditransfer',
                 'ready' => 'Siap Ditransfer (HR)',
+                'rolled_over', 'rapel' => 'Dirapel ke Periode Berikutnya (Tutup Buku)',
                 'in_review' => ($dbDisbursement?->mentor_submitted_at ? 'Diajukan Mentor (Verifikasi HR)' : 'Menunggu Pengajuan Mentor'),
                 default => 'Menunggu Periode',
             };

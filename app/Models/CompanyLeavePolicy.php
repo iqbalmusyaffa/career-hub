@@ -35,7 +35,7 @@ class CompanyLeavePolicy extends Model
                 'company_id' => $companyId,
                 'annual_leave_quota' => 12,
                 'permanent_leave_quota' => 15,
-                'internship_max_excused_days' => 4,
+                'internship_max_excused_days' => 5,
                 'allow_half_day' => false,
                 'require_attachment_for_sick' => true,
             ]);

@@ -139,6 +139,11 @@
                             <span>Uang Saku Magang</span>
                         </a>
 
+                        <a href="{{ route('admin.internship-benefits.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('admin.internship-benefits.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <i class="fa-solid fa-shield-heart text-xs w-4 text-center text-emerald-400"></i>
+                            <span>Fasilitas & BPJS Magang</span>
+                        </a>
+
                         @php
                             $sidebarPendingLeaves = \App\Models\LeaveRequest::where('status', 'pending')->count();
                         @endphp
@@ -400,6 +405,11 @@
                         <a href="{{ route('candidate.leaves.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('candidate.leaves.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <i class="fa-solid fa-umbrella-beach text-xs w-4 text-center text-indigo-400"></i>
                             <span>Cuti & Izin Mandiri</span>
+                        </a>
+
+                        <a href="{{ route('candidate.internship.benefits') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('candidate.internship.benefits') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <i class="fa-solid fa-shield-heart text-xs w-4 text-center text-emerald-400"></i>
+                            <span>Fasilitas & Jaminan BPJS</span>
                         </a>
 
                         <a href="{{ route('candidate.resignations.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('candidate.resignations.*') ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">

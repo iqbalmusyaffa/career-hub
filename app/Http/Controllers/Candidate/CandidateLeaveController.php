@@ -17,7 +17,7 @@ class CandidateLeaveController extends Controller
     /**
      * Display candidate's leave requests, balances, and submission form.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
@@ -39,34 +39,111 @@ class CandidateLeaveController extends Controller
             $isPermanent = $activeApplication->agreement->agreement_type === 'permanent_contract';
         }
 
-        if ($isIntern) {
-            $quotaTitle = 'Batas Izin Toleransi Magang (Non-Potong)';
-            $totalQuota = $policy->internship_max_excused_days;
-            $quotaSubtitle = 'Batas izin tanpa pemotongan uang saku / stipend';
-        } elseif ($isPermanent) {
-            $quotaTitle = 'Hak Cuti Tahunan Karyawan Tetap';
-            $totalQuota = $policy->permanent_leave_quota;
-            $quotaSubtitle = 'Alokasi cuti tahunan resmi per tahun';
-        } else {
-            $quotaTitle = 'Hak Cuti Tahunan (PKWT / Remote / Hybrid)';
-            $totalQuota = $policy->annual_leave_quota;
-            $quotaSubtitle = 'Alokasi cuti tahunan resmi per tahun';
+        $currentYear = Carbon::now()->year;
+        $selectedMonth = $request->query('month');
+        if (!$selectedMonth || !preg_match('/^\d{4}-\d{2}$/', $selectedMonth)) {
+            $selectedMonth = Carbon::now()->format('Y-m');
         }
 
-        // Calculate Used & Pending Days (in current year / period)
-        $currentYear = Carbon::now()->year;
-        $userLeaves = LeaveRequest::where('user_id', $user->id)
-            ->whereYear('start_date', $currentYear)
-            ->get();
+        $periodMonths = [];
+        $totalUsedAllTime = 0;
 
-        $usedDays = $userLeaves->where('status', 'approved')->sum('total_days');
-        $pendingDays = $userLeaves->where('status', 'pending')->sum('total_days');
-        $remainingDays = max(0, $totalQuota - $usedDays);
+        if ($isIntern) {
+            $periodSetting = \App\Models\InternshipPeriod::where('user_id', $user->id)->first();
+            $masterBatch = \App\Models\InternshipBatch::where('batch_name', $periodSetting?->period_name ?? $activeApplication?->job?->batch)->first();
+            $periodStartDate = $periodSetting?->start_date ? $periodSetting->start_date->copy() : ($masterBatch?->start_date ? $masterBatch->start_date->copy() : Carbon::create(2026, 8, 10));
+            $periodEndDate = $periodSetting?->end_date ? $periodSetting->end_date->copy() : ($masterBatch?->end_date ? $masterBatch->end_date->copy() : Carbon::create(2027, 2, 9));
 
-        $leaveRequests = LeaveRequest::with(['approver'])
-            ->where('user_id', $user->id)
-            ->latest()
-            ->paginate(10);
+            // Generate period month options for intern
+            $cursorMonth = $periodStartDate->copy()->startOfMonth();
+            while ($cursorMonth->lessThanOrEqualTo($periodEndDate)) {
+                $periodMonths[] = [
+                    'key' => $cursorMonth->format('Y-m'),
+                    'label' => $cursorMonth->translatedFormat('F Y'),
+                    'is_current' => $cursorMonth->format('Y-m') === Carbon::now()->format('Y-m'),
+                ];
+                $cursorMonth->addMonth();
+            }
+
+            try {
+                $currentPeriodDate = Carbon::createFromFormat('Y-m', $selectedMonth);
+            } catch (\Exception $e) {
+                $selectedMonth = Carbon::now()->format('Y-m');
+                $currentPeriodDate = Carbon::createFromFormat('Y-m', $selectedMonth);
+            }
+
+            $periodLabel = $currentPeriodDate->translatedFormat('F Y');
+            $quotaTitle = 'Batas Bebas Potong (' . $periodLabel . ')';
+            $totalQuota = $policy->internship_max_excused_days;
+            $quotaSubtitle = 'Kuota toleransi 5 hari per bulan (ter-reset otomatis setiap awal bulan)';
+
+            $monthStart = $currentPeriodDate->copy()->startOfMonth();
+            $monthEnd = $currentPeriodDate->copy()->endOfMonth();
+
+            // Calculate used & pending days in this specific month/period
+            $userLeaves = LeaveRequest::where('user_id', $user->id)
+                ->where(function ($q) use ($monthStart, $monthEnd) {
+                    $q->whereBetween('start_date', [$monthStart, $monthEnd])
+                      ->orWhereBetween('end_date', [$monthStart, $monthEnd]);
+                })
+                ->get();
+
+            $usedDays = $userLeaves->where('status', 'approved')->sum('total_days');
+            $pendingDays = $userLeaves->where('status', 'pending')->sum('total_days');
+            $rejectedDays = $userLeaves->where('status', 'rejected')->sum('total_days');
+            $remainingDays = max(0, $totalQuota - $usedDays);
+            $excessDays = max(0, $usedDays - $totalQuota);
+
+            $totalUsedAllTime = LeaveRequest::where('user_id', $user->id)
+                ->where('status', 'approved')
+                ->sum('total_days');
+            $selectedYear = $currentYear;
+            $availableYears = [];
+        } else {
+            $selectedYear = (int) $request->query('year', $currentYear);
+            $availableYears = [$currentYear - 1, $currentYear, $currentYear + 1];
+            $periodLabel = 'Tahun ' . $selectedYear;
+
+            if ($isPermanent) {
+                $quotaTitle = 'Hak Cuti Karyawan Tetap (' . $periodLabel . ')';
+                $totalQuota = $policy->permanent_leave_quota;
+                $quotaSubtitle = 'Alokasi cuti resmi per tahun kalender (ter-reset otomatis setiap 1 Januari)';
+            } else {
+                $quotaTitle = 'Hak Cuti PKWT (' . $periodLabel . ')';
+                $totalQuota = $policy->annual_leave_quota;
+                $quotaSubtitle = 'Alokasi cuti resmi per tahun kalender (ter-reset otomatis setiap 1 Januari)';
+            }
+
+            $userLeaves = LeaveRequest::where('user_id', $user->id)
+                ->whereYear('start_date', $selectedYear)
+                ->get();
+
+            $usedDays = $userLeaves->where('status', 'approved')->sum('total_days');
+            $pendingDays = $userLeaves->where('status', 'pending')->sum('total_days');
+            $rejectedDays = $userLeaves->where('status', 'rejected')->sum('total_days');
+            $remainingDays = max(0, $totalQuota - $usedDays);
+            $excessDays = 0;
+            $totalUsedAllTime = LeaveRequest::where('user_id', $user->id)
+                ->where('status', 'approved')
+                ->sum('total_days');
+        }
+
+        // Leave requests list - with optional month filtering
+        $filterMonth = $request->query('filter_month');
+        $query = LeaveRequest::with(['approver'])
+            ->where('user_id', $user->id);
+
+        if ($filterMonth && $filterMonth !== 'all') {
+            try {
+                $fDate = Carbon::createFromFormat('Y-m', $filterMonth);
+                $query->where(function ($q) use ($fDate) {
+                    $q->whereBetween('start_date', [$fDate->copy()->startOfMonth(), $fDate->copy()->endOfMonth()])
+                      ->orWhereBetween('end_date', [$fDate->copy()->startOfMonth(), $fDate->copy()->endOfMonth()]);
+                });
+            } catch (\Exception $e) {}
+        }
+
+        $leaveRequests = $query->orderByDesc('start_date')->paginate(10)->withQueryString();
 
         return view('candidate.leaves.index', compact(
             'user',
@@ -79,8 +156,17 @@ class CandidateLeaveController extends Controller
             'totalQuota',
             'usedDays',
             'pendingDays',
+            'rejectedDays',
             'remainingDays',
-            'leaveRequests'
+            'excessDays',
+            'totalUsedAllTime',
+            'leaveRequests',
+            'selectedMonth',
+            'selectedYear',
+            'availableYears',
+            'periodLabel',
+            'periodMonths',
+            'filterMonth'
         ));
     }
 
@@ -143,6 +229,33 @@ class CandidateLeaveController extends Controller
             ->first();
 
         $companyId = $activeApplication?->job?->companyProfile?->id ?? null;
+
+        // Validasi kuota toleransi 5 hari per bulan untuk peserta magang
+        if ($isIntern) {
+            $policy = $companyId ? CompanyLeavePolicy::getForCompany($companyId) : CompanyLeavePolicy::first();
+            $maxExcusedPerMonth = $policy?->internship_max_excused_days ?? 5;
+
+            $reqMonthStart = $startDate->copy()->startOfMonth();
+            $reqMonthEnd = $startDate->copy()->endOfMonth();
+
+            $usedInMonth = LeaveRequest::where('user_id', $user->id)
+                ->where('status', 'approved')
+                ->where(function ($q) use ($reqMonthStart, $reqMonthEnd) {
+                    $q->whereBetween('start_date', [$reqMonthStart, $reqMonthEnd])
+                      ->orWhereBetween('end_date', [$reqMonthStart, $reqMonthEnd]);
+                })
+                ->sum('total_days');
+
+            $remainingQuota = max(0, $maxExcusedPerMonth - $usedInMonth);
+
+            if ($remainingQuota === 0) {
+                return redirect()->back()->withInput()->with('error', "Kuota toleransi izin bebas potong Anda untuk bulan {$startDate->translatedFormat('F Y')} telah habis ({$maxExcusedPerMonth}/{$maxExcusedPerMonth} hari telah digunakan). Sesuai kebijakan, hari yang diajukan melebihi kuota toleransi langsung berstatus Ditolak dan dicatat sebagai Tidak Hadir (Alpa) dengan pemotongan uang saku proporsional.");
+            }
+
+            if ($workingDays > $remainingQuota) {
+                return redirect()->back()->withInput()->with('error', "Pengajuan izin Anda ({$workingDays} hari kerja) melebihi sisa kuota toleransi bebas potong bulan {$startDate->translatedFormat('F Y')} (tersisa {$remainingQuota} hari dari batas {$maxExcusedPerMonth} hari). Silakan ajukan maksimal {$remainingQuota} hari kerja, karena hari kelebihan langsung berstatus Ditolak dan dicatat sebagai Tidak Hadir (Alpa) dengan pemotongan uang saku.");
+            }
+        }
 
         $leave = LeaveRequest::create([
             'user_id' => $user->id,

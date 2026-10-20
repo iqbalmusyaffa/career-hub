@@ -243,7 +243,16 @@
                                     <i class="fa-solid fa-book-journal-whills text-blue-600"></i> Pengisian Logbook Harian (Peserta Magang)
                                 </div>
                                 <p class="text-slate-600 leading-relaxed">
-                                    Bagi peserta magang, isi aktivitas harian di menu <strong>Logbook Magang</strong> untuk diverifikasi oleh mentor perusahaan. Di akhir periode, Anda akan menerima <strong>Sertifikat Resmi & Transkrip Nilai</strong>.
+                                    Bagi peserta magang, isi aktivitas harian di menu <strong>Logbook Magang</strong> sebelum pukul 23:59 WIB untuk diverifikasi oleh mentor perusahaan. Di akhir periode, Anda akan menerima <strong>Sertifikat Resmi & Transkrip Nilai Ber-QR Code</strong>.
+                                </p>
+                            </div>
+
+                            <div class="p-4 rounded-xl border border-slate-200 bg-white text-xs space-y-1.5">
+                                <div class="font-bold text-slate-900 flex items-center gap-2">
+                                    <i class="fa-solid fa-umbrella-beach text-indigo-600"></i> Pengajuan Cuti & Izin Mandiri (Leave Portal)
+                                </div>
+                                <p class="text-slate-600 leading-relaxed">
+                                    Ajukan izin akademik, sakit, maupun cuti tahunan melalui menu <strong>Portal Cuti & Izin</strong>. Peserta magang mendapatkan toleransi izin <strong>5 hari kerja per bulan bebas potong</strong> (ter-reset otomatis setiap awal bulan). Pengajuan yang melebihi kuota 5 hari akan <strong>langsung ditolak</strong> dan dicatat sebagai <strong>Tidak Hadir (Alpa)</strong> di logbook dengan pemotongan uang saku proporsional. Karyawan kontrak/tetap mendapatkan alokasi cuti tahunan (<strong>12/15 hari</strong>, ter-reset setiap 1 Januari).
                                 </p>
                             </div>
                         </div>

@@ -128,21 +128,21 @@
                         <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600 block mb-1">Tata Tertib & Kebijakan</span>
                         <h2 class="text-lg sm:text-xl font-bold text-slate-900 mb-2">Aturan & Ketentuan Program Magang</h2>
                         <p class="text-xs text-slate-600 leading-relaxed mb-5">
-                            Pedoman resmi mengenai jam kerja, batas pengisian 23:59 WIB, hari libur nasional, batas toleransi izin 4 hari, dan formula pemotongan uang saku.
+                            Pedoman resmi mengenai jam kerja, batas pengisian 23:59 WIB, hari libur nasional, batas toleransi izin 5 hari per bulan (reset bulanan), ketentuan rapel tutup buku, dan formula pemotongan uang saku.
                         </p>
 
                         <div class="space-y-2 mb-6 text-xs text-slate-700">
                             <div class="flex items-center gap-2 font-medium">
                                 <i class="fa-solid fa-circle-check text-indigo-600 text-xs"></i>
-                                <span>Toleransi Izin / Sakit Maksimal 4 Hari</span>
+                                <span>Toleransi Izin Bebas Potong 5 Hari / Bulan (Reset Otomatis)</span>
                             </div>
                             <div class="flex items-center gap-2 font-medium">
                                 <i class="fa-solid fa-circle-check text-indigo-600 text-xs"></i>
-                                <span>Perhitungan Pemotongan Uang Saku</span>
+                                <span>Perhitungan Pemotongan Uang Saku & Standar UMK</span>
                             </div>
                             <div class="flex items-center gap-2 font-medium">
                                 <i class="fa-solid fa-circle-check text-indigo-600 text-xs"></i>
-                                <span>Ketentuan Validasi Rekening Bank KTP</span>
+                                <span>Ketentuan Validasi Rekening Bank KTP & Rapel Tutup Buku</span>
                             </div>
                         </div>
                     </div>

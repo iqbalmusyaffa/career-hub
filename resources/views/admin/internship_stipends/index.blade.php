@@ -115,7 +115,7 @@
                         </p>
                     </div>
                     <div class="mt-2 text-[10px] text-slate-400">
-                        Formula Potongan: (Izin &gt; 4 + Alpa) &times; (Nominal / 22)
+                        Formula Potongan: (Izin &gt; 5 + Alpa) &times; (Nominal / 22)
                     </div>
                 </div>
             </div>
@@ -158,7 +158,7 @@
                             <option value="">Semua Presensi</option>
                             <option value="alpha" {{ in_array($selectedAttendance, ['alpha', 'unexcused']) ? 'selected' : '' }}>🔴 Ada Alpa / Tidak Hadir</option>
                             <option value="izin_sakit" {{ in_array($selectedAttendance, ['izin_sakit', 'excused']) ? 'selected' : '' }}>🟡 Ada Izin / Sakit</option>
-                            <option value="excess_excused" {{ $selectedAttendance === 'excess_excused' ? 'selected' : '' }}>⚠️ Izin &gt; 4 Hari (Potong)</option>
+                            <option value="excess_excused" {{ $selectedAttendance === 'excess_excused' ? 'selected' : '' }}>⚠️ Izin &gt; 5 Hari (Potong)</option>
                             <option value="has_deduction" {{ $selectedAttendance === 'has_deduction' ? 'selected' : '' }}>💸 Ada Potongan Uang Saku</option>
                             <option value="perfect" {{ in_array($selectedAttendance, ['perfect', 'full_attendance']) ? 'selected' : '' }}>🟢 Hadir Penuh / Bebas Potong</option>
                         </select>
@@ -172,6 +172,7 @@
                             <option value="in_review" {{ $selectedStatus === 'in_review' ? 'selected' : '' }}>Dalam Verifikasi</option>
                             <option value="ready" {{ $selectedStatus === 'ready' ? 'selected' : '' }}>Siap Ditransfer</option>
                             <option value="transferred" {{ $selectedStatus === 'transferred' ? 'selected' : '' }}>Telah Ditransfer</option>
+                            <option value="rolled_over" {{ $selectedStatus === 'rolled_over' ? 'selected' : '' }}>Dirapel (Tutup Buku)</option>
                             <option value="pending_mentor" {{ $selectedStatus === 'pending_mentor' ? 'selected' : '' }}>Belum Diajukan Mentor</option>
                             <option value="submitted_mentor" {{ $selectedStatus === 'submitted_mentor' ? 'selected' : '' }}>Telah Diajukan Mentor</option>
                         </select>
@@ -315,7 +316,7 @@
                                                 {{ $stipend->present_days }} / {{ $stipend->total_working_days }} HK
                                             </div>
                                             <div class="text-[10px] text-slate-500">
-                                                <span class="{{ $stipend->excused_days > 4 ? 'text-rose-500 font-bold' : '' }}">Izin: {{ $stipend->excused_days }} hr</span>
+                                                <span class="{{ $stipend->excused_days > 5 ? 'text-rose-500 font-bold' : '' }}">Izin: {{ $stipend->excused_days }} hr</span>
                                                 @if($stipend->unexcused_days > 0)
                                                     <span class="text-rose-500 font-bold ml-1">Alpa: {{ $stipend->unexcused_days }} hr</span>
                                                 @endif
@@ -357,6 +358,10 @@
                                         @elseif($stipend->status === 'ready')
                                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 text-[10px] font-bold">
                                                 <i class="fa-solid fa-circle-play"></i> Siap Ditransfer
+                                            </span>
+                                        @elseif($stipend->status === 'rolled_over')
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 text-[10px] font-bold" title="Uang saku dirapel dan dicairkan pada periode berikutnya (Tutup Buku Akhir Tahun)">
+                                                <i class="fa-solid fa-clock-rotate-left"></i> Dirapel (Tutup Buku)
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 text-[10px] font-bold">
@@ -493,6 +498,7 @@
                                 <option value="in_review">Dalam Verifikasi (In Review)</option>
                                 <option value="ready">Siap Ditransfer (Ready for Transfer)</option>
                                 <option value="transferred">Telah Ditransfer (Transferred / Paid)</option>
+                                <option value="rolled_over">Dirapel ke Periode Berikutnya (Tutup Buku Akhir Tahun)</option>
                             </select>
                         </div>
 

@@ -2,38 +2,52 @@
 
 namespace App\Services;
 
+use App\Mail\AttendanceReminderMail;
 use App\Models\CompanyHoliday;
 use App\Models\CompanyHolidayOverride;
 use App\Models\InternshipLogbook;
 use App\Models\InternshipPeriod;
+use App\Models\SystemSetting;
 use App\Models\User;
 use App\Models\UserNotification;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class AttendanceReminderService
 {
     /**
      * Check and generate attendance/logbook reminder notifications for a specific user.
      */
-    public static function checkAndGenerateForUser($userId): void
+    public static function checkAndGenerateForUser($userId, bool $sendEmail = false, bool $force = false): array
     {
+        // 1. Check Global Master Switch
+        $masterEnabled = SystemSetting::getByKey('attendance_reminder_enabled', '1') === '1';
+        if (!$masterEnabled) {
+            return ['status' => 'disabled_globally', 'emails_sent' => 0];
+        }
+
         $user = User::with(['roles', 'internshipPeriod'])->find($userId);
         if (!$user) {
-            return;
+            return ['status' => 'user_not_found', 'emails_sent' => 0];
         }
 
         $now = Carbon::now();
         $today = Carbon::today();
+        $emailsSent = 0;
 
         // 1. Check if user is strictly a Mentor
         if ($user->hasRole('Mentor')) {
-            self::checkMentorPendingLogbooks($user, $today);
+            $emailsSent += self::checkMentorPendingLogbooks($user, $today, $sendEmail, $force);
         }
 
         // 2. Check if user is an Intern Candidate
         if ($user->hasRole('Candidate')) {
-            self::checkCandidateAttendanceAndLogbook($user, $now, $today);
+            $emailsSent += self::checkCandidateAttendanceAndLogbook($user, $now, $today, $sendEmail, $force);
         }
+
+        return ['status' => 'success', 'emails_sent' => $emailsSent];
     }
 
     /**
@@ -161,9 +175,9 @@ class AttendanceReminderService
             $cursor->addDay();
         }
 
-        // Deduction Calculation
+        // Deduction Calculation (Toleransi Izin Bebas Potong 5 Hari per Periode)
         $isFutureMonth = $startOfMonth->gt($today);
-        $excessExcused = max(0, $excusedDays - 4);
+        $excessExcused = max(0, $excusedDays - 5);
         $cutDays = $excessExcused + $unexcusedDays;
         $dailyRate = $totalWorkingDays > 0 ? ($baseNominal / $totalWorkingDays) : ($baseNominal / 22);
 
@@ -195,7 +209,7 @@ class AttendanceReminderService
     /**
      * Candidate attendance & logbook notifications check.
      */
-    private static function checkCandidateAttendanceAndLogbook(User $user, Carbon $now, Carbon $today): void
+    private static function checkCandidateAttendanceAndLogbook(User $user, Carbon $now, Carbon $today, bool $sendEmail = false, bool $force = false): int
     {
         // Check if candidate is in an active internship period
         $periodSetting = $user->internshipPeriod;
@@ -205,7 +219,7 @@ class AttendanceReminderService
             ->first();
 
         if (!$periodSetting && !$activeApp) {
-            return;
+            return 0;
         }
 
         $startDate = $periodSetting && $periodSetting->start_date ? $periodSetting->start_date->copy()->startOfDay() : Carbon::create(2026, 8, 10);
@@ -213,7 +227,7 @@ class AttendanceReminderService
 
         // Outside internship period -> no reminder
         if ($today->lt($startDate) || $today->gt($endDate)) {
-            return;
+            return 0;
         }
 
         // Check company ID
@@ -221,31 +235,74 @@ class AttendanceReminderService
 
         // If today is not a working day (weekend / holiday) -> no reminder
         if (!self::isWorkingDay($today, $companyId)) {
-            return;
+            return 0;
         }
 
         $todayLogbook = InternshipLogbook::where('user_id', $user->id)
             ->whereDate('date', $today->format('Y-m-d'))
             ->first();
 
+        // Global Switches
+        $inAppGlobal = SystemSetting::getByKey('attendance_reminder_inapp_enabled', '1') === '1';
+        $emailGlobal = SystemSetting::getByKey('attendance_reminder_email_enabled', '1') === '1';
+        $morningGlobal = SystemSetting::getByKey('attendance_reminder_morning_enabled', '1') === '1';
+        $afternoonGlobal = SystemSetting::getByKey('attendance_reminder_afternoon_enabled', '1') === '1';
+
+        // Personal User Preferences
+        $userInAppAllowed = (bool) ($user->inapp_attendance_reminder_enabled ?? true);
+        $userEmailAllowed = (bool) ($user->email_attendance_reminder_enabled ?? true);
+
+        $canSendInApp = $inAppGlobal && $userInAppAllowed;
+        $canSendEmail = $sendEmail && $emailGlobal && $userEmailAllowed && !empty($user->email);
+
+        $emailsSent = 0;
+
         // -------------------------------------------------------------
         // REMINDER A: Morning Attendance Check-In (After 07:00 WIB)
         // -------------------------------------------------------------
-        if ($now->hour >= 7) {
+        if ($morningGlobal && $now->hour >= 7) {
             if (!$todayLogbook) {
                 $hasMorningNotifToday = UserNotification::where('user_id', $user->id)
                     ->where('title', 'like', '%Presensi Pagi%')
                     ->whereDate('created_at', $today->format('Y-m-d'))
                     ->exists();
 
-                if (!$hasMorningNotifToday) {
+                $notifTitle = '⏰ Pengingat Presensi Pagi: Anda Belum Mengisi Kehadiran';
+                $notifMsg = 'Selamat pagi ' . $user->name . '! Hari ini (' . $today->translatedFormat('l, d F Y') . ') adalah hari kerja aktif. Silakan isi presensi kehadiran Anda.';
+                $targetUrl = route('candidate.logbook.show', $today->format('Y-m-d'));
+
+                if ($canSendInApp && !$hasMorningNotifToday) {
                     UserNotification::send(
                         $user->id,
-                        '⏰ Pengingat Presensi Pagi: Anda Belum Mengisi Kehadiran',
-                        'Selamat pagi ' . $user->name . '! Hari ini (' . $today->translatedFormat('l, d F Y') . ') adalah hari kerja aktif. Silakan isi presensi kehadiran Anda.',
-                        route('candidate.logbook.show', $today->format('Y-m-d')),
+                        $notifTitle,
+                        $notifMsg,
+                        $targetUrl,
                         'warning'
                     );
+                }
+
+                // Send email reminder if allowed
+                if ($canSendEmail) {
+                    $cacheKey = "attendance_email_morning_{$user->id}_{$today->format('Y-m-d')}";
+                    if ($force || !Cache::has($cacheKey)) {
+                        try {
+                            Mail::to($user->email)->send(
+                                new AttendanceReminderMail(
+                                    $user,
+                                    'morning_checkin',
+                                    $notifTitle,
+                                    $notifMsg,
+                                    $targetUrl,
+                                    'Isi Presensi Pagi Sekarang',
+                                    $today->translatedFormat('l, d F Y')
+                                )
+                            );
+                            Cache::put($cacheKey, true, now()->endOfDay());
+                            $emailsSent++;
+                        } catch (\Throwable $e) {
+                            Log::warning("Failed sending morning attendance email to {$user->email}: " . $e->getMessage());
+                        }
+                    }
                 }
             }
         }
@@ -253,7 +310,7 @@ class AttendanceReminderService
         // -------------------------------------------------------------
         // REMINDER B: Afternoon / Evening Logbook Activities (16:00 & 17:00 WIB)
         // -------------------------------------------------------------
-        if ($now->hour >= 16) {
+        if ($afternoonGlobal && $now->hour >= 16) {
             $isLogbookIncomplete = !$todayLogbook 
                 || empty($todayLogbook->tasks) 
                 || (float) $todayLogbook->work_hours <= 0 
@@ -262,70 +319,154 @@ class AttendanceReminderService
             if ($isLogbookIncomplete) {
                 $isPost17 = $now->hour >= 17;
                 $slotKeyword = $isPost17 ? '17.00 WIB' : '16.00 WIB';
+                $slotKey = $isPost17 ? '17' : '16';
                 $notifTitle = $isPost17
                     ? '📝 Pengingat Logbook (17.00 WIB): Waktu Pulang Kerja, Lengkapi Logbook Hari Ini'
                     : '📝 Pengingat Logbook Sore (16.00 WIB): Menjelang Pulang, Lengkapi Aktivitas Harian';
                 $notifMessage = $isPost17
                     ? 'Waktu kerja hari ini telah berakhir (17.00 WIB). Pastikan Anda telah melengkapi presensi dan catatan aktivitas logbook harian agar dapat diverifikasi oleh Mentor.'
                     : 'Waktu kerja hari ini hampir berakhir (16.00 WIB). Jangan lupa melengkapi ringkasan tugas & jam kerja pada logbook harian sebelum pulang.';
+                $targetUrl = route('candidate.logbook.show', $today->format('Y-m-d'));
 
                 $hasNotifForSlot = UserNotification::where('user_id', $user->id)
                     ->where('title', 'like', '%' . $slotKeyword . '%')
                     ->whereDate('created_at', $today->format('Y-m-d'))
                     ->exists();
 
-                if (!$hasNotifForSlot) {
+                if ($canSendInApp && !$hasNotifForSlot) {
                     UserNotification::send(
                         $user->id,
                         $notifTitle,
                         $notifMessage,
-                        route('candidate.logbook.show', $today->format('Y-m-d')),
+                        $targetUrl,
                         'info'
                     );
                 }
+
+                // Send email reminder if allowed
+                if ($canSendEmail) {
+                    $cacheKey = "attendance_email_logbook_{$slotKey}_{$user->id}_{$today->format('Y-m-d')}";
+                    if ($force || !Cache::has($cacheKey)) {
+                        try {
+                            Mail::to($user->email)->send(
+                                new AttendanceReminderMail(
+                                    $user,
+                                    'afternoon_logbook',
+                                    $notifTitle,
+                                    $notifMessage,
+                                    $targetUrl,
+                                    'Lengkapi Logbook Sekarang',
+                                    $today->translatedFormat('l, d F Y')
+                                )
+                            );
+                            Cache::put($cacheKey, true, now()->endOfDay());
+                            $emailsSent++;
+                        } catch (\Throwable $e) {
+                            Log::warning("Failed sending logbook email to {$user->email}: " . $e->getMessage());
+                        }
+                    }
+                }
             }
         }
+
+        return $emailsSent;
     }
 
     /**
      * Mentor reminder for pending logbooks.
      */
-    private static function checkMentorPendingLogbooks(User $user, Carbon $today): void
+    private static function checkMentorPendingLogbooks(User $user, Carbon $today, bool $sendEmail = false, bool $force = false): int
     {
+        $mentorGlobal = SystemSetting::getByKey('attendance_reminder_mentor_enabled', '1') === '1';
+        if (!$mentorGlobal) {
+            return 0;
+        }
+
         $pendingCount = InternshipLogbook::where('status', 'pending')->count();
         if ($pendingCount <= 0) {
-            return;
+            return 0;
         }
+
+        $inAppGlobal = SystemSetting::getByKey('attendance_reminder_inapp_enabled', '1') === '1';
+        $emailGlobal = SystemSetting::getByKey('attendance_reminder_email_enabled', '1') === '1';
+
+        $userInAppAllowed = (bool) ($user->inapp_attendance_reminder_enabled ?? true);
+        $userEmailAllowed = (bool) ($user->email_attendance_reminder_enabled ?? true);
+
+        $canSendInApp = $inAppGlobal && $userInAppAllowed;
+        $canSendEmail = $sendEmail && $emailGlobal && $userEmailAllowed && !empty($user->email);
+
+        $emailsSent = 0;
+        $notifTitle = '📋 Pengingat Mentor: ' . $pendingCount . ' Logbook Menunggu Verifikasi';
+        $notifMessage = 'Halo ' . $user->name . ', terdapat ' . $pendingCount . ' laporan logbook harian peserta magang yang menunggu persetujuan (ACC) Anda.';
+        $targetUrl = route('mentor.logbooks.index');
 
         $hasMentorNotifToday = UserNotification::where('user_id', $user->id)
             ->where('title', 'like', '%Logbook Menunggu Verifikasi%')
             ->whereDate('created_at', $today->format('Y-m-d'))
             ->exists();
 
-        if (!$hasMentorNotifToday) {
+        if ($canSendInApp && !$hasMentorNotifToday) {
             UserNotification::send(
                 $user->id,
-                '📋 Pengingat Mentor: ' . $pendingCount . ' Logbook Menunggu Verifikasi',
-                'Halo ' . $user->name . ', terdapat ' . $pendingCount . ' laporan logbook harian peserta magang yang menunggu persetujuan (ACC) Anda.',
-                route('mentor.logbooks.index'),
+                $notifTitle,
+                $notifMessage,
+                $targetUrl,
                 'info'
             );
         }
+
+        // Send email reminder to mentor if allowed
+        if ($canSendEmail) {
+            $cacheKey = "attendance_email_mentor_{$user->id}_{$today->format('Y-m-d')}";
+            if ($force || !Cache::has($cacheKey)) {
+                try {
+                    Mail::to($user->email)->send(
+                        new AttendanceReminderMail(
+                            $user,
+                            'mentor_pending',
+                            $notifTitle,
+                            $notifMessage,
+                            $targetUrl,
+                            'Verifikasi Logbook Magang',
+                            $today->translatedFormat('l, d F Y'),
+                            ['pending_count' => $pendingCount]
+                        )
+                    );
+                    Cache::put($cacheKey, true, now()->endOfDay());
+                    $emailsSent++;
+                } catch (\Throwable $e) {
+                    Log::warning("Failed sending mentor attendance email to {$user->email}: " . $e->getMessage());
+                }
+            }
+        }
+
+        return $emailsSent;
     }
 
     /**
      * Send reminders to all active interns and mentors (useful for scheduled cron/artisan command).
      */
-    public static function sendRemindersToAll(): array
+    public static function sendRemindersToAll(bool $sendEmail = true, bool $force = false, ?int $targetUserId = null): array
     {
-        $users = User::role(['Candidate', 'Mentor', 'HR'])->get();
-        $count = 0;
-
-        foreach ($users as $u) {
-            self::checkAndGenerateForUser($u->id);
-            $count++;
+        if ($targetUserId) {
+            $users = User::where('id', $targetUserId)->get();
+        } else {
+            $users = User::role(['Candidate', 'Mentor', 'HR'])->get();
         }
 
-        return ['processed_users' => $count];
+        $processedCount = 0;
+        $totalEmailsSent = 0;
+
+        foreach ($users as $u) {
+            $res = self::checkAndGenerateForUser($u->id, $sendEmail, $force);
+            $processedCount++;
+            $totalEmailsSent += ($res['emails_sent'] ?? 0);
+        }
+
+        return [
+            'processed_users' => $processedCount,
+            'emails_sent' => $totalEmailsSent,
+        ];
     }
 }

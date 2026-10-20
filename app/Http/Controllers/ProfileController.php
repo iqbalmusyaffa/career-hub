@@ -38,6 +38,19 @@ class ProfileController extends Controller
     }
 
     /**
+     * Update user notification preferences.
+     */
+    public function updateNotificationPreferences(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $user->email_attendance_reminder_enabled = $request->has('email_attendance_reminder_enabled');
+        $user->inapp_attendance_reminder_enabled = $request->has('inapp_attendance_reminder_enabled');
+        $user->save();
+
+        return Redirect::route('profile.edit')->with('success', 'Preferensi notifikasi pengingat kehadiran berhasil diperbarui.');
+    }
+
+    /**
      * Update user theme preference (synced across devices/browsers).
      */
     public function updateTheme(Request $request)

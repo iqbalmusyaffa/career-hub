@@ -27,6 +27,8 @@ class User extends Authenticatable
         'google_id',
         'avatar',
         'theme_preference',
+        'email_attendance_reminder_enabled',
+        'inapp_attendance_reminder_enabled',
         'is_suspended',
         'status_reason',
     ];
@@ -52,6 +54,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_suspended' => 'boolean',
+            'email_attendance_reminder_enabled' => 'boolean',
+            'inapp_attendance_reminder_enabled' => 'boolean',
         ];
     }
 
@@ -118,6 +122,23 @@ class User extends Authenticatable
     public function employeeTerminations()
     {
         return $this->hasMany(EmployeeTermination::class, 'user_id');
+    }
+
+    public function candidateOnboarding()
+    {
+        return $this->hasOne(CandidateOnboarding::class, 'user_id')->latestOfMany();
+    }
+
+    public function internshipUserBenefits()
+    {
+        return $this->hasMany(InternshipUserBenefit::class, 'user_id');
+    }
+
+    public function internshipBenefits()
+    {
+        return $this->belongsToMany(InternshipBenefit::class, 'internship_user_benefits', 'user_id', 'internship_benefit_id')
+                    ->withPivot('policy_number', 'status', 'custom_nominal', 'notes', 'start_date', 'end_date')
+                    ->withTimestamps();
     }
 
     /**
