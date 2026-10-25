@@ -748,8 +748,9 @@ class CandidateLogbookController extends Controller
 
         $isEligibleForCertificate = ($totalApprovedHours >= $targetHours) || ($finalEvaluation !== null) || ($certificate !== null);
 
-        // 6. Survey Status (Active on last month of internship or if evaluated)
-        $isLastMonth = $now->diffInMonths($periodEndDate, false) <= 1;
+        // 6. Survey Status (Active on last month of internship or if certificate issued)
+        $isLastMonth = $now->greaterThanOrEqualTo($periodEndDate->copy()->startOfMonth());
+        $isSurveyAvailable = $isLastMonth || ($certificate !== null);
         $hasSubmittedSurvey = \App\Models\InternshipSurvey::where('user_id', $user->id)->exists() || session()->has('survey_submitted_' . $user->id);
 
         return view('candidate.logbook.progress', compact(
@@ -770,6 +771,7 @@ class CandidateLogbookController extends Controller
             'stipendPeriods',
             'onboarding',
             'isLastMonth',
+            'isSurveyAvailable',
             'hasSubmittedSurvey',
             'monthlyStipendNominal',
             'jobTitle',
@@ -809,6 +811,22 @@ class CandidateLogbookController extends Controller
             return redirect()->route('dashboard')->with('error', 'Fitur Program Magang & Presensi hanya dapat diakses oleh kandidat yang telah diterima sebagai Peserta Magang.');
         }
 
+        $latestApp = $user->applications()->with('job.companyProfile')->latest()->first();
+        $periodSetting = InternshipPeriod::where('user_id', $user->id)->first();
+        $jobBatch = $latestApp?->job?->batch;
+        $periodName = $periodSetting?->period_name ?? $jobBatch ?? 'Batch 1 - Semester Genap 2026';
+        $masterBatch = \App\Models\InternshipBatch::where('batch_name', $periodName)->first();
+        $periodEndDate = $periodSetting?->end_date ? $periodSetting->end_date->copy() : ($masterBatch?->end_date ? $masterBatch->end_date->copy() : Carbon::create(2027, 2, 9));
+
+        $certificate = \App\Models\InternshipCertificate::where('user_id', $user->id)->latest()->first();
+        $isLastMonth = Carbon::now()->greaterThanOrEqualTo($periodEndDate->copy()->startOfMonth());
+        $isSurveyAvailable = $isLastMonth || ($certificate !== null);
+
+        if (!$isSurveyAvailable) {
+            return redirect()->route('candidate.logbook.progress')
+                ->with('error', 'Survei dan masukan pengalaman magang saat ini masih terkunci. Fitur ini hanya tersedia pada bulan terakhir periode magang Anda (' . $periodEndDate->translatedFormat('F Y') . ').');
+        }
+
         $validated = $request->validate([
             'mentor_rating' => 'required|integer|between:1,5',
             'program_rating' => 'required|integer|between:1,5',
@@ -819,12 +837,8 @@ class CandidateLogbookController extends Controller
             'feedback' => 'required|string|min:10|max:2000',
         ]);
 
-        $period = InternshipPeriod::where('user_id', $user->id)->first();
-        $application = Application::where('user_id', $user->id)
-            ->whereIn('status', ['accepted', 'hired'])
-            ->with('job')
-            ->latest()
-            ->first();
+        $period = $periodSetting;
+        $application = $latestApp;
 
         $companyId = $period ? $period->company_id : ($application && $application->job ? $application->job->company_profile_id : null);
 

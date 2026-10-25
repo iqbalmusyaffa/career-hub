@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Application;
 use App\Models\CandidateOnboarding;
 use App\Models\AuditLog;
+use App\Enums\ApplicationStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -154,9 +155,64 @@ class CandidateOnboardingController extends Controller
             }
         }
 
-        AuditLog::record('onboarding_submitted', "Kandidat " . Auth::user()->name . " mengunggah berkas data onboarding untuk posisi " . $application->job->title);
+        AuditLog::record('onboarding_submitted', "Kandidat " . $user->name . " mengunggah berkas data onboarding untuk posisi " . $application->job->title);
 
-        return redirect()->route('dashboard')->with('success', '🎉 Berhasil! Data onboarding & rekening insentif Anda telah tersimpan dan terkirim ke Tim HR.');
+        $isInternship = \Illuminate\Support\Str::contains(strtolower($application->job->work_type ?? ''), ['intern', 'magang']) 
+            || \Illuminate\Support\Str::contains(strtolower($application->job->title ?? ''), ['intern', 'magang'])
+            || !empty($application->job->batch);
+
+        if ($isInternship) {
+            // Remove Employee role if present so candidate is purely recognized as an intern
+            if ($user->hasRole('Employee')) {
+                $user->removeRole('Employee');
+            }
+
+            // Activate or setup Internship Period so intern logbook is immediately ready
+            \App\Models\InternshipPeriod::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'company_id' => $application->job->company_profile_id ?? 1,
+                    'period_name' => $application->job->batch ?? 'Batch Magang ' . now()->year,
+                    'start_date' => $application->job->start_date ?? now(),
+                    'end_date' => $application->job->start_date ? \Carbon\Carbon::parse($application->job->start_date)->addMonths(6) : now()->addMonths(6),
+                    'target_hours' => 400,
+                ]
+            );
+
+            // Update application status to accepted/hired
+            $application->update(['status' => ApplicationStatus::ACCEPTED]);
+
+            \App\Models\UserNotification::send(
+                $user->id,
+                '✅ Onboarding Berhasil & Presensi Magang Aktif',
+                "Data onboarding Anda telah lengkap. Anda kini resmi terdaftar sebagai Peserta Magang dan modul Presensi Magang telah aktif.",
+                route('candidate.logbook.index'),
+                'success'
+            );
+
+            return redirect()->route('candidate.logbook.index')
+                ->with('success', '🎉 Berhasil! Berkas Onboarding tersimpan. Anda kini resmi terdaftar sebagai Peserta Magang dan modul Presensi Magang telah aktif!');
+        } else {
+            // Non-intern position: Automatically assign Employee role & unlock Employee Attendance!
+            $employeeRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Employee', 'guard_name' => 'web']);
+            if (!$user->hasRole('Employee')) {
+                $user->assignRole($employeeRole);
+            }
+
+            // Update application status to accepted/hired
+            $application->update(['status' => ApplicationStatus::ACCEPTED]);
+
+            \App\Models\UserNotification::send(
+                $user->id,
+                '🎉 Selamat Bergabung! Status Karyawan & Presensi Aktif',
+                "Data karyawan dan berkas onboarding Anda berhasil disimpan. Modul Presensi Karyawan (Kamera Wajah & GPS) kini telah aktif untuk Anda.",
+                route('employee.attendance.index'),
+                'success'
+            );
+
+            return redirect()->route('employee.attendance.index')
+                ->with('success', "🎉 Selamat! Berkas Onboarding berhasil disimpan. Status Anda kini resmi menjadi Karyawan Aktif di {$companyName} dan modul Presensi Karyawan telah aktif!");
+        }
     }
 
     /**
@@ -196,6 +252,16 @@ class CandidateOnboardingController extends Controller
         $onboarding->verification_status = 'verified';
         $onboarding->verified_at = now();
         $onboarding->save();
+
+        // Ensure user has the appropriate role
+        $candUser = $application->user;
+        $isIntern = $candUser->isIntern();
+        if (!$isIntern) {
+            $employeeRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Employee', 'guard_name' => 'web']);
+            if (!$candUser->hasRole('Employee')) {
+                $candUser->assignRole($employeeRole);
+            }
+        }
 
         // Send Notification to candidate
         \App\Models\UserNotification::send(

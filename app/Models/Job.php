@@ -82,6 +82,11 @@ class Job extends Model
         return $this->belongsTo(CompanyBranch::class, 'company_branch_id');
     }
 
+    public function companyBranch()
+    {
+        return $this->belongsTo(CompanyBranch::class, 'company_branch_id');
+    }
+
     public function companyProfile()
     {
         return $this->belongsTo(CompanyProfile::class, 'company_name', 'company_name');

@@ -222,6 +222,11 @@ class User extends Authenticatable
      */
     public function isIntern(): bool
     {
+        // If user explicitly has the regular Employee role, they are treated as a regular employee
+        if ($this->hasRole('Employee')) {
+            return false;
+        }
+
         if ($this->internshipPeriod) {
             return true;
         }
@@ -234,5 +239,70 @@ class User extends Authenticatable
                   ->orWhereNotNull('batch');
             })
             ->exists();
+    }
+
+    public function employeeAttendances()
+    {
+        return $this->hasMany(EmployeeAttendance::class, 'user_id');
+    }
+
+    public function todayEmployeeAttendance()
+    {
+        return $this->hasOne(EmployeeAttendance::class, 'user_id')->where('date', now()->toDateString());
+    }
+
+    public function employeeOvertimes()
+    {
+        return $this->hasMany(EmployeeOvertime::class, 'user_id');
+    }
+
+    public function employeeReimbursements()
+    {
+        return $this->hasMany(EmployeeReimbursement::class, 'user_id');
+    }
+
+    public function employeePayrolls()
+    {
+        return $this->hasMany(EmployeePayroll::class, 'user_id');
+    }
+
+    /**
+     * Check if user has completed candidate onboarding form.
+     */
+    public function hasCompletedOnboarding(): bool
+    {
+        return $this->candidateOnboarding()->exists();
+    }
+
+    /**
+     * Check if user is an active hired regular employee eligible for employee attendance (non-intern).
+     */
+    public function isHiredEmployee(): bool
+    {
+        if ($this->isIntern()) {
+            return false;
+        }
+
+        if ($this->hasAnyRole(['Employee', 'HR', 'Company Owner', 'Super Admin'])) {
+            return true;
+        }
+
+        return $this->applications()
+            ->whereIn('status', ['accepted', 'hired'])
+            ->whereHas('job', function($q) {
+                $q->where('work_type', 'not like', '%Intern%')
+                  ->where('work_type', 'not like', '%Magang%')
+                  ->whereNull('batch');
+            })
+            ->whereHas('onboarding')
+            ->exists();
+    }
+
+    /**
+     * Check if user is an employee eligible for regular employee attendance (not an intern).
+     */
+    public function isEmployee(): bool
+    {
+        return $this->isHiredEmployee();
     }
 }

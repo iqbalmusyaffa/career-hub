@@ -61,6 +61,10 @@ class ApplicationRepository implements ApplicationRepositoryInterface
             $query->where('status', request('status'));
         }
 
+        if (request('view') === 'kanban') {
+            return $query->take(250)->get();
+        }
+
         $perPage = (int) request('per_page', 10);
 
         return $query->paginate($perPage)->withQueryString();

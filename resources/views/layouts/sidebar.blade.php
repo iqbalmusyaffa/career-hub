@@ -25,6 +25,11 @@
         $roleBadgeClass = 'bg-purple-500/10 text-purple-400 border-purple-500/20';
         $dashboardRoute = route('mentor.dashboard');
         $portalTitle = 'Panel Mentor Pembimbing';
+    } elseif ($user->isHiredEmployee() || $user->hasRole('Employee')) {
+        $roleName = 'Karyawan Aktif';
+        $roleBadgeClass = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+        $dashboardRoute = route('dashboard');
+        $portalTitle = 'Portal Karyawan Perusahaan';
     } elseif ($user->isIntern()) {
         $roleName = 'Peserta Magang';
         $roleBadgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
@@ -155,6 +160,42 @@
                             @if($sidebarPendingLeaves > 0)
                                 <span class="px-2 py-0.5 bg-amber-400 text-slate-950 text-[10px] font-extrabold rounded-full">{{ $sidebarPendingLeaves }}</span>
                             @endif
+                        </a>
+
+                        <a href="{{ route('admin.employee-attendances.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('admin.employee-attendances.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <i class="fa-solid fa-camera-retro text-xs w-4 text-center text-emerald-400"></i>
+                            <span>Presensi Karyawan</span>
+                        </a>
+
+                        @php
+                            $sidebarPendingOvertimes = \App\Models\EmployeeOvertime::where('status', 'pending')->count();
+                        @endphp
+                        <a href="{{ route('admin.employee-overtimes.index') }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('admin.employee-overtimes.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-business-time text-xs w-4 text-center text-amber-400"></i>
+                                <span>Persetujuan Lembur</span>
+                            </div>
+                            @if($sidebarPendingOvertimes > 0)
+                                <span class="px-2 py-0.5 bg-amber-400 text-slate-950 text-[10px] font-extrabold rounded-full">{{ $sidebarPendingOvertimes }}</span>
+                            @endif
+                        </a>
+
+                        @php
+                            $sidebarPendingReimbursements = \App\Models\EmployeeReimbursement::where('status', 'pending')->count();
+                        @endphp
+                        <a href="{{ route('admin.employee-reimbursements.index') }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('admin.employee-reimbursements.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-file-invoice-dollar text-xs w-4 text-center text-teal-400"></i>
+                                <span>Klaim Reimbursement</span>
+                            </div>
+                            @if($sidebarPendingReimbursements > 0)
+                                <span class="px-2 py-0.5 bg-teal-400 text-slate-950 text-[10px] font-extrabold rounded-full">{{ $sidebarPendingReimbursements }}</span>
+                            @endif
+                        </a>
+
+                        <a href="{{ route('admin.employee-payrolls.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('admin.employee-payrolls.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <i class="fa-solid fa-money-check-dollar text-xs w-4 text-center text-emerald-400"></i>
+                            <span>Payroll & Slip Gaji</span>
                         </a>
 
                         @if(!$user->hasRole('Super Admin'))
@@ -342,7 +383,7 @@
 
                         <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                             <i class="fa-solid fa-gauge-high text-xs w-4 text-center"></i>
-                            <span>{{ $user->isIntern() ? 'Dashboard Magang' : 'Dashboard Karir' }}</span>
+                            <span>{{ $user->isIntern() ? 'Dashboard Magang' : ($user->isHiredEmployee() ? 'Dashboard Karyawan' : 'Dashboard Karir') }}</span>
                         </a>
 
                         @php
@@ -357,6 +398,25 @@
                                 <span class="px-1.5 py-0.5 bg-blue-500/30 text-blue-300 text-[10px] font-bold rounded-md">{{ $candidateAppCount }}</span>
                             @endif
                         </a>
+
+                        {{-- Presensi Menu Otomatis Muncul di Navigasi Utama Berdasarkan Status --}}
+                        @if($user->isIntern() && $user->hasCompletedOnboarding())
+                        <a href="{{ route('candidate.logbook.index') }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('candidate.logbook.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-emerald-400 hover:bg-slate-800 hover:text-white' }}">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-calendar-check text-xs w-4 text-center text-emerald-400"></i>
+                                <span>Presensi Magang</span>
+                            </div>
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        </a>
+                        @elseif($user->isHiredEmployee())
+                        <a href="{{ route('employee.attendance.index') }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('employee.attendance.*') ? 'bg-emerald-600 text-white shadow-xs' : 'text-emerald-400 hover:bg-slate-800 hover:text-white' }}">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-camera text-xs w-4 text-center text-emerald-400"></i>
+                                <span>Presensi Karyawan</span>
+                            </div>
+                            <span class="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 text-[9px] font-extrabold rounded uppercase tracking-wider border border-emerald-500/30">GPS + Wajah</span>
+                        </a>
+                        @endif
                     </div>
 
                     <!-- GROUP 2: EKSPLORASI KARIR -->
@@ -378,6 +438,49 @@
                             <span>Lowongan Tersimpan</span>
                         </a>
                     </div>
+
+                    @if($user->isHiredEmployee() || $user->hasRole('Employee'))
+                    <!-- GROUP: MODUL KARYAWAN AKTIF -->
+                    <div class="space-y-1">
+                        <div class="px-2.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400 mb-1.5 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>Portal Karyawan</span>
+                        </div>
+
+                        <a href="{{ route('employee.attendance.index') }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('employee.attendance.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-camera-retro text-xs w-4 text-center text-emerald-400"></i>
+                                <span>Presensi Wajah & GPS</span>
+                            </div>
+                            <span class="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 text-[9px] font-bold rounded">Live</span>
+                        </a>
+
+                        <a href="{{ route('candidate.leaves.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('candidate.leaves.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <i class="fa-solid fa-umbrella-beach text-xs w-4 text-center text-indigo-400"></i>
+                            <span>Pengajuan Cuti & Izin</span>
+                        </a>
+
+                        <a href="{{ route('employee.overtimes.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('employee.overtimes.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <i class="fa-solid fa-business-time text-xs w-4 text-center text-amber-400"></i>
+                            <span>Pengajuan Lembur</span>
+                        </a>
+
+                        <a href="{{ route('employee.reimbursements.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('employee.reimbursements.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <i class="fa-solid fa-receipt text-xs w-4 text-center text-teal-400"></i>
+                            <span>Klaim Reimbursement</span>
+                        </a>
+
+                        <a href="{{ route('employee.payrolls.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('employee.payrolls.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <i class="fa-solid fa-file-invoice-dollar text-xs w-4 text-center text-emerald-400"></i>
+                            <span>E-Slip Gaji Karyawan</span>
+                        </a>
+
+                        <a href="{{ route('profile.candidate.documents.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition {{ request()->routeIs('profile.candidate.documents.*') ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                            <i class="fa-solid fa-folder-closed text-xs w-4 text-center text-blue-400"></i>
+                            <span>Berkas & BPJS/NPWP</span>
+                        </a>
+                    </div>
+                    @endif
 
                     @if($user->isIntern())
                     <!-- GROUP 3: PROGRAM MAGANG (KHUSUS PESERTA MAGANG AKTIF) -->

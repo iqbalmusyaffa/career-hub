@@ -129,6 +129,32 @@ Route::get('/dashboard', function () {
         ];
     }
 
+    // Regular Employee detection & metrics
+    $isHiredEmployee = $user->isHiredEmployee();
+    $employeeMetrics = null;
+    if ($isHiredEmployee) {
+        $todayAttendance = $user->todayEmployeeAttendance;
+        $activeHiredApp = $applications->first(function($app) {
+            $st = is_object($app->status) ? $app->status->value : (string)$app->status;
+            return in_array($st, ['accepted', 'hired']);
+        });
+
+        $thisMonthAttendances = \App\Models\EmployeeAttendance::where('user_id', $user->id)
+            ->whereYear('date', now()->year)
+            ->whereMonth('date', now()->month)
+            ->get();
+
+        $employeeMetrics = [
+            'todayAttendance' => $todayAttendance,
+            'job' => $activeHiredApp ? $activeHiredApp->job : null,
+            'application' => $activeHiredApp,
+            'totalDaysPresent' => $thisMonthAttendances->count(),
+            'onTimeCount' => $thisMonthAttendances->where('check_in_status', 'on_time')->count(),
+            'lateCount' => $thisMonthAttendances->where('check_in_status', 'late')->count(),
+            'totalWorkHours' => round($thisMonthAttendances->sum('work_duration_minutes') / 60, 1),
+        ];
+    }
+
     return view('dashboard', compact(
         'totalApplications', 
         'processingApplications', 
@@ -137,7 +163,9 @@ Route::get('/dashboard', function () {
         'recentApplications', 
         'statusPopupApp',
         'isIntern',
-        'internMetrics'
+        'internMetrics',
+        'isHiredEmployee',
+        'employeeMetrics'
     ));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -258,6 +286,25 @@ Route::middleware('auth')->group(function () {
 
     // FITUR: Portal Fasilitas & BPJS Perlindungan Magang (Candidate)
     Route::get('/candidate/internship/benefits', [\App\Http\Controllers\Candidate\CandidateBenefitController::class, 'index'])->name('candidate.internship.benefits');
+
+    // FITUR: Modul Presensi Karyawan (Camera Selfie & Geolocation - Khusus Karyawan Non-Magang)
+    Route::get('/employee/attendance', [\App\Http\Controllers\Employee\EmployeeAttendanceController::class, 'index'])->name('employee.attendance.index');
+    Route::post('/employee/attendance/check-in', [\App\Http\Controllers\Employee\EmployeeAttendanceController::class, 'checkIn'])->name('employee.attendance.checkin');
+    Route::post('/employee/attendance/check-out', [\App\Http\Controllers\Employee\EmployeeAttendanceController::class, 'checkOut'])->name('employee.attendance.checkout');
+
+    // FITUR: Pengajuan Lembur Karyawan (Employee Self Service)
+    Route::get('/employee/overtimes', [\App\Http\Controllers\Employee\EmployeeOvertimeController::class, 'index'])->name('employee.overtimes.index');
+    Route::post('/employee/overtimes', [\App\Http\Controllers\Employee\EmployeeOvertimeController::class, 'store'])->name('employee.overtimes.store');
+    Route::delete('/employee/overtimes/{id}', [\App\Http\Controllers\Employee\EmployeeOvertimeController::class, 'destroy'])->name('employee.overtimes.destroy');
+
+    // FITUR: Klaim Biaya Operasional / Reimbursement Karyawan (Employee Self Service)
+    Route::get('/employee/reimbursements', [\App\Http\Controllers\Employee\EmployeeReimbursementController::class, 'index'])->name('employee.reimbursements.index');
+    Route::post('/employee/reimbursements', [\App\Http\Controllers\Employee\EmployeeReimbursementController::class, 'store'])->name('employee.reimbursements.store');
+    Route::delete('/employee/reimbursements/{id}', [\App\Http\Controllers\Employee\EmployeeReimbursementController::class, 'destroy'])->name('employee.reimbursements.destroy');
+
+    // FITUR: E-Slip Gaji & Riwayat Payroll Karyawan Tetap/Kontrak
+    Route::get('/employee/payrolls', [\App\Http\Controllers\Employee\EmployeePayrollController::class, 'index'])->name('employee.payrolls.index');
+    Route::get('/employee/payrolls/{id}/slip', [\App\Http\Controllers\Employee\EmployeePayrollController::class, 'downloadSlip'])->name('employee.payrolls.slip');
 
     // Dedicated Mentor Role Workspace, ACC Absensi, & Final Performance Rating Routes
     Route::get('/mentor/dashboard', [\App\Http\Controllers\Mentor\MentorLogbookController::class, 'dashboard'])->name('mentor.dashboard');
@@ -484,6 +531,26 @@ Route::middleware(['auth', 'role:HR|Super Admin|Company Owner'])->prefix('admin'
     Route::delete('/internship-benefits/{id}', [\App\Http\Controllers\Admin\InternshipBenefitController::class, 'destroy'])->name('internship-benefits.destroy');
     Route::post('/internship-benefits/assign-user', [\App\Http\Controllers\Admin\InternshipBenefitController::class, 'assignUser'])->name('internship-benefits.assign-user');
     Route::post('/internship-benefits/user-benefit/{id}/toggle', [\App\Http\Controllers\Admin\InternshipBenefitController::class, 'toggleUserBenefit'])->name('internship-benefits.toggle-user');
+
+    // FITUR: Monitoring Presensi Karyawan (HR & Super Admin)
+    Route::get('/employee-attendances', [\App\Http\Controllers\Admin\EmployeeAttendanceMonitoringController::class, 'index'])->name('employee-attendances.index');
+    Route::get('/employee-attendances/export/csv', [\App\Http\Controllers\Admin\EmployeeAttendanceMonitoringController::class, 'exportCsv'])->name('employee-attendances.export-csv');
+
+    // FITUR: Persetujuan Lembur Karyawan (Admin/HR Review & Approval)
+    Route::get('/employee-overtimes', [\App\Http\Controllers\Admin\EmployeeOvertimeController::class, 'index'])->name('employee-overtimes.index');
+    Route::post('/employee-overtimes/{id}/status', [\App\Http\Controllers\Admin\EmployeeOvertimeController::class, 'updateStatus'])->name('employee-overtimes.status');
+
+    // FITUR: Klaim Reimbursement Karyawan (Admin/HR Review & Disbursement)
+    Route::get('/employee-reimbursements', [\App\Http\Controllers\Admin\EmployeeReimbursementController::class, 'index'])->name('employee-reimbursements.index');
+    Route::post('/employee-reimbursements/{id}/status', [\App\Http\Controllers\Admin\EmployeeReimbursementController::class, 'updateStatus'])->name('employee-reimbursements.status');
+
+    // FITUR: Payroll Module & E-Slip Gaji Karyawan Tetap/Kontrak (Admin/HR)
+    Route::get('/employee-payrolls', [\App\Http\Controllers\Admin\EmployeePayrollController::class, 'index'])->name('employee-payrolls.index');
+    Route::post('/employee-payrolls/generate', [\App\Http\Controllers\Admin\EmployeePayrollController::class, 'generate'])->name('employee-payrolls.generate');
+    Route::post('/employee-payrolls/bulk-transfer', [\App\Http\Controllers\Admin\EmployeePayrollController::class, 'bulkTransfer'])->name('employee-payrolls.bulk-transfer');
+    Route::post('/employee-payrolls/{id}/status', [\App\Http\Controllers\Admin\EmployeePayrollController::class, 'updateStatus'])->name('employee-payrolls.status');
+    Route::get('/employee-payrolls/{id}/slip', [\App\Http\Controllers\Admin\EmployeePayrollController::class, 'downloadSlip'])->name('employee-payrolls.slip');
+    Route::get('/employee-payrolls/export/csv', [\App\Http\Controllers\Admin\EmployeePayrollController::class, 'exportCsv'])->name('employee-payrolls.export-csv');
 
     // Super Admin Exclusive Control & Moderation
     Route::middleware('role:Super Admin')->group(function () {

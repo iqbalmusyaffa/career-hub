@@ -22,7 +22,18 @@ class ApplicationController extends Controller
     {
         $applications = $this->applicationService->getAllApplications();
         $statusCounts = $this->applicationService->getStatusCounts();
-        return view('admin.applications.index', compact('applications', 'statusCounts'));
+
+        $user = auth()->user();
+        $jobsQuery = \App\Models\Job::query()->select('id', 'title', 'company_name');
+        if ($user && !$user->hasRole('Super Admin')) {
+            $companyProfile = $user->currentCompanyProfile();
+            if ($companyProfile && $companyProfile->company_name) {
+                $jobsQuery->where('company_name', 'LIKE', '%' . $companyProfile->company_name . '%');
+            }
+        }
+        $jobs = $jobsQuery->orderBy('title')->get();
+
+        return view('admin.applications.index', compact('applications', 'statusCounts', 'jobs'));
     }
 
     public function show($id)
@@ -33,8 +44,40 @@ class ApplicationController extends Controller
 
     public function updateStatus(UpdateApplicationStatusRequest $request, $id)
     {
-        $this->applicationService->updateApplicationStatus($id, $request->status);
-        return redirect()->back()->with('success', 'Application status updated successfully.');
+        $realId = \App\Helpers\IdHasher::decode($id) ?? $id;
+
+        try {
+            $this->applicationService->updateApplicationStatus($realId, $request->status);
+
+            if ($request->wantsJson() || $request->ajax()) {
+                $statusEnum = \App\Enums\ApplicationStatus::tryFrom($request->status);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Status pelamar berhasil diubah menjadi: ' . ($statusEnum ? $statusEnum->label() : strtoupper($request->status)) . '!',
+                    'new_status' => $request->status,
+                    'status_label' => $statusEnum ? $statusEnum->label() : strtoupper($request->status),
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Status pelamar berhasil diperbarui.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errorMsg = collect($e->errors())->flatten()->first() ?? $e->getMessage();
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMsg,
+                ], 422);
+            }
+            return redirect()->back()->withErrors($e->errors())->with('error', $errorMsg);
+        } catch (\Throwable $e) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 500);
+            }
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function exportCsv()

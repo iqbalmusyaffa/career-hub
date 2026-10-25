@@ -22,6 +22,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $ownerRole = Role::firstOrCreate(['name' => 'Company Owner']);
         $mentorRole = Role::firstOrCreate(['name' => 'Mentor']);
         $candidateRole = Role::firstOrCreate(['name' => 'Candidate']);
+        $employeeRole = Role::firstOrCreate(['name' => 'Employee']);
 
         // Create Super Admin User
         $superAdmin = User::firstOrCreate(

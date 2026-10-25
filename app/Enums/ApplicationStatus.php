@@ -15,6 +15,7 @@ enum ApplicationStatus: string
     case BACKGROUND_CHECK = 'background_check';
     case OFFERED = 'offered';
     case ACCEPTED = 'accepted';
+    case HIRED = 'hired';
     case REJECTED = 'rejected';
 
     public function label(): string
@@ -30,7 +31,7 @@ enum ApplicationStatus: string
             self::INTERVIEW_USER => 'Wawancara User / Tim Teknis',
             self::BACKGROUND_CHECK => 'Background Check',
             self::OFFERED => 'Surat Penawaran (Offering)',
-            self::ACCEPTED => 'Diterima Bekerja (Hired)',
+            self::ACCEPTED, self::HIRED => 'Diterima Bekerja (Hired)',
             self::REJECTED => 'Tidak Lolos (Ditolak)',
         };
     }
@@ -47,7 +48,7 @@ enum ApplicationStatus: string
             self::INTERVIEW_USER => 'Interview User',
             self::BACKGROUND_CHECK => 'Bg Check',
             self::OFFERED => 'Offering',
-            self::ACCEPTED => 'Hired',
+            self::ACCEPTED, self::HIRED => 'Hired',
             self::REJECTED => 'Ditolak',
         };
     }
@@ -91,7 +92,7 @@ enum ApplicationStatus: string
             self::INTERVIEW_USER => 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200',
             self::BACKGROUND_CHECK => 'bg-teal-100 text-teal-800 border-teal-200',
             self::OFFERED => 'bg-emerald-100 text-emerald-800 border-emerald-200',
-            self::ACCEPTED => 'bg-emerald-600 text-white font-black',
+            self::ACCEPTED, self::HIRED => 'bg-emerald-600 text-white font-black',
             self::REJECTED => 'bg-rose-100 text-rose-800 border-rose-200',
         };
     }

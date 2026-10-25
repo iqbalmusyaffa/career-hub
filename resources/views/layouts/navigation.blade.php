@@ -50,6 +50,9 @@
                             <x-nav-link :href="route('mentor.logbooks.index')" :active="request()->routeIs('mentor.logbooks.*') || request()->routeIs('mentor.settings.*')">
                                 Batch & Presensi Magang
                             </x-nav-link>
+                            <x-nav-link :href="route('admin.employee-attendances.index')" :active="request()->routeIs('admin.employee-attendances.*')">
+                                Presensi Karyawan
+                            </x-nav-link>
                             <x-nav-link :href="route('admin.leaves.index')" :active="request()->routeIs('admin.leaves.*')">
                                 Kelola Cuti & Izin
                             </x-nav-link>
@@ -105,7 +108,7 @@
                             </div>
                         @endif
                         
-                        @if(auth()->user()->hasRole('Candidate'))
+                        @if(auth()->user()->hasRole('Candidate') || auth()->user()->hasRole('Employee'))
                             <x-nav-link :href="route('candidate.applications.index')" :active="request()->routeIs('candidate.applications.*')">
                                 Lamaran Saya
                             </x-nav-link>
@@ -118,10 +121,16 @@
                             <x-nav-link :href="route('saved-jobs.index')" :active="request()->routeIs('saved-jobs.*')">
                                 Lowongan Tersimpan
                             </x-nav-link>
-                            @if(auth()->user()->isIntern())
-                            <x-nav-link :href="route('candidate.logbook.index')" :active="request()->routeIs('candidate.logbook.*')">
-                                Presensi Magang
-                            </x-nav-link>
+
+                            {{-- Menu Presensi Otomatis Muncul Berdasarkan Status Onboarding & Karyawan --}}
+                            @if(auth()->user()->isIntern() && auth()->user()->hasCompletedOnboarding())
+                                <x-nav-link :href="route('candidate.logbook.index')" :active="request()->routeIs('candidate.logbook.*')">
+                                    Presensi Magang
+                                </x-nav-link>
+                            @elseif(auth()->user()->isHiredEmployee())
+                                <x-nav-link :href="route('employee.attendance.index')" :active="request()->routeIs('employee.attendance.*')">
+                                    Presensi Karyawan
+                                </x-nav-link>
                             @endif
                             <x-nav-link :href="route('candidate.leaves.index')" :active="request()->routeIs('candidate.leaves.*')">
                                 Cuti & Izin
@@ -430,6 +439,9 @@
                 <x-responsive-nav-link :href="route('mentor.logbooks.index')" :active="request()->routeIs('mentor.logbooks.*') || request()->routeIs('mentor.settings.*')">
                     Batch & Presensi Magang
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.employee-attendances.index')" :active="request()->routeIs('admin.employee-attendances.*')">
+                    Presensi Karyawan
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.leaves.index')" :active="request()->routeIs('admin.leaves.*')">
                     Kelola Cuti & Izin
                 </x-responsive-nav-link>
@@ -444,7 +456,7 @@
                 </x-responsive-nav-link>
                 @endif
                 
-                @if(auth()->user()->hasRole('Candidate'))
+                @if(auth()->user()->hasRole('Candidate') || auth()->user()->hasRole('Employee'))
                 <x-responsive-nav-link :href="route('candidate.applications.index')" :active="request()->routeIs('candidate.applications.*')">
                     Lamaran Saya
                 </x-responsive-nav-link>
@@ -457,9 +469,13 @@
                 <x-responsive-nav-link :href="route('saved-jobs.index')" :active="request()->routeIs('saved-jobs.*')">
                     Lowongan Tersimpan
                 </x-responsive-nav-link>
-                @if(auth()->user()->isIntern())
+                @if(auth()->user()->isIntern() && auth()->user()->hasCompletedOnboarding())
                 <x-responsive-nav-link :href="route('candidate.logbook.index')" :active="request()->routeIs('candidate.logbook.*')">
                     Presensi Magang
+                </x-responsive-nav-link>
+                @elseif(auth()->user()->isHiredEmployee())
+                <x-responsive-nav-link :href="route('employee.attendance.index')" :active="request()->routeIs('employee.attendance.*')">
+                    Presensi Karyawan
                 </x-responsive-nav-link>
                 @endif
                 <x-responsive-nav-link :href="route('candidate.leaves.index')" :active="request()->routeIs('candidate.leaves.*')">

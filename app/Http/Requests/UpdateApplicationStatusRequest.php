@@ -10,7 +10,7 @@ class UpdateApplicationStatusRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->hasRole('HR') || $this->user()->hasRole('Super Admin');
+        return $this->user()->hasRole('HR') || $this->user()->hasRole('Super Admin') || $this->user()->hasRole('Company Owner');
     }
 
     public function rules(): array

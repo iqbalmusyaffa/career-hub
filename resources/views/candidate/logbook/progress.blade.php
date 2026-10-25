@@ -41,6 +41,7 @@
         openModal: null, // 'kurikulum', 'evaluasi', 'uang_saku', 'survei', 'sertifikat'
         hasSubmittedSurvey: {{ $hasSubmittedSurvey ? 'true' : 'false' }},
         hasCertificate: {{ $certificate ? 'true' : 'false' }},
+        isSurveyAvailable: {{ $isSurveyAvailable ? 'true' : 'false' }},
         openCertModalOnLoad: {{ session('open_certificate_modal') ? 'true' : 'false' }},
         surveyRatingMentor: 0,
         hoverRatingMentor: 0,
@@ -82,7 +83,7 @@
     }" x-init="
         if (openCertModalOnLoad) {
             openModal = 'sertifikat';
-        } else if (hasCertificate && !hasSubmittedSurvey) {
+        } else if (hasCertificate && !hasSubmittedSurvey && isSurveyAvailable) {
             openModal = 'survei';
         }
     ">
@@ -333,23 +334,53 @@
                     </div>
                 </a>
 
-                <!-- Card 4: Survei -->
-                <button type="button" @click="openModal = 'survei'" class="w-full px-5 py-4 sm:px-6 sm:py-5 flex items-center justify-between hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition text-left group">
+                <!-- Card 4: Survei & Masukan Magang -->
+                <button type="button" @click="openModal = 'survei'" class="w-full px-5 py-4 sm:px-6 sm:py-5 flex items-center justify-between hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition text-left group {{ !$isSurveyAvailable && !$hasSubmittedSurvey ? 'bg-slate-50/40 dark:bg-slate-900/30' : '' }}">
                     <div class="flex items-center gap-4">
-                        <div class="w-11 h-11 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg shrink-0 group-hover:scale-105 transition-transform">
-                            <i class="fa-solid fa-square-check"></i>
+                        <div class="w-11 h-11 rounded-xl {{ $hasSubmittedSurvey ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400' : ($isSurveyAvailable ? 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500') }} flex items-center justify-center text-lg shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+                            <i class="fa-solid {{ $hasSubmittedSurvey ? 'fa-square-check' : ($isSurveyAvailable ? 'fa-square-poll-vertical' : 'fa-lock') }}"></i>
                         </div>
                         <div>
-                            <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
-                                Survei
-                            </h4>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white {{ $hasSubmittedSurvey ? 'group-hover:text-emerald-600 dark:group-hover:text-emerald-400' : ($isSurveyAvailable ? 'group-hover:text-indigo-600 dark:group-hover:text-indigo-400' : 'group-hover:text-slate-700 dark:group-hover:text-slate-300') }} transition">
+                                    Survei & Masukan Magang
+                                </h4>
+                                @if($hasSubmittedSurvey)
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 inline-flex items-center gap-1">
+                                        <i class="fa-solid fa-check text-[9px]"></i> Sudah Diisi
+                                    </span>
+                                @elseif($isSurveyAvailable)
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-300 inline-flex items-center gap-1">
+                                        <i class="fa-solid fa-pen text-[9px]"></i> Siap Diisi
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 inline-flex items-center gap-1">
+                                        <i class="fa-solid fa-lock text-[9px]"></i> Terkunci
+                                    </span>
+                                @endif
+                            </div>
                             <p class="text-xs text-slate-500 dark:text-slate-400 font-normal mt-0.5">
-                                Tersedia pada bulan terakhir magang
+                                @if($hasSubmittedSurvey)
+                                    Evaluasi dan masukan pengalaman magang Anda telah tersimpan. Klik untuk melihat status.
+                                @elseif($isSurveyAvailable)
+                                    Bulan terakhir magang aktif. Berikan evaluasi mutu bimbingan, kurikulum, serta saran masukan Anda.
+                                @else
+                                    Terkunci — Baru tersedia pada bulan terakhir magang ({{ $periodEndDate->translatedFormat('F Y') }}).
+                                @endif
                             </p>
                         </div>
                     </div>
-                    <div class="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition pl-2">
-                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    <div class="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition pl-2 flex items-center gap-2">
+                        @if($hasSubmittedSurvey)
+                            <span class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold hidden sm:inline">Lihat Status</span>
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        @elseif($isSurveyAvailable)
+                            <span class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hidden sm:inline">Buka Survei</span>
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        @else
+                            <span class="text-xs text-slate-400 dark:text-slate-500 font-medium hidden sm:inline">{{ $periodEndDate->translatedFormat('F Y') }}</span>
+                            <i class="fa-solid fa-lock text-slate-300 dark:text-slate-600 text-xs"></i>
+                        @endif
                     </div>
                 </button>
 
@@ -1032,8 +1063,8 @@
             <div @click.away="openModal = null" class="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 max-h-[92vh] overflow-y-auto scrollbar-thin">
                 <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg shrink-0">
-                            <i class="fa-solid fa-square-poll-vertical"></i>
+                        <div class="w-10 h-10 rounded-xl {{ $hasSubmittedSurvey ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400' : ($isSurveyAvailable ? 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400') }} flex items-center justify-center text-lg shrink-0">
+                            <i class="fa-solid {{ $hasSubmittedSurvey ? 'fa-square-check' : ($isSurveyAvailable ? 'fa-square-poll-vertical' : 'fa-lock') }}"></i>
                         </div>
                         <div>
                             <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Survei Pengalaman Magang</h3>
@@ -1054,6 +1085,40 @@
                         <p class="text-xs sm:text-sm text-emerald-700 dark:text-emerald-300 max-w-md mx-auto leading-relaxed">
                             Terima kasih atas partisipasi dan masukan objektif Anda. Jawaban Anda tersimpan untuk perbaikan mutu bimbingan mentor dan kurikulum magang perusahaan.
                         </p>
+                        <div class="pt-3">
+                            <button type="button" @click="openModal = null" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition shadow-xs">
+                                Tutup
+                            </button>
+                        </div>
+                    </div>
+                @elseif(!$isSurveyAvailable)
+                    <!-- LOCKED STATE NOTIFICATION -->
+                    <div class="p-8 text-center bg-slate-50/80 dark:bg-slate-800/50 rounded-2xl border border-slate-200/80 dark:border-slate-700 space-y-4">
+                        <div class="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center text-3xl shadow-xs">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <div class="space-y-2 max-w-md mx-auto">
+                            <h4 class="text-base font-bold text-slate-900 dark:text-white">Survei & Masukan Belum Tersedia</h4>
+                            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                                Form survei evaluasi mutu serta saran perbaikan magang saat ini masih <strong class="text-slate-800 dark:text-slate-200 font-semibold">terkunci</strong>. Fitur ini dirancang khusus untuk evaluasi komprehensif di akhir program dan baru akan terbuka otomatis pada <strong class="text-slate-900 dark:text-white font-bold">bulan terakhir magang ({{ $periodEndDate->translatedFormat('F Y') }})</strong>.
+                            </p>
+                        </div>
+
+                        <div class="p-3.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200/80 dark:border-blue-900/60 text-left flex items-start gap-3 max-w-md mx-auto text-xs text-blue-900 dark:text-blue-300">
+                            <i class="fa-solid fa-circle-info text-blue-600 dark:text-blue-400 text-sm mt-0.5 shrink-0"></i>
+                            <div class="space-y-0.5">
+                                <span class="font-bold">Periode Pembukaan Survei:</span>
+                                <p class="text-[11px] text-blue-700/90 dark:text-blue-400 font-normal">
+                                    Survei dapat diakses mulai tanggal <strong class="font-semibold text-blue-950 dark:text-blue-200">1 {{ $periodEndDate->translatedFormat('F Y') }}</strong> hingga akhir masa magang Anda ({{ $periodEndDate->translatedFormat('d F Y') }}).
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="button" @click="openModal = null" class="px-6 py-2.5 bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 text-white rounded-xl text-xs font-semibold transition shadow-xs">
+                                Mengerti & Tutup
+                            </button>
+                        </div>
                     </div>
                 @else
                     @if($certificate)

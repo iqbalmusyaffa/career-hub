@@ -3,14 +3,24 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
             <div>
                 <h1 class="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-                    <span class="w-8 h-8 rounded-xl {{ ($isIntern ?? false) ? 'bg-emerald-600 dark:bg-emerald-500' : 'bg-slate-900 dark:bg-blue-600' }} text-white flex items-center justify-center text-xs shadow-xs shrink-0">
-                        <i class="fa-solid {{ ($isIntern ?? false) ? 'fa-graduation-cap' : 'fa-user' }}"></i>
+                    <span class="w-8 h-8 rounded-xl {{ ($isIntern ?? false) ? 'bg-emerald-600 dark:bg-emerald-500' : (($isHiredEmployee ?? false) ? 'bg-blue-600 dark:bg-blue-500' : 'bg-slate-900 dark:bg-blue-600') }} text-white flex items-center justify-center text-xs shadow-xs shrink-0">
+                        <i class="fa-solid {{ ($isIntern ?? false) ? 'fa-graduation-cap' : (($isHiredEmployee ?? false) ? 'fa-id-badge' : 'fa-user') }}"></i>
                     </span>
-                    <span>{{ ($isIntern ?? false) ? 'Dashboard Peserta Magang' : 'Dashboard Karir' }}</span>
+                    <span>
+                        @if($isIntern ?? false)
+                            Dashboard Peserta Magang
+                        @elseif($isHiredEmployee ?? false)
+                            Dashboard Karyawan Aktif
+                        @else
+                            Dashboard Karir
+                        @endif
+                    </span>
                 </h1>
                 <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                     @if($isIntern ?? false)
                         Kelola presensi harian, jurnal logbook magang, dan pantau pemenuhan jam kerja Anda.
+                    @elseif($isHiredEmployee ?? false)
+                        Kelola presensi kehadiran kerja harian, pengajuan cuti, dan informasi ketenagakerjaan Anda.
                     @else
                         Pantau status lamaran kerja, jadwal wawancara, dan dokumen karir Anda secara terpadu.
                     @endif
@@ -25,6 +35,19 @@
                     <a href="{{ route('candidate.logbook.evaluation') }}" class="w-full sm:w-auto text-center justify-center bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold py-2 px-4 rounded-xl text-xs transition border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-2">
                         <i class="fa-solid fa-chart-line text-slate-400 text-xs"></i> 
                         <span>Nilai & Evaluasi</span>
+                    </a>
+                @elseif($isHiredEmployee ?? false)
+                    <a href="{{ route('employee.attendance.index') }}" class="w-full sm:w-auto text-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl text-xs transition shadow-xs flex items-center gap-2">
+                        <i class="fa-solid fa-camera text-xs"></i> 
+                        <span>Presensi Karyawan</span>
+                    </a>
+                    <a href="{{ route('employee.payrolls.index') }}" class="w-full sm:w-auto text-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-xl text-xs transition shadow-xs flex items-center gap-2">
+                        <i class="fa-solid fa-file-invoice-dollar text-xs"></i> 
+                        <span>E-Slip Gaji</span>
+                    </a>
+                    <a href="{{ route('candidate.leaves.index') }}" class="w-full sm:w-auto text-center justify-center bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold py-2 px-4 rounded-xl text-xs transition border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-minus text-slate-400 text-xs"></i> 
+                        <span>Cuti & Izin</span>
                     </a>
                 @else
                     <a href="{{ route('jobs.index') }}" class="w-full sm:w-auto text-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl text-xs transition shadow-xs flex items-center gap-2">
@@ -651,23 +674,94 @@
                 <!-- B. TAMPILAN KHUSUS PELAMAR KERJA (JOB SEEKER MODE)      -->
                 <!-- ======================================================= -->
 
-                <!-- 1. HERO WELCOME BANNER CARD -->
-                <div class="bg-white dark:bg-slate-900 p-5 sm:p-7 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-800">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                        <div class="space-y-1.5 flex-1">
+                @if($isHiredEmployee ?? false)
+                    <!-- HERO BANNER KARYAWAN AKTIF & STATUS PRESENSI HARI INI -->
+                    <div class="bg-linear-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-5 sm:p-7 rounded-3xl shadow-lg border border-blue-800/80 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div class="space-y-2 flex-1">
                             <div class="flex items-center gap-2 flex-wrap">
-                                <span class="px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-900 text-blue-700 dark:text-blue-300 rounded-md text-[11px] font-semibold uppercase tracking-wider">
-                                    Pencari Kerja
+                                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    Karyawan Aktif
                                 </span>
-                                <span class="text-xs text-slate-400 dark:text-slate-500 font-normal">| {{ now()->translatedFormat('l, d F Y') }}</span>
+                                <span class="text-xs text-blue-200">| {{ now()->translatedFormat('l, d F Y') }}</span>
                             </div>
-                            <h2 class="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                                Selamat Datang, {{ auth()->user()->name }}
+                            <h2 class="text-xl sm:text-2xl font-black tracking-tight text-white">
+                                Selamat Bertugas, {{ auth()->user()->name }}!
                             </h2>
-                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed font-normal">
-                                Pantau perkembangan berkas lamaran Anda atau temukan peluang karir baru yang sesuai dengan kompetensi Anda.
+                            <p class="text-xs sm:text-sm text-blue-100">
+                                Posisi: <strong>{{ $employeeMetrics['job']->title ?? 'Karyawan' }}</strong> &bull; Perusahaan: <strong>{{ $employeeMetrics['job']->company_name ?? 'Perusahaan' }}</strong>
                             </p>
                         </div>
+
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full md:w-auto">
+                            @if(isset($employeeMetrics['todayAttendance']) && $employeeMetrics['todayAttendance'] && $employeeMetrics['todayAttendance']->is_checked_in)
+                                <div class="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-xs">
+                                    <div class="text-[11px] text-blue-200">Presensi Hari Ini:</div>
+                                    <div class="font-mono font-bold text-white flex items-center gap-1.5 mt-0.5">
+                                        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                                        <span>Masuk: {{ $employeeMetrics['todayAttendance']->formatted_check_in_time }}</span>
+                                    </div>
+                                </div>
+                            @endif
+                            <a href="{{ route('employee.attendance.index') }}" class="py-3 px-5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-2xl transition shadow-md flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-camera"></i>
+                                <span>Buka Presensi Karyawan &rarr;</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- ESS QUICK ACTION HUB -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
+                        <a href="{{ route('employee.attendance.index') }}" class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 hover:border-blue-500 hover:shadow-md transition group">
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center text-base mb-3 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-camera-retro"></i>
+                            </div>
+                            <div class="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition">Presensi Wajah & GPS</div>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Check-in / Check-out</p>
+                        </a>
+
+                        <a href="{{ route('employee.overtimes.index') }}" class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 hover:border-amber-500 hover:shadow-md transition group">
+                            <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-base mb-3 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-business-time"></i>
+                            </div>
+                            <div class="text-xs font-bold text-slate-900 dark:text-white group-hover:text-amber-600 transition">Pengajuan Lembur</div>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Form lembur & riwayat</p>
+                        </a>
+
+                        <a href="{{ route('employee.reimbursements.index') }}" class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 hover:border-teal-500 hover:shadow-md transition group">
+                            <div class="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center text-base mb-3 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-receipt"></i>
+                            </div>
+                            <div class="text-xs font-bold text-slate-900 dark:text-white group-hover:text-teal-600 transition">Klaim Reimbursement</div>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Klaim biaya operasional</p>
+                        </a>
+
+                        <a href="{{ route('employee.payrolls.index') }}" class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 hover:border-emerald-500 hover:shadow-md transition group">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base mb-3 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                            </div>
+                            <div class="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition">E-Slip Gaji Karyawan</div>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Unduh slip PDF bulanan</p>
+                        </a>
+                    </div>
+                @else
+                    <!-- 1. HERO WELCOME BANNER CARD (JOB SEEKER) -->
+                    <div class="bg-white dark:bg-slate-900 p-5 sm:p-7 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-800">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                            <div class="space-y-1.5 flex-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-900 text-blue-700 dark:text-blue-300 rounded-md text-[11px] font-semibold uppercase tracking-wider">
+                                        Pencari Kerja
+                                    </span>
+                                    <span class="text-xs text-slate-400 dark:text-slate-500 font-normal">| {{ now()->translatedFormat('l, d F Y') }}</span>
+                                </div>
+                                <h2 class="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                                    Selamat Datang, {{ auth()->user()->name }}
+                                </h2>
+                                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed font-normal">
+                                    Pantau perkembangan berkas lamaran Anda atau temukan peluang karir baru yang sesuai dengan kompetensi Anda.
+                                </p>
+                            </div>
 
                         @php
                             $candidateProfile = auth()->user()->candidateProfile;
@@ -702,6 +796,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <!-- 2. ACTION HUB / NOTIFICATIONS REQUIRING ATTENTION -->
                 @php

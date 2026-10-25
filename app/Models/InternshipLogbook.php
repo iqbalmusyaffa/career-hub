@@ -47,6 +47,11 @@ class InternshipLogbook extends Model
         };
     }
 
+    public function getSelfieUrlAttribute()
+    {
+        return $this->selfie_path ? asset('storage/' . $this->selfie_path) : null;
+    }
+
     public function getStatusBadgeAttribute()
     {
         return match($this->status) {

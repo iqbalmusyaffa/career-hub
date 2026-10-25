@@ -16,13 +16,27 @@
             </div>
             
             <div class="flex items-center gap-2.5">
+                <!-- View Switcher (Table vs Kanban) -->
+                <div class="inline-flex p-1 bg-white rounded-xl border border-slate-200/90 shadow-2xs">
+                    <a href="{{ route('admin.applications.index', array_merge(request()->except(['view', 'page']), ['view' => 'table'])) }}" 
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition {{ request('view', 'table') !== 'kanban' ? 'bg-blue-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900' }}">
+                        <i class="fa-solid fa-table-list text-xs"></i>
+                        <span>Tabel</span>
+                    </a>
+                    <a href="{{ route('admin.applications.index', array_merge(request()->except(['view', 'page']), ['view' => 'kanban'])) }}" 
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition {{ request('view') === 'kanban' ? 'bg-blue-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900' }}">
+                        <i class="fa-solid fa-table-columns text-xs"></i>
+                        <span>Kanban Board</span>
+                    </a>
+                </div>
+
                 <a href="{{ route('admin.applications.export.csv') }}" class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold transition border border-slate-300 shadow-2xs hover:border-slate-400">
                     <i class="fa-solid fa-file-csv text-emerald-600 text-sm"></i>
-                    <span>Ekspor CSV</span>
+                    <span class="hidden sm:inline">Ekspor CSV</span>
                 </a>
                 <a href="{{ route('admin.applications.export.pdf') }}" class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold transition border border-slate-300 shadow-2xs hover:border-slate-400">
                     <i class="fa-solid fa-file-pdf text-rose-600 text-sm"></i>
-                    <span>Unduh PDF</span>
+                    <span class="hidden sm:inline">Unduh PDF</span>
                 </a>
             </div>
         </div>
@@ -91,6 +105,7 @@
             <!-- Integrated Search & Filter Command Bar -->
             <div class="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-4">
                 <form method="GET" action="{{ route('admin.applications.index') }}" id="filterForm">
+                    <input type="hidden" name="view" value="{{ request('view', 'table') }}">
                     @if(request('status'))
                         <input type="hidden" name="status" value="{{ request('status') }}">
                     @endif
@@ -113,6 +128,19 @@
 
                         <!-- Dropdown Filters Group -->
                         <div class="flex flex-wrap items-center gap-2.5">
+                            @if(isset($jobs) && $jobs->isNotEmpty())
+                                <div class="w-48">
+                                    <select name="job_id" onchange="document.getElementById('filterForm').submit()" class="w-full px-2.5 py-2 bg-slate-50/50 hover:bg-white focus:bg-white border-slate-200 focus:border-blue-500 rounded-lg text-xs font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 transition shadow-2xs">
+                                        <option value="">Semua Posisi Lowongan</option>
+                                        @foreach($jobs as $j)
+                                            <option value="{{ $j->id }}" {{ request('job_id') == $j->id ? 'selected' : '' }}>
+                                                {{ \Illuminate\Support\Str::limit($j->title, 24) }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
+
                             @if(auth()->user()->hasRole('Super Admin'))
                                 <div class="w-44">
                                     <input type="text" 
@@ -123,26 +151,28 @@
                                 </div>
                             @endif
 
-                            <div class="w-48">
+                            <div class="w-44">
                                 <x-indonesia-majors-select name="major" value="{{ request('major') }}" placeholder="Semua Jurusan" />
                             </div>
 
-                            <div class="w-28">
-                                <select name="per_page" onchange="document.getElementById('filterForm').submit()" class="w-full px-2.5 py-2 bg-slate-50/50 hover:bg-white focus:bg-white border-slate-200 focus:border-blue-500 rounded-lg text-xs font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 transition shadow-2xs">
-                                    <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10 Baris</option>
-                                    <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25 Baris</option>
-                                    <option value="50" {{ request('per_page', 50) == 50 ? 'selected' : '' }}>50 Baris</option>
-                                    <option value="100" {{ request('per_page', 100) == 100 ? 'selected' : '' }}>100 Baris</option>
-                                </select>
-                            </div>
+                            @if(request('view') !== 'kanban')
+                                <div class="w-28">
+                                    <select name="per_page" onchange="document.getElementById('filterForm').submit()" class="w-full px-2.5 py-2 bg-slate-50/50 hover:bg-white focus:bg-white border-slate-200 focus:border-blue-500 rounded-lg text-xs font-medium text-slate-700 focus:ring-1 focus:ring-blue-500 transition shadow-2xs">
+                                        <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10 Baris</option>
+                                        <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25 Baris</option>
+                                        <option value="50" {{ request('per_page', 50) == 50 ? 'selected' : '' }}>50 Baris</option>
+                                        <option value="100" {{ request('per_page', 100) == 100 ? 'selected' : '' }}>100 Baris</option>
+                                    </select>
+                                </div>
+                            @endif
 
                             <button type="submit" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-xs transition flex items-center gap-1.5 shadow-2xs">
                                 <i class="fa-solid fa-filter text-xs"></i>
                                 <span>Filter</span>
                             </button>
 
-                            @if(request()->hasAny(['search', 'major', 'company_name', 'status']))
-                                <a href="{{ route('admin.applications.index') }}" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 font-medium rounded-lg text-xs transition border border-slate-200" title="Reset Semua Filter">
+                            @if(request()->hasAny(['search', 'job_id', 'major', 'company_name', 'status']))
+                                <a href="{{ route('admin.applications.index', request()->only('view')) }}" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 font-medium rounded-lg text-xs transition border border-slate-200" title="Reset Semua Filter">
                                     <i class="fa-solid fa-rotate-left"></i>
                                 </a>
                             @endif
@@ -183,8 +213,223 @@
                 </form>
             </div>
 
-            <!-- Form Bulk Action Pipeline -->
-            <form id="bulkForm" action="{{ route('admin.applications.bulk-status') }}" method="POST">
+            @if(request('view') === 'kanban')
+                <!-- KANBAN BOARD VIEW -->
+                @php
+                    $kanbanStages = [
+                        'screening' => [
+                            'title' => 'Screening & Review',
+                            'target_status' => 'screening',
+                            'statuses' => ['pending', 'screening', 'processing', 'reviewed'],
+                            'color' => 'amber',
+                            'header_dot' => 'bg-amber-500',
+                            'header_border' => 'border-amber-400',
+                            'icon' => 'fa-magnifying-glass',
+                        ],
+                        'test' => [
+                            'title' => 'Tes Online & Asesmen',
+                            'target_status' => 'test',
+                            'statuses' => ['test'],
+                            'color' => 'purple',
+                            'header_dot' => 'bg-purple-500',
+                            'header_border' => 'border-purple-400',
+                            'icon' => 'fa-file-lines',
+                        ],
+                        'interview' => [
+                            'title' => 'Wawancara HR & User',
+                            'target_status' => 'interview_hr',
+                            'statuses' => ['interview', 'interview_hr', 'interview_user'],
+                            'color' => 'indigo',
+                            'header_dot' => 'bg-indigo-500',
+                            'header_border' => 'border-indigo-400',
+                            'icon' => 'fa-users-viewfinder',
+                        ],
+                        'offered' => [
+                            'title' => 'Offering & Verifikasi',
+                            'target_status' => 'offered',
+                            'statuses' => ['background_check', 'offered'],
+                            'color' => 'teal',
+                            'header_dot' => 'bg-teal-500',
+                            'header_border' => 'border-teal-400',
+                            'icon' => 'fa-file-signature',
+                        ],
+                        'accepted' => [
+                            'title' => 'Diterima (Hired)',
+                            'target_status' => 'accepted',
+                            'statuses' => ['accepted', 'hired'],
+                            'color' => 'emerald',
+                            'header_dot' => 'bg-emerald-500',
+                            'header_border' => 'border-emerald-400',
+                            'icon' => 'fa-circle-check',
+                        ],
+                        'rejected' => [
+                            'title' => 'Tidak Lolos (Ditolak)',
+                            'target_status' => 'rejected',
+                            'statuses' => ['rejected'],
+                            'color' => 'rose',
+                            'header_dot' => 'bg-rose-500',
+                            'header_border' => 'border-rose-400',
+                            'icon' => 'fa-circle-xmark',
+                        ],
+                    ];
+                @endphp
+
+                <div class="relative">
+                    <div class="flex items-center justify-between mb-3 px-1 text-xs text-slate-500">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-bold border border-blue-200">
+                                <i class="fa-solid fa-arrows-up-down-left-right text-[10px]"></i>
+                                Drag & Drop Aktif
+                            </span>
+                            <span>Geser kartu pelamar antar kolom untuk memperbarui tahapan rekrutmen secara instan.</span>
+                        </div>
+                        <div class="text-[11px] font-semibold text-slate-400">
+                            Total: <strong class="text-slate-700">{{ $applications->count() }}</strong> kandidat
+                        </div>
+                    </div>
+
+                    <!-- Kanban Swimlane Grid (Horizontal scrollable) -->
+                    <div class="flex items-start gap-4 overflow-x-auto pb-6 pt-1 min-h-[70vh] select-none">
+                        @foreach($kanbanStages as $stageKey => $stage)
+                            @php
+                                $stageApps = $applications->filter(function($app) use ($stage) {
+                                    $st = is_object($app->status) ? $app->status->value : (string)$app->status;
+                                    return in_array($st, $stage['statuses']);
+                                });
+                            @endphp
+
+                            <div class="w-80 shrink-0 flex flex-col max-h-[calc(100vh-230px)] bg-slate-100/90 rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                                
+                                <!-- Column Header -->
+                                <div class="p-3.5 border-b border-slate-200 bg-white flex items-center justify-between border-t-4 {{ $stage['header_border'] }}">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2.5 h-2.5 rounded-full {{ $stage['header_dot'] }}"></span>
+                                        <h3 class="text-xs font-bold text-slate-800 tracking-tight flex items-center gap-1.5">
+                                            <i class="fa-solid {{ $stage['icon'] }} text-[11px] text-slate-400"></i>
+                                            <span>{{ $stage['title'] }}</span>
+                                        </h3>
+                                    </div>
+                                    <span class="column-count px-2 py-0.5 rounded-full text-[11px] font-black bg-slate-100 text-slate-700 border border-slate-200" data-stage="{{ $stageKey }}">
+                                        {{ $stageApps->count() }}
+                                    </span>
+                                </div>
+
+                                <!-- Column Drop Zone -->
+                                <div class="kanban-cards-container flex-1 overflow-y-auto p-3 space-y-3 min-h-[140px]" 
+                                     data-stage="{{ $stageKey }}" 
+                                     data-target-status="{{ $stage['target_status'] }}">
+                                    
+                                    @foreach($stageApps as $app)
+                                        @php
+                                            $matchScore = $app->job ? $app->job->calculateMatchScore($app->user->candidateProfile) : 0;
+                                            $stVal = is_object($app->status) ? $app->status->value : (string)$app->status;
+                                            $candidateName = $app->user->name ?? 'Kandidat';
+                                            $candidateInitial = strtoupper(substr($candidateName, 0, 1));
+                                            $profile = $app->user->candidateProfile ?? null;
+                                        @endphp
+
+                                        <div class="kanban-card bg-white rounded-xl p-3.5 border border-slate-200/90 shadow-2xs hover:shadow-md transition-all duration-150 cursor-grab active:cursor-grabbing space-y-2.5 group"
+                                             data-id="{{ $app->getHashedId() }}"
+                                             data-current-status="{{ $stVal }}"
+                                             data-applicant-name="{{ $candidateName }}">
+                                            
+                                            <!-- Card Header: Candidate Info -->
+                                            <div class="flex items-start justify-between gap-2">
+                                                <div class="flex items-center gap-2.5 min-w-0">
+                                                    <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 font-bold flex items-center justify-center text-xs shrink-0 border border-blue-200">
+                                                        {{ $candidateInitial }}
+                                                    </div>
+                                                    <div class="min-w-0">
+                                                        <a href="{{ route('admin.applications.show', $app->getHashedId()) }}" class="font-bold text-xs text-slate-900 hover:text-blue-600 truncate block transition" title="{{ $candidateName }}">
+                                                            {{ $candidateName }}
+                                                        </a>
+                                                        <span class="text-[11px] text-slate-400 truncate block">{{ $app->user->email ?? '-' }}</span>
+                                                    </div>
+                                                </div>
+
+                                                <span class="text-[10px] text-slate-400 font-medium whitespace-nowrap shrink-0">
+                                                    {{ $app->created_at->diffForHumans(null, true) }}
+                                                </span>
+                                            </div>
+
+                                            <!-- Card Body: Job & Education -->
+                                            <div class="space-y-1.5 pt-1">
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200 truncate max-w-[210px]" title="{{ $app->job->title ?? 'Pekerjaan' }}">
+                                                        <i class="fa-solid fa-briefcase text-[9px] text-slate-400 mr-1"></i>
+                                                        {{ $app->job->title ?? 'Pekerjaan' }}
+                                                    </span>
+                                                </div>
+
+                                                @if($profile && ($profile->last_education || $profile->major))
+                                                    <div class="text-[11px] text-slate-500 flex items-center gap-1.5 truncate">
+                                                        <i class="fa-solid fa-graduation-cap text-[10px] text-slate-400"></i>
+                                                        <span class="truncate">{{ $profile->last_education }} {{ $profile->major ? '• ' . $profile->major : '' }}</span>
+                                                    </div>
+                                                @endif
+
+                                                <!-- Match Score & Test Results Badges -->
+                                                <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                                                    @if($matchScore > 0)
+                                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold {{ $matchScore >= 80 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : ($matchScore >= 50 ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-600') }}">
+                                                            <i class="fa-solid fa-bullseye text-[9px]"></i>
+                                                            {{ $matchScore }}% Cocok
+                                                        </span>
+                                                    @endif
+
+                                                    @if($app->testResult)
+                                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold {{ $app->testResult->is_passed ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-rose-50 text-rose-700 border border-rose-200' }}">
+                                                            <i class="fa-solid fa-file-signature text-[9px]"></i>
+                                                            Nilai: {{ $app->testResult->score }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                            <!-- Card Footer: Quick Actions -->
+                                            <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                                                <div class="flex items-center gap-2">
+                                                    <a href="{{ route('admin.applications.show', $app->getHashedId()) }}" class="text-blue-600 hover:text-blue-800 text-[11px] font-semibold flex items-center gap-1" title="Lihat Detail Pelamar">
+                                                        <span>Detail</span>
+                                                        <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                                    </a>
+
+                                                    <a href="{{ route('admin.applications.cv.ats', $app->id) }}" class="text-slate-400 hover:text-slate-700 text-xs" title="Unduh CV ATS">
+                                                        <i class="fa-solid fa-file-pdf"></i>
+                                                    </a>
+                                                </div>
+
+                                                @if($profile && $profile->phone)
+                                                    @php
+                                                        $waPhone = preg_replace('/[^0-9]/', '', $profile->phone);
+                                                        if (\Illuminate\Support\Str::startsWith($waPhone, '0')) {
+                                                            $waPhone = '62' . substr($waPhone, 1);
+                                                        }
+                                                    @endphp
+                                                    <a href="https://wa.me/{{ $waPhone }}?text=Halo%20{{ urlencode($candidateName) }},%20kami%20dari%20tim%20rekruter" target="_blank" class="text-emerald-600 hover:text-emerald-700 text-xs font-semibold flex items-center gap-1" title="Chat WhatsApp">
+                                                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                                                    </a>
+                                                @endif
+                                            </div>
+
+                                        </div>
+                                    @endforeach
+
+                                    @if($stageApps->isEmpty())
+                                        <div class="kanban-empty p-4 text-center text-xs text-slate-400 italic rounded-xl border border-dashed border-slate-200">
+                                            Tarik kartu pelamar ke sini
+                                        </div>
+                                    @endif
+
+                                </div>
+
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @else
+                <!-- Form Bulk Action Pipeline -->
+                <form id="bulkForm" action="{{ route('admin.applications.bulk-status') }}" method="POST">
                 @csrf
                 
                 <!-- Floating Bulk Action Toolbar (appears when items are checked) -->
@@ -379,9 +624,20 @@
                     @endif
                 </div>
             </form>
+            @endif
+
+            <!-- Toast Notification Floating Element -->
+            <div id="kanbanToast" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl border text-xs font-bold bg-slate-900 text-white border-slate-700">
+                <div id="kanbanToastIcon" class="text-base"></div>
+                <div id="kanbanToastMessage"></div>
+            </div>
+
+            <!-- SortableJS CDN for Kanban Pipeline -->
+            <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
+                    // 1. Table View Bulk Selection Logic
                     const selectAll = document.getElementById('selectAll');
                     const checkboxes = document.querySelectorAll('.app-checkbox');
                     const bulkToolbar = document.getElementById('bulkToolbar');
@@ -391,10 +647,10 @@
                     function updateToolbar() {
                         const checked = document.querySelectorAll('.app-checkbox:checked');
                         if (checked.length > 0) {
-                            bulkToolbar.classList.remove('hidden');
-                            selectedCount.textContent = checked.length;
+                            if (bulkToolbar) bulkToolbar.classList.remove('hidden');
+                            if (selectedCount) selectedCount.textContent = checked.length;
                         } else {
-                            bulkToolbar.classList.add('hidden');
+                            if (bulkToolbar) bulkToolbar.classList.add('hidden');
                             if (selectAll) selectAll.checked = false;
                         }
                     }
@@ -421,6 +677,112 @@
                             if (selectAll) selectAll.checked = false;
                             updateToolbar();
                         });
+                    }
+
+                    // 2. Kanban Board Drag-and-Drop Pipeline Logic
+                    const kanbanContainers = document.querySelectorAll('.kanban-cards-container');
+                    if (kanbanContainers.length > 0 && typeof Sortable !== 'undefined') {
+                        kanbanContainers.forEach(container => {
+                            new Sortable(container, {
+                                group: 'kanban-pipeline',
+                                animation: 220,
+                                ghostClass: 'bg-blue-50/80',
+                                chosenClass: 'ring-2',
+                                dragClass: 'shadow-2xl',
+                                onEnd: function(evt) {
+                                    const item = evt.item;
+                                    const fromContainer = evt.from;
+                                    const toContainer = evt.to;
+
+                                    if (fromContainer === toContainer) return;
+
+                                    const appId = item.getAttribute('data-id');
+                                    const applicantName = item.getAttribute('data-applicant-name') || 'Pelamar';
+                                    const newStatus = toContainer.getAttribute('data-target-status');
+
+                                    // Optimistic visual state
+                                    item.classList.add('opacity-50', 'pointer-events-none');
+
+                                    fetch(`{{ url('admin/applications') }}/${appId}/status`, {
+                                        method: 'PATCH',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                        },
+                                        body: JSON.stringify({ status: newStatus })
+                                    })
+                                    .then(async response => {
+                                        const data = await response.json();
+                                        if (!response.ok) {
+                                            throw new Error(data.message || 'Gagal mengubah status pelamar');
+                                        }
+                                        return data;
+                                    })
+                                    .then(data => {
+                                        item.classList.remove('opacity-50', 'pointer-events-none');
+                                        item.setAttribute('data-current-status', newStatus);
+                                        updateKanbanCounters();
+                                        showKanbanToast('success', `Status ${applicantName} berhasil dipindahkan ke: ${data.status_label || newStatus}!`);
+                                    })
+                                    .catch(err => {
+                                        item.classList.remove('opacity-50', 'pointer-events-none');
+                                        // Revert card back to original column
+                                        if (evt.oldIndex !== undefined && fromContainer.children[evt.oldIndex]) {
+                                            fromContainer.insertBefore(item, fromContainer.children[evt.oldIndex]);
+                                        } else {
+                                            fromContainer.appendChild(item);
+                                        }
+                                        updateKanbanCounters();
+                                        showKanbanToast('error', err.message || 'Gagal memindahkan pelamar.');
+                                    });
+                                }
+                            });
+                        });
+
+                        function updateKanbanCounters() {
+                            kanbanContainers.forEach(c => {
+                                const stage = c.getAttribute('data-stage');
+                                const countBadge = document.querySelector(`.column-count[data-stage="${stage}"]`);
+                                const cardCount = c.querySelectorAll('.kanban-card').length;
+                                if (countBadge) {
+                                    countBadge.textContent = cardCount;
+                                }
+                                const emptyMsg = c.querySelector('.kanban-empty');
+                                if (cardCount === 0 && !emptyMsg) {
+                                    const ph = document.createElement('div');
+                                    ph.className = 'kanban-empty p-4 text-center text-xs text-slate-400 italic rounded-xl border border-dashed border-slate-200';
+                                    ph.textContent = 'Tarik kartu pelamar ke sini';
+                                    c.appendChild(ph);
+                                } else if (cardCount > 0 && emptyMsg) {
+                                    emptyMsg.remove();
+                                }
+                            });
+                        }
+                    }
+
+                    function showKanbanToast(type, msg) {
+                        const toast = document.getElementById('kanbanToast');
+                        const icon = document.getElementById('kanbanToastIcon');
+                        const msgEl = document.getElementById('kanbanToastMessage');
+                        if (!toast) return;
+
+                        if (type === 'success') {
+                            toast.className = 'fixed bottom-6 right-6 z-50 transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl border text-xs font-bold bg-emerald-600 text-white border-emerald-500';
+                            icon.innerHTML = '<i class="fa-solid fa-circle-check text-base"></i>';
+                        } else {
+                            toast.className = 'fixed bottom-6 right-6 z-50 transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl border text-xs font-bold bg-rose-600 text-white border-rose-500';
+                            icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-base"></i>';
+                        }
+
+                        msgEl.textContent = msg;
+                        toast.style.transform = 'translateY(0)';
+                        toast.style.opacity = '1';
+
+                        setTimeout(() => {
+                            toast.style.transform = 'translateY(80px)';
+                            toast.style.opacity = '0';
+                        }, 4000);
                     }
                 });
             </script>

@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             DummyDataSeeder::class,
             CandidateFaridProfileSeeder::class,
             CandidateTaniaLogbookSeeder::class,
+            CandidateIqbalJuniorBackendSeeder::class,
         ]);
     }
 }

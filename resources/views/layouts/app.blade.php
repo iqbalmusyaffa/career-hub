@@ -167,6 +167,10 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <!-- Stacked Styles -->
+        @stack('styles')
+    </head>
     <body class="font-sans antialiased bg-slate-50/60 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen overflow-x-hidden selection:bg-blue-500 selection:text-white">
         
         @if(session()->has('impersonator_id'))
@@ -203,5 +207,8 @@
                 @include('layouts.footer')
             </div>
         @endauth
+
+        <!-- Stacked Scripts -->
+        @stack('scripts')
     </body>
 </html>
