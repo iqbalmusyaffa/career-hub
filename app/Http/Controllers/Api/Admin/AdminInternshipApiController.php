@@ -17,7 +17,12 @@ class AdminInternshipApiController extends Controller
         path: "/admin/internship-stipends",
         summary: "Daftar Rekapitulasi Uang Saku Magang (HR & Admin)",
         description: "Mengambil daftar pencairan dan pengajuan uang saku seluruh peserta magang.",
-        tags: ["HR & Employer Recruitment"]
+        security: [["bearerAuth" => []]],
+        tags: ["HR & Employer Recruitment"],
+        responses: [
+            new OA\Response(response: 200, description: "Daftar rekapitulasi uang saku magang berhasil dimuat."),
+            new OA\Response(response: 401, description: "Unauthenticated")
+        ]
     )]
     public function stipends(Request $request): JsonResponse
     {
@@ -41,7 +46,15 @@ class AdminInternshipApiController extends Controller
         path: "/admin/internship-stipends/{id}/status",
         summary: "Update Status Pembayaran Uang Saku",
         description: "Memperbarui status pembayaran uang saku (pending, verified, transferred, rejected).",
-        tags: ["HR & Employer Recruitment"]
+        security: [["bearerAuth" => []]],
+        tags: ["HR & Employer Recruitment"],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Status pencairan uang saku berhasil diperbarui."),
+            new OA\Response(response: 422, description: "Validasi gagal")
+        ]
     )]
     public function updateStipendStatus(Request $request, int $id): JsonResponse
     {
@@ -87,7 +100,11 @@ class AdminInternshipApiController extends Controller
         path: "/admin/internship-unlocks",
         summary: "Daftar Pengajuan Buka Kunci Presensi (HR & Admin)",
         description: "Mengambil daftar tiket permohonan buka kunci presensi pada tanggal yang telah terkunci.",
-        tags: ["HR & Employer Recruitment"]
+        security: [["bearerAuth" => []]],
+        tags: ["HR & Employer Recruitment"],
+        responses: [
+            new OA\Response(response: 200, description: "Daftar tiket buka kunci presensi berhasil dimuat.")
+        ]
     )]
     public function unlocks(Request $request): JsonResponse
     {
@@ -111,7 +128,14 @@ class AdminInternshipApiController extends Controller
         path: "/admin/internship-unlocks/{id}/approve",
         summary: "Setujui Tiket Buka Kunci Presensi",
         description: "Menyetujui pembukaan kunci tanggal presensi sehingga peserta magang dapat mengisi logbook yang terlewat.",
-        tags: ["HR & Employer Recruitment"]
+        security: [["bearerAuth" => []]],
+        tags: ["HR & Employer Recruitment"],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Tiket permohonan buka kunci berhasil disetujui.")
+        ]
     )]
     public function approveUnlock(Request $request, int $id): JsonResponse
     {
@@ -144,7 +168,14 @@ class AdminInternshipApiController extends Controller
         path: "/admin/internship-unlocks/{id}/reject",
         summary: "Tolak Tiket Buka Kunci Presensi",
         description: "Menolak tiket permohonan buka kunci presensi.",
-        tags: ["HR & Employer Recruitment"]
+        security: [["bearerAuth" => []]],
+        tags: ["HR & Employer Recruitment"],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Tiket permohonan buka kunci telah ditolak.")
+        ]
     )]
     public function rejectUnlock(Request $request, int $id): JsonResponse
     {

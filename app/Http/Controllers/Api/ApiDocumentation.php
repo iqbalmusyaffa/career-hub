@@ -12,7 +12,15 @@ use OpenApi\Attributes as OA;
 )]
 #[OA\Server(
     url: "/api/v1",
-    description: "Web-Karir Primary API Server"
+    description: "Current Server (Auto-detected Host & Domain)"
+)]
+#[OA\Server(
+    url: "http://localhost:8000/api/v1",
+    description: "Local Development Server (Port 8000)"
+)]
+#[OA\Server(
+    url: "http://localhost/api/v1",
+    description: "Local Web Server (Apache/Nginx)"
 )]
 #[OA\SecurityScheme(
     securityScheme: "bearerAuth",

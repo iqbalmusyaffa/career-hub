@@ -12,7 +12,15 @@
     "servers": [
         {
             "url": "/api/v1",
-            "description": "Web-Karir Primary API Server"
+            "description": "Current Server (Auto-detected Host & Domain)"
+        },
+        {
+            "url": "http://localhost:8000/api/v1",
+            "description": "Local Development Server (Port 8000)"
+        },
+        {
+            "url": "http://localhost/api/v1",
+            "description": "Local Web Server (Apache/Nginx)"
         }
     ],
     "paths": {
@@ -582,6 +590,344 @@
                 "responses": {
                     "201": {
                         "description": "Template email berhasil dibuat"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/employee-attendances": {
+            "get": {
+                "tags": [
+                    "HR Employee Management & Payroll"
+                ],
+                "summary": "[HR] Monitoring Rekapitulasi Presensi Karyawan",
+                "description": "Mengambil daftar presensi harian seluruh karyawan tetap/kontrak dengan filter tanggal/status.",
+                "operationId": "11bfb1474b3f5243f985e3fe7b79c947",
+                "responses": {
+                    "200": {
+                        "description": "Data presensi berhasil dimuat."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/employee-overtimes": {
+            "get": {
+                "tags": [
+                    "HR Employee Management & Payroll"
+                ],
+                "summary": "[HR] Daftar Pengajuan Lembur Karyawan",
+                "description": "Mengambil daftar pengajuan lembur karyawan dengan filter bulan dan status persetujuan.",
+                "operationId": "6f19fcd1ff478711c365eb5f5c312c0b",
+                "responses": {
+                    "200": {
+                        "description": "Daftar lembur berhasil dimuat."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/employee-overtimes/{id}/status": {
+            "post": {
+                "tags": [
+                    "HR Employee Management & Payroll"
+                ],
+                "summary": "[HR] Verifikasi & Update Status Lembur Karyawan",
+                "description": "Menyetujui (Approved) atau menolak (Rejected) permohonan upah lembur karyawan.",
+                "operationId": "3ee704dc32f5fd84025775440412432c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status lembur berhasil diperbarui."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/employee-reimbursements": {
+            "get": {
+                "tags": [
+                    "HR Employee Management & Payroll"
+                ],
+                "summary": "[HR] Daftar Klaim Reimbursement Karyawan",
+                "description": "Mengambil daftar pengajuan klaim penggantian biaya operasional kantor.",
+                "operationId": "3900881e72dea67eee8924b71a47641f",
+                "responses": {
+                    "200": {
+                        "description": "Daftar klaim berhasil diambil."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/employee-reimbursements/{id}/status": {
+            "post": {
+                "tags": [
+                    "HR Employee Management & Payroll"
+                ],
+                "summary": "[HR] Verifikasi & Pembayaran Klaim Reimbursement",
+                "description": "Menyetujui (approved), menolak (rejected), atau menandai telah ditransfer (paid).",
+                "operationId": "d6fff55f676a379ecfeacdafda7481e5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status klaim berhasil diperbarui."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/employee-payrolls": {
+            "get": {
+                "tags": [
+                    "HR Employee Management & Payroll"
+                ],
+                "summary": "[HR] Rekapitulasi Payroll & E-Slip Gaji Bulanan",
+                "description": "Mengambil daftar rekapitulasi gaji, upah lembur, potongan BPJS/PPH21 seluruh karyawan.",
+                "operationId": "595df1465896a3349748cf2ae3379511",
+                "responses": {
+                    "200": {
+                        "description": "Daftar payroll berhasil dimuat."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/employee-payrolls/generate": {
+            "post": {
+                "tags": [
+                    "HR Employee Management & Payroll"
+                ],
+                "summary": "[HR] Generate Otomatis Payroll & Sinkronisasi Kehadiran",
+                "description": "Menghitung dan membuat slip gaji bulanan seluruh karyawan tetap/kontrak aktif secara otomatis.",
+                "operationId": "f9300596ba36dc1e25e63757e6a32922",
+                "responses": {
+                    "200": {
+                        "description": "Payroll berhasil di-generate."
+                    },
+                    "422": {
+                        "description": "Format periode salah"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/employee-payrolls/{id}/status": {
+            "post": {
+                "tags": [
+                    "HR Employee Management & Payroll"
+                ],
+                "summary": "[HR] Update Status Slip Gaji (Draft / Published / Paid)",
+                "description": "Menerbitkan slip gaji ke portal karyawan (published) atau menandai sudah ditransfer (paid).",
+                "operationId": "e57a7c7d61b8d6b31b3c91d3dfc8dd2a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status payroll berhasil diperbarui."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/internship-stipends": {
+            "get": {
+                "tags": [
+                    "HR & Employer Recruitment"
+                ],
+                "summary": "Daftar Rekapitulasi Uang Saku Magang (HR & Admin)",
+                "description": "Mengambil daftar pencairan dan pengajuan uang saku seluruh peserta magang.",
+                "operationId": "6bb6e8d5b31715d9c10dcb35541b183b",
+                "responses": {
+                    "200": {
+                        "description": "Daftar rekapitulasi uang saku magang berhasil dimuat."
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/internship-stipends/{id}/status": {
+            "post": {
+                "tags": [
+                    "HR & Employer Recruitment"
+                ],
+                "summary": "Update Status Pembayaran Uang Saku",
+                "description": "Memperbarui status pembayaran uang saku (pending, verified, transferred, rejected).",
+                "operationId": "8e0d6d1848202080cfebf775d4129f54",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status pencairan uang saku berhasil diperbarui."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/internship-unlocks": {
+            "get": {
+                "tags": [
+                    "HR & Employer Recruitment"
+                ],
+                "summary": "Daftar Pengajuan Buka Kunci Presensi (HR & Admin)",
+                "description": "Mengambil daftar tiket permohonan buka kunci presensi pada tanggal yang telah terkunci.",
+                "operationId": "fd623aec8a31115bd6ebb4f0c3dbb382",
+                "responses": {
+                    "200": {
+                        "description": "Daftar tiket buka kunci presensi berhasil dimuat."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/internship-unlocks/{id}/approve": {
+            "post": {
+                "tags": [
+                    "HR & Employer Recruitment"
+                ],
+                "summary": "Setujui Tiket Buka Kunci Presensi",
+                "description": "Menyetujui pembukaan kunci tanggal presensi sehingga peserta magang dapat mengisi logbook yang terlewat.",
+                "operationId": "5f0771e89d49b2a313508e9fd9e8ce43",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tiket permohonan buka kunci berhasil disetujui."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/internship-unlocks/{id}/reject": {
+            "post": {
+                "tags": [
+                    "HR & Employer Recruitment"
+                ],
+                "summary": "Tolak Tiket Buka Kunci Presensi",
+                "description": "Menolak tiket permohonan buka kunci presensi.",
+                "operationId": "5cccb58faeaed6ecb06d69ad7efc50dd",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tiket permohonan buka kunci telah ditolak."
                     }
                 },
                 "security": [
@@ -1827,6 +2173,53 @@
                 ]
             }
         },
+        "/candidate/cv": {
+            "get": {
+                "tags": [
+                    "Candidate CV Builder"
+                ],
+                "summary": "Ambil Data CV ATS Kandidat",
+                "description": "Mengambil data lengkap 8 bagian CV standar ATS (profil, ringkasan, pengalaman kerja, pendidikan, keahlian, proyek, sertifikasi, organisasi, dan bahasa).",
+                "operationId": "e1eb0f8da95762289dfba462941ffb12",
+                "responses": {
+                    "200": {
+                        "description": "Data CV berhasil diambil."
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Candidate CV Builder"
+                ],
+                "summary": "Simpan & Update Data CV ATS",
+                "description": "Menyimpan atau memperbarui data 8 bagian CV kandidat.",
+                "operationId": "bf405a78695c33c513c4bb84d59f16fc",
+                "responses": {
+                    "200": {
+                        "description": "CV berhasil diperbarui."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/candidate/documents": {
             "get": {
                 "tags": [
@@ -1960,6 +2353,170 @@
                                 }
                             }
                         }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/internship/logbooks": {
+            "get": {
+                "tags": [
+                    "Candidate Internship & Logbook"
+                ],
+                "summary": "Daftar Logbook & Presensi Magang",
+                "description": "Mengambil riwayat presensi harian, logbook kegiatan, dan statistik jam kerja magang kandidat.",
+                "operationId": "5bd6d269ec12cb460349dfd9ab1f77ba",
+                "responses": {
+                    "200": {
+                        "description": "Data logbook magang berhasil diambil."
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Candidate Internship & Logbook"
+                ],
+                "summary": "Submit / Check-in Presensi & Logbook Harian",
+                "description": "Mengisi presensi harian, aktivitas, jam kerja, foto bukti, dan koordinat GPS.",
+                "operationId": "2cd75483011e70de21662f2978591065",
+                "responses": {
+                    "200": {
+                        "description": "Presensi dan logbook kegiatan berhasil disimpan."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/internship/logbooks/{date}": {
+            "get": {
+                "tags": [
+                    "Candidate Internship & Logbook"
+                ],
+                "summary": "Detail Logbook Tanggal Tertentu",
+                "description": "Mengambil detail presensi dan catatan kegiatan untuk tanggal tertentu (format: YYYY-MM-DD).",
+                "operationId": "ecac532d6ad7bc81cfe00da311f4b050",
+                "parameters": [
+                    {
+                        "name": "date",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "2026-10-25"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail logbook berhasil diambil."
+                    },
+                    "404": {
+                        "description": "Logbook tidak ditemukan."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/internship/progress": {
+            "get": {
+                "tags": [
+                    "Candidate Internship & Logbook"
+                ],
+                "summary": "Ringkasan Progress Magang & Nilai",
+                "description": "Mengambil capaian jam kerja magang, persentase kelulusan, nilai evaluasi mentor, transkrip nilai, dan sertifikat.",
+                "operationId": "cef21a8ea231aa59b065db1f7bf3bd01",
+                "responses": {
+                    "200": {
+                        "description": "Progress magang berhasil diambil."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/internship/bank-account": {
+            "post": {
+                "tags": [
+                    "Candidate Internship & Logbook"
+                ],
+                "summary": "Simpan Rekening Bank untuk Uang Saku",
+                "description": "Menyimpan atau memperbarui data nomor rekening bank kandidat untuk pencairan uang saku magang.",
+                "operationId": "f72efe7117150ab9ccb219146d22874a",
+                "responses": {
+                    "200": {
+                        "description": "Data rekening bank berhasil disimpan."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/internship/stipends": {
+            "get": {
+                "tags": [
+                    "Candidate Internship & Logbook"
+                ],
+                "summary": "Riwayat Pencairan Uang Saku Magang",
+                "description": "Mengambil daftar pencairan uang saku dan insentif magang kandidat.",
+                "operationId": "69641b3866d7ecf1567fa8f156e2a282",
+                "responses": {
+                    "200": {
+                        "description": "Riwayat uang saku berhasil diambil."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidate/internship/resignations": {
+            "post": {
+                "tags": [
+                    "Candidate Internship & Logbook"
+                ],
+                "summary": "Pengajuan Pengunduran Diri Magang (Self-Resignation)",
+                "description": "Mengirimkan formulir pengajuan pengunduran diri magang beserta alasan dan dokumen pendukung.",
+                "operationId": "f13ac652b2a43673c5c9ce3c2f03cf79",
+                "responses": {
+                    "201": {
+                        "description": "Pengajuan pengunduran diri berhasil dikirimkan."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
                     }
                 },
                 "security": [
@@ -2343,6 +2900,352 @@
                 ]
             }
         },
+        "/company-reports": {
+            "post": {
+                "tags": [
+                    "Public & Reports"
+                ],
+                "summary": "Laporkan Indikasi Penipuan / Red Flag Perusahaan",
+                "description": "Mengirimkan laporan pengaduan penipuan, pungutan liar, atau pelanggaran oleh perusahaan/lowongan kerja.",
+                "operationId": "9988a791919827bf9ed6b99068e48a02",
+                "responses": {
+                    "201": {
+                        "description": "Laporan berhasil dikirim."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/company-reports": {
+            "get": {
+                "tags": [
+                    "Admin Super & Moderation"
+                ],
+                "summary": "Daftar Laporan Red Flag (Super Admin)",
+                "description": "Mengambil daftar laporan pengaduan perusahaan dari kandidat untuk dimoderasi.",
+                "operationId": "ace3a4a7ca6fdf185aa3067ccc43dcb5",
+                "responses": {
+                    "200": {
+                        "description": "Daftar laporan red flag berhasil dimuat."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/company-reports/{id}/status": {
+            "patch": {
+                "tags": [
+                    "Admin Super & Moderation"
+                ],
+                "summary": "Update Status Laporan Red Flag (Super Admin)",
+                "description": "Memperbarui status penanganan laporan (investigating, resolved, dismissed).",
+                "operationId": "2c0da3b27dd9fe534c4b9824b6d895a0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status laporan red flag berhasil diperbarui."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/employee/attendance": {
+            "get": {
+                "tags": [
+                    "Employee Self Service (ESS)"
+                ],
+                "summary": "[Karyawan] Status Presensi Hari Ini & Riwayat Bulan Ini",
+                "description": "Mengambil status kehadiran hari ini (sudah check-in/check-out) dan daftar presensi bulan berjalan.",
+                "operationId": "d667209098793429a19d28993ce73ad3",
+                "responses": {
+                    "200": {
+                        "description": "Data presensi berhasil dimuat."
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/employee/attendance/check-in": {
+            "post": {
+                "tags": [
+                    "Employee Self Service (ESS)"
+                ],
+                "summary": "[Karyawan] Check-in Presensi (Selfie & GPS)",
+                "description": "Melakukan presensi masuk kerja dengan foto selfie dan koordinat lokasi GPS.",
+                "operationId": "dc3c2d799169243b0f510e8b040c3efc",
+                "responses": {
+                    "200": {
+                        "description": "Check-in berhasil."
+                    },
+                    "422": {
+                        "description": "Validasi gagal / Sudah check-in sebelumnya."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/employee/attendance/check-out": {
+            "post": {
+                "tags": [
+                    "Employee Self Service (ESS)"
+                ],
+                "summary": "[Karyawan] Check-out Presensi Pulang Kerja",
+                "description": "Melakukan presensi pulang kerja dan mencatat durasi total jam kerja.",
+                "operationId": "e65a5d82345d0f89fca88a168943da80",
+                "responses": {
+                    "200": {
+                        "description": "Check-out berhasil."
+                    },
+                    "422": {
+                        "description": "Belum check-in / Sudah check-out."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/employee/overtimes": {
+            "get": {
+                "tags": [
+                    "Employee Self Service (ESS)"
+                ],
+                "summary": "[Karyawan] Daftar Riwayat Pengajuan Lembur",
+                "description": "Mengambil daftar pengajuan lembur dan kompensasi upah lembur karyawan.",
+                "operationId": "90bb4b7fc5aa5eaa87602fa1906cca01",
+                "responses": {
+                    "200": {
+                        "description": "Daftar lembur berhasil dimuat."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Employee Self Service (ESS)"
+                ],
+                "summary": "[Karyawan] Buat Pengajuan Lembur Baru",
+                "description": "Mengirimkan formulir pengajuan lembur kerja untuk di-review oleh HR.",
+                "operationId": "2feeeb8a2a77a7230cfd82d4c8ab1914",
+                "responses": {
+                    "201": {
+                        "description": "Pengajuan lembur berhasil dikirim."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/employee/overtimes/{id}": {
+            "delete": {
+                "tags": [
+                    "Employee Self Service (ESS)"
+                ],
+                "summary": "[Karyawan] Batalkan Pengajuan Lembur",
+                "description": "Membatalkan pengajuan lembur yang masih berstatus pending.",
+                "operationId": "eb65ace0ad2d044a4e6fa7e66546765e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pengajuan lembur berhasil dibatalkan."
+                    },
+                    "403": {
+                        "description": "Lembur yang sudah diproses tidak dapat dibatalkan."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/employee/reimbursements": {
+            "get": {
+                "tags": [
+                    "Employee Self Service (ESS)"
+                ],
+                "summary": "[Karyawan] Daftar Klaim Biaya Reimbursement",
+                "description": "Mengambil daftar riwayat klaim reimbursement operasional dan bukti struk pembayaran.",
+                "operationId": "f040c1e25191641d7437d04105e93b64",
+                "responses": {
+                    "200": {
+                        "description": "Daftar klaim berhasil diambil."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Employee Self Service (ESS)"
+                ],
+                "summary": "[Karyawan] Ajukan Klaim Biaya Reimbursement Baru",
+                "description": "Mengirimkan permohonan klaim penggantian biaya operasional beserta lampiran bukti transaksi/struk.",
+                "operationId": "026c5f05107df97e2aca939173702607",
+                "responses": {
+                    "201": {
+                        "description": "Klaim berhasil diajukan."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/employee/reimbursements/{id}": {
+            "delete": {
+                "tags": [
+                    "Employee Self Service (ESS)"
+                ],
+                "summary": "[Karyawan] Batalkan Pengajuan Klaim",
+                "description": "Membatalkan klaim reimbursement yang masih berstatus pending.",
+                "operationId": "5c019ab72aa21f521aa97d6c72b5b6bc",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Klaim berhasil dibatalkan."
+                    },
+                    "403": {
+                        "description": "Klaim yang sudah diproses tidak dapat dibatalkan."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/employee/payrolls": {
+            "get": {
+                "tags": [
+                    "Employee Self Service (ESS)"
+                ],
+                "summary": "[Karyawan] Riwayat Slip Gaji & Take Home Pay",
+                "description": "Mengambil daftar E-Slip Gaji yang telah terbit (published/paid) dan rincian gaji bulan berjalan.",
+                "operationId": "eba8711d1ba6746aa00e57d30c407cd2",
+                "responses": {
+                    "200": {
+                        "description": "Daftar slip gaji berhasil dimuat."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/employee/payrolls/{id}": {
+            "get": {
+                "tags": [
+                    "Employee Self Service (ESS)"
+                ],
+                "summary": "[Karyawan] Rincian Detail E-Slip Gaji Bulanan",
+                "description": "Mengambil rincian breakdown gaji pokok, upah lembur, tunjangan, potongan BPJS/PPH21, dan take-home pay.",
+                "operationId": "a8425a3e9f3e4dddc552bc40bcc0f7ac",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail slip gaji berhasil diambil."
+                    },
+                    "404": {
+                        "description": "Slip gaji tidak ditemukan."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/jobs": {
             "get": {
                 "tags": [
@@ -2695,6 +3598,330 @@
                 }
             }
         },
+        "/categories": {
+            "get": {
+                "tags": [
+                    "Jobs & Search"
+                ],
+                "summary": "Daftar Kategori Lowongan Kerja Aktif",
+                "description": "Mengambil daftar master kategori lowongan pekerjaan aktif untuk filter pencarian.",
+                "operationId": "7cdb822c8a0fc57e5f70c31caeedd53c",
+                "responses": {
+                    "200": {
+                        "description": "Daftar kategori berhasil diambil."
+                    }
+                }
+            }
+        },
+        "/leaves": {
+            "get": {
+                "tags": [
+                    "Leave & Attendance Management"
+                ],
+                "summary": "[Karyawan/Magang] Riwayat Pengajuan Cuti & Izin",
+                "description": "Mengambil daftar pengajuan cuti tahunan, izin sakit, dan izin khusus karyawan/peserta magang.",
+                "operationId": "450e4b2b83f70b6514029aaaf430d539",
+                "responses": {
+                    "200": {
+                        "description": "Daftar cuti berhasil dimuat."
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Leave & Attendance Management"
+                ],
+                "summary": "[Karyawan/Magang] Ajukan Permohonan Cuti / Izin Baru",
+                "description": "Mengirimkan formulir permohonan cuti tahunan atau izin sakit dengan lampiran surat pendukung.",
+                "operationId": "e541fe2ae84569cc368639ee2c4b613e",
+                "responses": {
+                    "201": {
+                        "description": "Pengajuan cuti berhasil dikirim."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/leaves/{id}/cancel": {
+            "post": {
+                "tags": [
+                    "Leave & Attendance Management"
+                ],
+                "summary": "[Karyawan/Magang] Batalkan Permohonan Cuti",
+                "description": "Membatalkan pengajuan cuti yang masih menunggu persetujuan (pending).",
+                "operationId": "451e2c24c22f7440380ad28309aeef9f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cuti berhasil dibatalkan."
+                    },
+                    "403": {
+                        "description": "Cuti sudah diproses."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/leaves": {
+            "get": {
+                "tags": [
+                    "Leave & Attendance Management"
+                ],
+                "summary": "[HR] Daftar Pengajuan Cuti Seluruh Karyawan",
+                "description": "Mengambil daftar seluruh permohonan cuti dan izin yang masuk untuk di-review HR.",
+                "operationId": "ddb8eb8e967e2a04e1fd152867be2a1c",
+                "responses": {
+                    "200": {
+                        "description": "Daftar cuti berhasil dimuat."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/leaves/{id}/approve": {
+            "post": {
+                "tags": [
+                    "Leave & Attendance Management"
+                ],
+                "summary": "[HR] Setujui Permohonan Cuti",
+                "description": "Menyetujui pengajuan cuti atau izin karyawan/peserta magang.",
+                "operationId": "75576cced355ccac029723a3307faa61",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cuti berhasil disetujui."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/leaves/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Leave & Attendance Management"
+                ],
+                "summary": "[HR] Tolak Permohonan Cuti",
+                "description": "Menolak pengajuan cuti beserta catatan alasan penolakan.",
+                "operationId": "b002792255f99b63c53ed21c958aa907",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cuti telah ditolak."
+                    },
+                    "422": {
+                        "description": "Alasan penolakan wajib diisi."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/mentor/dashboard": {
+            "get": {
+                "tags": [
+                    "Mentor Workspace"
+                ],
+                "summary": "Dashboard & Statistik Mentor",
+                "description": "Mengambil statistik total mentee, jumlah logbook menunggu persetujuan, dan ringkasan aktivitas bimbingan.",
+                "operationId": "fd3643d7948b83e60ed4af5f83aa96b7",
+                "responses": {
+                    "200": {
+                        "description": "Data dashboard mentor berhasil dimuat."
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/mentor/logbooks": {
+            "get": {
+                "tags": [
+                    "Mentor Workspace"
+                ],
+                "summary": "Daftar Logbook Seluruh Mentee",
+                "description": "Mengambil daftar logbook kegiatan harian mentee dengan filter status dan nama mentee.",
+                "operationId": "0aceb663d0a85ef2bd7b401ea24cc54c",
+                "responses": {
+                    "200": {
+                        "description": "Daftar logbook mentee berhasil diambil."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/mentor/logbooks/{id}/approve": {
+            "post": {
+                "tags": [
+                    "Mentor Workspace"
+                ],
+                "summary": "Setujui / ACC Logbook Mentee",
+                "description": "Menyetujui presensi dan jam kerja logbook harian mentee.",
+                "operationId": "8e5e1e6c87c6040e1f40ff74f493fd54",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Logbook berhasil disetujui (Approved)."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/mentor/logbooks/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Mentor Workspace"
+                ],
+                "summary": "Tolak / Minta Revisi Logbook Mentee",
+                "description": "Menolak atau meminta revisi atas pengisian presensi kegiatan harian mentee.",
+                "operationId": "9f9a2c70775b2d97296b76d4d35a1a35",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Logbook telah ditolak dengan catatan evaluasi."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/mentor/interns": {
+            "get": {
+                "tags": [
+                    "Mentor Workspace"
+                ],
+                "summary": "Daftar Peserta Magang (Mentees)",
+                "description": "Mengambil daftar lengkap seluruh peserta magang aktif berserta progres jam kerja dan persentase kehadiran.",
+                "operationId": "2755bfa5f76097c404127e0a20b9cb8d",
+                "responses": {
+                    "200": {
+                        "description": "Daftar peserta magang berhasil dimuat."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/mentor/evaluations": {
+            "post": {
+                "tags": [
+                    "Mentor Workspace"
+                ],
+                "summary": "Submit Nilai & Evaluasi Akhir Mentee",
+                "description": "Mengirimkan nilai performa akhir, soft skills, technical skills, dan ulasan rekomendasi kelulusan mentee.",
+                "operationId": "1b89556f499b6f8f26b3bfedffbfdcb3",
+                "responses": {
+                    "200": {
+                        "description": "Nilai evaluasi performa magang berhasil disimpan."
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/notifications": {
             "get": {
                 "tags": [
@@ -2811,6 +4038,170 @@
                 ]
             }
         },
+        "/salary-benchmark": {
+            "get": {
+                "tags": [
+                    "Salary Benchmark & Insights"
+                ],
+                "summary": "Kalkulator & Rekomendasi Gaji Pasar (Salary Benchmark)",
+                "description": "Menghitung rekomendasi gaji realistis dan akurat berdasarkan jenis pekerjaan, jenjang karir (level), lokasi kota (UMK 2026), dan keahlian khusus (skills).",
+                "operationId": "17ab0f901b391018f2fcf22a03868205",
+                "parameters": [
+                    {
+                        "name": "position",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Backend Developer"
+                        }
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Kota Administrasi Jakarta Selatan"
+                        }
+                    },
+                    {
+                        "name": "level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Mid Level (2-5 Tahun)"
+                        }
+                    },
+                    {
+                        "name": "skills",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Laravel, PostgreSQL, Docker, AWS"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Perhitungan rekomendasi gaji berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "success": true,
+                                    "message": "Rekomendasi gaji berhasil dikalkulasi.",
+                                    "data": {
+                                        "query": {
+                                            "position": "Backend Developer",
+                                            "canonical_role": "Backend Developer",
+                                            "category": "Tech & Software Engineering",
+                                            "level": "Mid",
+                                            "level_name": "Mid Level",
+                                            "years_of_experience": "2 - 5 Tahun",
+                                            "location": "Jakarta",
+                                            "skills": [
+                                                "Laravel",
+                                                "Docker",
+                                                "AWS"
+                                            ]
+                                        },
+                                        "salary_range": {
+                                            "currency": "IDR",
+                                            "min_monthly": 15200000,
+                                            "median_monthly": 19000000,
+                                            "max_monthly": 30400000,
+                                            "formatted": {
+                                                "min": "Rp 15.200.000",
+                                                "median": "Rp 19.000.000",
+                                                "max": "Rp 30.400.000",
+                                                "summary": "Rp 15.2 Juta - Rp 30.4 Juta / bulan"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/salary-benchmark/roles": {
+            "get": {
+                "tags": [
+                    "Salary Benchmark & Insights"
+                ],
+                "summary": "Daftar Kategori & Posisi Pekerjaan Benchmark",
+                "description": "Mengambil katalog posisi pekerjaan, kategori industri, tingkat permintaan pasar, dan skill yang dicari.",
+                "operationId": "6793f01120fe3ae2d53d7b38ae561fe3",
+                "responses": {
+                    "200": {
+                        "description": "Katalog posisi pekerjaan"
+                    }
+                }
+            }
+        },
+        "/salary-benchmark/compare": {
+            "get": {
+                "tags": [
+                    "Salary Benchmark & Insights"
+                ],
+                "summary": "Bandingkan Gaji Antar Wilayah / Posisi",
+                "description": "Membandingkan rekomendasi gaji satu posisi di beberapa kota berbeda, atau beberapa posisi di kota yang sama.",
+                "operationId": "a736536988c287efd7eed24af3ea14da",
+                "parameters": [
+                    {
+                        "name": "position",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Software Engineer"
+                        }
+                    },
+                    {
+                        "name": "locations",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Jakarta,Surabaya,Bandung,Yogyakarta,Semarang"
+                        }
+                    },
+                    {
+                        "name": "level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Mid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Hasil komparasi multi wilayah"
+                    }
+                }
+            }
+        },
+        "/salary-benchmark/locations": {
+            "get": {
+                "tags": [
+                    "Salary Benchmark & Insights"
+                ],
+                "summary": "Daftar Kota Top Benchmark Indonesia",
+                "description": "Mengambil daftar kota utama dengan acuan UMK 2026 untuk benchmark.",
+                "operationId": "e832c394ab9a7d86b9f9501c0d4f6a18",
+                "responses": {
+                    "200": {
+                        "description": "Daftar kota benchmark"
+                    }
+                }
+            }
+        },
         "/umk-lookup": {
             "get": {
                 "tags": [
@@ -2916,6 +4307,14 @@
             "description": "Company Management"
         },
         {
+            "name": "HR Employee Management & Payroll",
+            "description": "HR Employee Management & Payroll"
+        },
+        {
+            "name": "HR & Employer Recruitment",
+            "description": "HR & Employer Recruitment"
+        },
+        {
             "name": "HR Job Postings & Company",
             "description": "HR Job Postings & Company"
         },
@@ -2932,8 +4331,16 @@
             "description": "Authentication"
         },
         {
+            "name": "Candidate CV Builder",
+            "description": "Candidate CV Builder"
+        },
+        {
             "name": "Document Vault",
             "description": "Document Vault"
+        },
+        {
+            "name": "Candidate Internship & Logbook",
+            "description": "Candidate Internship & Logbook"
         },
         {
             "name": "Candidate Profile",
@@ -2944,12 +4351,36 @@
             "description": "Online Tests & Offers"
         },
         {
+            "name": "Public & Reports",
+            "description": "Public & Reports"
+        },
+        {
+            "name": "Admin Super & Moderation",
+            "description": "Admin Super & Moderation"
+        },
+        {
+            "name": "Employee Self Service (ESS)",
+            "description": "Employee Self Service (ESS)"
+        },
+        {
             "name": "Jobs & Search",
             "description": "Jobs & Search"
         },
         {
+            "name": "Leave & Attendance Management",
+            "description": "Leave & Attendance Management"
+        },
+        {
+            "name": "Mentor Workspace",
+            "description": "Mentor Workspace"
+        },
+        {
             "name": "Notifications & Salary",
             "description": "Notifications & Salary"
+        },
+        {
+            "name": "Salary Benchmark & Insights",
+            "description": "Salary Benchmark & Insights"
         },
         {
             "name": "Regional UMK & Benchmark",

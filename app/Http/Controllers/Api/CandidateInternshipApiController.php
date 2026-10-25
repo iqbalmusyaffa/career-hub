@@ -22,7 +22,12 @@ class CandidateInternshipApiController extends Controller
         path: "/candidate/internship/logbooks",
         summary: "Daftar Logbook & Presensi Magang",
         description: "Mengambil riwayat presensi harian, logbook kegiatan, dan statistik jam kerja magang kandidat.",
-        tags: ["Candidate Internship & Logbook"]
+        security: [["bearerAuth" => []]],
+        tags: ["Candidate Internship & Logbook"],
+        responses: [
+            new OA\Response(response: 200, description: "Data logbook magang berhasil diambil."),
+            new OA\Response(response: 401, description: "Unauthenticated")
+        ]
     )]
     public function logbooks(Request $request): JsonResponse
     {
@@ -67,7 +72,15 @@ class CandidateInternshipApiController extends Controller
         path: "/candidate/internship/logbooks/{date}",
         summary: "Detail Logbook Tanggal Tertentu",
         description: "Mengambil detail presensi dan catatan kegiatan untuk tanggal tertentu (format: YYYY-MM-DD).",
-        tags: ["Candidate Internship & Logbook"]
+        security: [["bearerAuth" => []]],
+        tags: ["Candidate Internship & Logbook"],
+        parameters: [
+            new OA\Parameter(name: "date", in: "path", required: true, schema: new OA\Schema(type: "string", example: "2026-10-25"))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Detail logbook berhasil diambil."),
+            new OA\Response(response: 404, description: "Logbook tidak ditemukan.")
+        ]
     )]
     public function showLogbook(Request $request, string $date): JsonResponse
     {
@@ -96,7 +109,12 @@ class CandidateInternshipApiController extends Controller
         path: "/candidate/internship/logbooks",
         summary: "Submit / Check-in Presensi & Logbook Harian",
         description: "Mengisi presensi harian, aktivitas, jam kerja, foto bukti, dan koordinat GPS.",
-        tags: ["Candidate Internship & Logbook"]
+        security: [["bearerAuth" => []]],
+        tags: ["Candidate Internship & Logbook"],
+        responses: [
+            new OA\Response(response: 200, description: "Presensi dan logbook kegiatan berhasil disimpan."),
+            new OA\Response(response: 422, description: "Validasi gagal")
+        ]
     )]
     public function storeLogbook(Request $request): JsonResponse
     {
@@ -143,7 +161,11 @@ class CandidateInternshipApiController extends Controller
         path: "/candidate/internship/progress",
         summary: "Ringkasan Progress Magang & Nilai",
         description: "Mengambil capaian jam kerja magang, persentase kelulusan, nilai evaluasi mentor, transkrip nilai, dan sertifikat.",
-        tags: ["Candidate Internship & Logbook"]
+        security: [["bearerAuth" => []]],
+        tags: ["Candidate Internship & Logbook"],
+        responses: [
+            new OA\Response(response: 200, description: "Progress magang berhasil diambil.")
+        ]
     )]
     public function progress(Request $request): JsonResponse
     {
@@ -184,7 +206,12 @@ class CandidateInternshipApiController extends Controller
         path: "/candidate/internship/bank-account",
         summary: "Simpan Rekening Bank untuk Uang Saku",
         description: "Menyimpan atau memperbarui data nomor rekening bank kandidat untuk pencairan uang saku magang.",
-        tags: ["Candidate Internship & Logbook"]
+        security: [["bearerAuth" => []]],
+        tags: ["Candidate Internship & Logbook"],
+        responses: [
+            new OA\Response(response: 200, description: "Data rekening bank berhasil disimpan."),
+            new OA\Response(response: 422, description: "Validasi gagal")
+        ]
     )]
     public function bankAccount(Request $request): JsonResponse
     {
@@ -220,7 +247,11 @@ class CandidateInternshipApiController extends Controller
         path: "/candidate/internship/stipends",
         summary: "Riwayat Pencairan Uang Saku Magang",
         description: "Mengambil daftar pencairan uang saku dan insentif magang kandidat.",
-        tags: ["Candidate Internship & Logbook"]
+        security: [["bearerAuth" => []]],
+        tags: ["Candidate Internship & Logbook"],
+        responses: [
+            new OA\Response(response: 200, description: "Riwayat uang saku berhasil diambil.")
+        ]
     )]
     public function stipends(Request $request): JsonResponse
     {
@@ -241,7 +272,12 @@ class CandidateInternshipApiController extends Controller
         path: "/candidate/internship/resignations",
         summary: "Pengajuan Pengunduran Diri Magang (Self-Resignation)",
         description: "Mengirimkan formulir pengajuan pengunduran diri magang beserta alasan dan dokumen pendukung.",
-        tags: ["Candidate Internship & Logbook"]
+        security: [["bearerAuth" => []]],
+        tags: ["Candidate Internship & Logbook"],
+        responses: [
+            new OA\Response(response: 201, description: "Pengajuan pengunduran diri berhasil dikirimkan."),
+            new OA\Response(response: 422, description: "Validasi gagal")
+        ]
     )]
     public function resignations(Request $request): JsonResponse
     {

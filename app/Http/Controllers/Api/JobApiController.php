@@ -368,4 +368,24 @@ class JobApiController extends Controller
             'active_jobs' => $jobs,
         ], 'Detail profil perusahaan berhasil diambil.');
     }
+
+    #[OA\Get(
+        path: "/categories",
+        summary: "Daftar Kategori Lowongan Kerja Aktif",
+        description: "Mengambil daftar master kategori lowongan pekerjaan aktif untuk filter pencarian.",
+        tags: ["Jobs & Search"],
+        responses: [
+            new OA\Response(response: 200, description: "Daftar kategori berhasil diambil.")
+        ]
+    )]
+    public function categories(): \Illuminate\Http\JsonResponse
+    {
+        $categories = \App\Models\JobCategory::where('is_active', true)->orderBy('name')->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Daftar kategori lowongan kerja berhasil diambil.',
+            'data' => $categories,
+        ]);
+    }
 }

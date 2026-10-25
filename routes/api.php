@@ -53,6 +53,7 @@ Route::prefix('v1')->middleware(['throttle:api'])->group(function () {
     Route::get('/jobs/{id}', [JobApiController::class, 'show']);
     Route::get('/companies', [JobApiController::class, 'companies']);
     Route::get('/companies/{name}', [JobApiController::class, 'companyShow']);
+    Route::get('/categories', [JobApiController::class, 'categories']);
 
     // ==========================================
     // 3. REGIONAL UMK 2026, CITIES & MAJORS API
@@ -130,6 +131,27 @@ Route::prefix('v1')->middleware(['throttle:api'])->group(function () {
         Route::get('/notifications', [NotificationApiController::class, 'index']);
         Route::post('/notifications/{id}/read', [NotificationApiController::class, 'markAsRead']);
         Route::post('/notifications/read-all', [NotificationApiController::class, 'markAllAsRead']);
+
+        // Employee Self-Service (ESS): Attendance, Overtime, Reimbursement, Payroll
+        Route::get('/employee/attendance', [\App\Http\Controllers\Api\Employee\EmployeeEssApiController::class, 'attendanceToday']);
+        Route::post('/employee/attendance/check-in', [\App\Http\Controllers\Api\Employee\EmployeeEssApiController::class, 'checkIn']);
+        Route::post('/employee/attendance/check-out', [\App\Http\Controllers\Api\Employee\EmployeeEssApiController::class, 'checkOut']);
+
+        Route::get('/employee/overtimes', [\App\Http\Controllers\Api\Employee\EmployeeEssApiController::class, 'overtimesList']);
+        Route::post('/employee/overtimes', [\App\Http\Controllers\Api\Employee\EmployeeEssApiController::class, 'storeOvertime']);
+        Route::delete('/employee/overtimes/{id}', [\App\Http\Controllers\Api\Employee\EmployeeEssApiController::class, 'destroyOvertime']);
+
+        Route::get('/employee/reimbursements', [\App\Http\Controllers\Api\Employee\EmployeeEssApiController::class, 'reimbursementsList']);
+        Route::post('/employee/reimbursements', [\App\Http\Controllers\Api\Employee\EmployeeEssApiController::class, 'storeReimbursement']);
+        Route::delete('/employee/reimbursements/{id}', [\App\Http\Controllers\Api\Employee\EmployeeEssApiController::class, 'destroyReimbursement']);
+
+        Route::get('/employee/payrolls', [\App\Http\Controllers\Api\Employee\EmployeeEssApiController::class, 'payrollsList']);
+        Route::get('/employee/payrolls/{id}', [\App\Http\Controllers\Api\Employee\EmployeeEssApiController::class, 'payrollDetail']);
+
+        // Leave & Attendance Management (Cuti & Izin Karyawan/Magang)
+        Route::get('/leaves', [\App\Http\Controllers\Api\LeaveApiController::class, 'myLeaves']);
+        Route::post('/leaves', [\App\Http\Controllers\Api\LeaveApiController::class, 'storeLeave']);
+        Route::post('/leaves/{id}/cancel', [\App\Http\Controllers\Api\LeaveApiController::class, 'cancelLeave']);
     });
 
     // ==========================================
@@ -201,6 +223,21 @@ Route::prefix('v1')->middleware(['throttle:api'])->group(function () {
         Route::get('/email-templates', [AdminCompanyTeamApiController::class, 'templatesIndex']);
         Route::post('/email-templates', [AdminCompanyTeamApiController::class, 'templatesStore']);
         Route::get('/calendar/events', [AdminSuperApiController::class, 'calendarEvents']);
+
+        // HR Employee Management & Payroll Module
+        Route::get('/employee-attendances', [\App\Http\Controllers\Api\Admin\AdminEmployeePayrollApiController::class, 'attendancesIndex']);
+        Route::get('/employee-overtimes', [\App\Http\Controllers\Api\Admin\AdminEmployeePayrollApiController::class, 'overtimesIndex']);
+        Route::post('/employee-overtimes/{id}/status', [\App\Http\Controllers\Api\Admin\AdminEmployeePayrollApiController::class, 'updateOvertimeStatus']);
+        Route::get('/employee-reimbursements', [\App\Http\Controllers\Api\Admin\AdminEmployeePayrollApiController::class, 'reimbursementsIndex']);
+        Route::post('/employee-reimbursements/{id}/status', [\App\Http\Controllers\Api\Admin\AdminEmployeePayrollApiController::class, 'updateReimbursementStatus']);
+        Route::get('/employee-payrolls', [\App\Http\Controllers\Api\Admin\AdminEmployeePayrollApiController::class, 'payrollsIndex']);
+        Route::post('/employee-payrolls/generate', [\App\Http\Controllers\Api\Admin\AdminEmployeePayrollApiController::class, 'generatePayroll']);
+        Route::post('/employee-payrolls/{id}/status', [\App\Http\Controllers\Api\Admin\AdminEmployeePayrollApiController::class, 'updatePayrollStatus']);
+
+        // HR Leave Management (Cuti & Izin Approval)
+        Route::get('/leaves', [\App\Http\Controllers\Api\LeaveApiController::class, 'adminLeaves']);
+        Route::post('/leaves/{id}/approve', [\App\Http\Controllers\Api\LeaveApiController::class, 'approveLeave']);
+        Route::post('/leaves/{id}/reject', [\App\Http\Controllers\Api\LeaveApiController::class, 'rejectLeave']);
     });
 
     // ==========================================

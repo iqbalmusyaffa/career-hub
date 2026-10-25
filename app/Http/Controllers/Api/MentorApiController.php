@@ -19,7 +19,12 @@ class MentorApiController extends Controller
         path: "/mentor/dashboard",
         summary: "Dashboard & Statistik Mentor",
         description: "Mengambil statistik total mentee, jumlah logbook menunggu persetujuan, dan ringkasan aktivitas bimbingan.",
-        tags: ["Mentor Workspace"]
+        security: [["bearerAuth" => []]],
+        tags: ["Mentor Workspace"],
+        responses: [
+            new OA\Response(response: 200, description: "Data dashboard mentor berhasil dimuat."),
+            new OA\Response(response: 401, description: "Unauthenticated")
+        ]
     )]
     public function dashboard(Request $request): JsonResponse
     {
@@ -50,7 +55,11 @@ class MentorApiController extends Controller
         path: "/mentor/logbooks",
         summary: "Daftar Logbook Seluruh Mentee",
         description: "Mengambil daftar logbook kegiatan harian mentee dengan filter status dan nama mentee.",
-        tags: ["Mentor Workspace"]
+        security: [["bearerAuth" => []]],
+        tags: ["Mentor Workspace"],
+        responses: [
+            new OA\Response(response: 200, description: "Daftar logbook mentee berhasil diambil.")
+        ]
     )]
     public function logbooks(Request $request): JsonResponse
     {
@@ -80,7 +89,14 @@ class MentorApiController extends Controller
         path: "/mentor/logbooks/{id}/approve",
         summary: "Setujui / ACC Logbook Mentee",
         description: "Menyetujui presensi dan jam kerja logbook harian mentee.",
-        tags: ["Mentor Workspace"]
+        security: [["bearerAuth" => []]],
+        tags: ["Mentor Workspace"],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Logbook berhasil disetujui (Approved).")
+        ]
     )]
     public function approveLogbook(Request $request, int $id): JsonResponse
     {
@@ -110,7 +126,15 @@ class MentorApiController extends Controller
         path: "/mentor/logbooks/{id}/reject",
         summary: "Tolak / Minta Revisi Logbook Mentee",
         description: "Menolak atau meminta revisi atas pengisian presensi kegiatan harian mentee.",
-        tags: ["Mentor Workspace"]
+        security: [["bearerAuth" => []]],
+        tags: ["Mentor Workspace"],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Logbook telah ditolak dengan catatan evaluasi."),
+            new OA\Response(response: 422, description: "Validasi gagal")
+        ]
     )]
     public function rejectLogbook(Request $request, int $id): JsonResponse
     {
@@ -137,7 +161,11 @@ class MentorApiController extends Controller
         path: "/mentor/interns",
         summary: "Daftar Peserta Magang (Mentees)",
         description: "Mengambil daftar lengkap seluruh peserta magang aktif berserta progres jam kerja dan persentase kehadiran.",
-        tags: ["Mentor Workspace"]
+        security: [["bearerAuth" => []]],
+        tags: ["Mentor Workspace"],
+        responses: [
+            new OA\Response(response: 200, description: "Daftar peserta magang berhasil dimuat.")
+        ]
     )]
     public function interns(): JsonResponse
     {
@@ -184,7 +212,12 @@ class MentorApiController extends Controller
         path: "/mentor/evaluations",
         summary: "Submit Nilai & Evaluasi Akhir Mentee",
         description: "Mengirimkan nilai performa akhir, soft skills, technical skills, dan ulasan rekomendasi kelulusan mentee.",
-        tags: ["Mentor Workspace"]
+        security: [["bearerAuth" => []]],
+        tags: ["Mentor Workspace"],
+        responses: [
+            new OA\Response(response: 200, description: "Nilai evaluasi performa magang berhasil disimpan."),
+            new OA\Response(response: 422, description: "Validasi gagal")
+        ]
     )]
     public function evaluations(Request $request): JsonResponse
     {

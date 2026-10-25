@@ -13,7 +13,12 @@ class CandidateCvApiController extends Controller
         path: "/candidate/cv",
         summary: "Ambil Data CV ATS Kandidat",
         description: "Mengambil data lengkap 8 bagian CV standar ATS (profil, ringkasan, pengalaman kerja, pendidikan, keahlian, proyek, sertifikasi, organisasi, dan bahasa).",
-        tags: ["Candidate CV Builder"]
+        security: [["bearerAuth" => []]],
+        tags: ["Candidate CV Builder"],
+        responses: [
+            new OA\Response(response: 200, description: "Data CV berhasil diambil."),
+            new OA\Response(response: 401, description: "Unauthenticated")
+        ]
     )]
     public function show(Request $request): JsonResponse
     {
@@ -57,7 +62,13 @@ class CandidateCvApiController extends Controller
         path: "/candidate/cv",
         summary: "Simpan & Update Data CV ATS",
         description: "Menyimpan atau memperbarui data 8 bagian CV kandidat.",
-        tags: ["Candidate CV Builder"]
+        security: [["bearerAuth" => []]],
+        tags: ["Candidate CV Builder"],
+        responses: [
+            new OA\Response(response: 200, description: "CV berhasil diperbarui."),
+            new OA\Response(response: 422, description: "Validasi gagal"),
+            new OA\Response(response: 401, description: "Unauthenticated")
+        ]
     )]
     public function save(Request $request): JsonResponse
     {

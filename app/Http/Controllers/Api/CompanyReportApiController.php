@@ -18,7 +18,12 @@ class CompanyReportApiController extends Controller
         path: "/company-reports",
         summary: "Laporkan Indikasi Penipuan / Red Flag Perusahaan",
         description: "Mengirimkan laporan pengaduan penipuan, pungutan liar, atau pelanggaran oleh perusahaan/lowongan kerja.",
-        tags: ["Public & Reports"]
+        security: [["bearerAuth" => []]],
+        tags: ["Public & Reports"],
+        responses: [
+            new OA\Response(response: 201, description: "Laporan berhasil dikirim."),
+            new OA\Response(response: 422, description: "Validasi gagal")
+        ]
     )]
     public function store(Request $request): JsonResponse
     {
@@ -88,7 +93,11 @@ class CompanyReportApiController extends Controller
         path: "/admin/company-reports",
         summary: "Daftar Laporan Red Flag (Super Admin)",
         description: "Mengambil daftar laporan pengaduan perusahaan dari kandidat untuk dimoderasi.",
-        tags: ["Admin Super & Moderation"]
+        security: [["bearerAuth" => []]],
+        tags: ["Admin Super & Moderation"],
+        responses: [
+            new OA\Response(response: 200, description: "Daftar laporan red flag berhasil dimuat.")
+        ]
     )]
     public function index(Request $request): JsonResponse
     {
@@ -112,7 +121,15 @@ class CompanyReportApiController extends Controller
         path: "/admin/company-reports/{id}/status",
         summary: "Update Status Laporan Red Flag (Super Admin)",
         description: "Memperbarui status penanganan laporan (investigating, resolved, dismissed).",
-        tags: ["Admin Super & Moderation"]
+        security: [["bearerAuth" => []]],
+        tags: ["Admin Super & Moderation"],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Status laporan red flag berhasil diperbarui."),
+            new OA\Response(response: 422, description: "Validasi gagal")
+        ]
     )]
     public function updateStatus(Request $request, int $id): JsonResponse
     {
