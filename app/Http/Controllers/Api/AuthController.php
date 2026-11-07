@@ -186,6 +186,99 @@ class AuthController extends Controller
         ], 'Login berhasil!');
     }
 
+    public function googleAuth(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'name' => 'nullable|string',
+            'google_id' => 'nullable|string',
+            'avatar' => 'nullable|string',
+            'id_token' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse('Validasi data Google gagal.', 422, $validator->errors());
+        }
+
+        $email = strtolower(trim($request->email));
+        $name = trim($request->name ?: explode('@', $email)[0]);
+        $googleId = $request->google_id;
+        $avatar = $request->avatar;
+
+        if ($request->filled('id_token')) {
+            try {
+                $verifyRes = \Illuminate\Support\Facades\Http::timeout(5)->get("https://oauth2.googleapis.com/tokeninfo?id_token=" . $request->id_token);
+                if ($verifyRes->successful()) {
+                    $payload = $verifyRes->json();
+                    if (!empty($payload['email'])) {
+                        $email = strtolower($payload['email']);
+                    }
+                    if (!empty($payload['name'])) {
+                        $name = $payload['name'];
+                    }
+                    if (!empty($payload['sub'])) {
+                        $googleId = $payload['sub'];
+                    }
+                    if (!empty($payload['picture'])) {
+                        $avatar = $payload['picture'];
+                    }
+                }
+            } catch (\Exception $e) {}
+        }
+
+        $user = User::where('email', $email)->first();
+
+        if ($user) {
+            if ($user->is_suspended) {
+                return $this->errorResponse('Akun Anda ditangguhkan: ' . ($user->status_reason ?: 'Pelanggaran aturan platform'), 403);
+            }
+
+            if ($googleId && !$user->google_id) {
+                $user->update([
+                    'google_id' => $googleId,
+                    'avatar' => $avatar ?? $user->avatar,
+                ]);
+            }
+        } else {
+            $user = User::create([
+                'name' => $name,
+                'email' => $email,
+                'google_id' => $googleId,
+                'avatar' => $avatar,
+                'password' => Hash::make(\Illuminate\Support\Str::random(24)),
+            ]);
+
+            \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Candidate', 'guard_name' => 'web']);
+            $user->assignRole('Candidate');
+
+            \App\Models\CandidateProfile::create([
+                'user_id' => $user->id,
+                'phone' => null,
+                'resume_path' => null,
+            ]);
+        }
+
+        if (!$user->hasRole('Candidate')) {
+            $user->assignRole('Candidate');
+        }
+
+        $token = $user->createToken('mobile-google-auth')->plainTextToken;
+        $user->load(['candidateProfile', 'companyProfile']);
+
+        return $this->successResponse([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'avatar' => $user->avatar,
+                'is_suspended' => (bool)$user->is_suspended,
+                'roles' => $user->getRoleNames(),
+                'candidate_profile' => $user->candidateProfile,
+            ],
+            'token' => $token,
+        ], 'Login Google berhasil!');
+    }
+
     #[OA\Get(
         path: "/auth/me",
         summary: "Informasi User Saat Ini",
