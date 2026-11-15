@@ -61,6 +61,10 @@
                             <span class="font-semibold text-slate-800 dark:text-slate-200">{{ $activePeriod->target_hours }} Jam Kerja</span>
                         </div>
                     @endif
+                    <a href="{{ route('mentor.evaluations.create', $intern->id) }}" class="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-xs transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-award text-xs"></i>
+                        <span>Beri Nilai & Evaluasi</span>
+                    </a>
                 </div>
             </div>
 

@@ -7,9 +7,9 @@ use App\Http\Controllers\Admin\ApplicationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    $latestJobs = \App\Models\Job::where('status', 'active')->latest()->take(3)->get();
+    $latestJobs = \App\Models\Job::with('companyProfile')->where('status', 'active')->latest()->take(6)->get();
     if ($latestJobs->isEmpty()) {
-        $latestJobs = \App\Models\Job::latest()->take(3)->get();
+        $latestJobs = \App\Models\Job::with('companyProfile')->latest()->take(6)->get();
     }
     
     // Perusahaan terkemuka berdasarkan lowongan aktif terbanyak

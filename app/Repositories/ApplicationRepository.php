@@ -58,7 +58,16 @@ class ApplicationRepository implements ApplicationRepositoryInterface
         }
 
         if (request()->filled('status')) {
-            $query->where('status', request('status'));
+            $statusReq = request('status');
+            if (in_array($statusReq, ['reviewing', 'screening'])) {
+                $query->whereIn('status', ['screening', 'processing', 'reviewed', 'test']);
+            } elseif ($statusReq === 'interview') {
+                $query->whereIn('status', ['interview', 'interview_hr', 'interview_user']);
+            } elseif ($statusReq === 'accepted') {
+                $query->whereIn('status', ['accepted', 'hired']);
+            } else {
+                $query->where('status', $statusReq);
+            }
         }
 
         if (request('view') === 'kanban') {

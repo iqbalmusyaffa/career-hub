@@ -17,15 +17,10 @@
             </div>
             
             <div class="flex items-center gap-2 flex-wrap">
-                @php
-                    $sampleIntern = \App\Models\User::role('Candidate')->first();
-                @endphp
-                @if($sampleIntern)
-                    <a href="{{ route('mentor.evaluations.create', $sampleIntern->id) }}" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center gap-2">
-                        <i class="fa-solid fa-award text-xs"></i>
-                        <span>Penilaian Kinerja Magang</span>
-                    </a>
-                @endif
+                <a href="{{ route('mentor.logbooks.index') }}" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center gap-2">
+                    <i class="fa-solid fa-users text-xs"></i>
+                    <span>Daftar & Penilaian Peserta</span>
+                </a>
                 <a href="{{ route('mentor.settings.index') }}" class="px-3.5 py-2 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs transition flex items-center gap-2">
                     <i class="fa-solid fa-sliders text-slate-400 text-xs"></i>
                     <span>Pengaturan Periode & Libur</span>

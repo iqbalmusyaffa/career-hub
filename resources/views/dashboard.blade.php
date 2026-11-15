@@ -133,7 +133,7 @@
 
                     // Holiday & Weekend Detection for Today
                     $today = today();
-                    $companyId = $internMetrics['job']->company_profile_id ?? 1;
+                    $companyId = $internMetrics['job']?->companyProfile?->id ?? ($internMetrics['period']?->company_id ?? 1);
                     $isWeekend = $today->isWeekend();
                     $todayHoliday = \App\Models\CompanyHoliday::whereDate('date', $today->format('Y-m-d'))
                         ->where(function ($q) use ($companyId) {
@@ -1020,7 +1020,7 @@
                             $stages[] = ['key' => 'background_check', 'label' => 'Background Check', 'icon' => 'fa-shield-halved'];
                         }
 
-                        if ($hasOfferLetter || $statusVal === 'offered' || $statusVal === 'accepted') {
+                        if ($hasOfferLetter || $statusVal === 'offered' || $statusVal === 'accepted' || $statusVal === 'hired') {
                             $stages[] = ['key' => 'offered', 'label' => 'Offer Letter', 'icon' => 'fa-file-contract'];
                         }
 
@@ -1030,6 +1030,7 @@
                         $currentKey = $statusVal;
                         if ($statusVal === 'reviewed' || $statusVal === 'processing') $currentKey = 'pending';
                         if ($statusVal === 'interview') $currentKey = 'interview_hr';
+                        if ($statusVal === 'hired') $currentKey = 'accepted';
                         
                         $activeIdx = array_search($currentKey, $stageKeys);
                         if ($activeIdx === false) {
@@ -1371,9 +1372,9 @@
                             </p>
 
                             <div class="pt-1 flex flex-col gap-2">
-                                <button type="button" @click="dismissModal()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                                <a href="{{ route('candidate.applications.index') }}" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
                                     <i class="fa-solid fa-file-contract text-xs"></i> Tinjau Surat Penawaran &rarr;
-                                </button>
+                                </a>
                                 <button type="button" @click="dismissModal()" class="text-xs text-slate-400 font-medium hover:underline py-1">Tutup</button>
                             </div>
                         </div>
@@ -1403,9 +1404,10 @@
                             </p>
 
                             <div class="pt-1 flex flex-col gap-2">
-                                <button type="button" @click="dismissModal()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-calendar-days text-xs"></i> Lihat Jadwal Wawancara
-                                </button>
+                                <a href="{{ route('candidate.applications.index') }}" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-calendar-days text-xs"></i> Lihat Jadwal Wawancara &rarr;
+                                </a>
+                                <button type="button" @click="dismissModal()" class="text-xs text-slate-400 font-medium hover:underline py-1">Tutup</button>
                             </div>
                         </div>
 

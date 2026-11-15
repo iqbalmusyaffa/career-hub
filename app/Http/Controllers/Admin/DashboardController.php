@@ -99,8 +99,8 @@ class DashboardController extends Controller
             $activeJobsCount = $companyJobs->where('status', 'active')->count();
 
             $totalCompanyApplications = (clone $appQuery)->count();
-            $hiredCount = (clone $appQuery)->where('status', 'accepted')->count();
-            $interviewCount = (clone $appQuery)->where('status', 'interview')->count();
+            $hiredCount = (clone $appQuery)->whereIn('status', ['accepted', 'hired'])->count();
+            $interviewCount = (clone $appQuery)->whereIn('status', ['interview', 'interview_hr', 'interview_user'])->count();
             $pendingCount = (clone $appQuery)->where('status', 'pending')->count();
 
             $recentApplications = (clone $appQuery)->with(['user.candidateProfile', 'job'])
@@ -134,10 +134,10 @@ class DashboardController extends Controller
         $totalApplicants = (clone $appQuery)->distinct('user_id')->count('user_id');
         $totalApplications = (clone $appQuery)->count();
         $newApplications = (clone $appQuery)->where('status', 'pending')->count();
-        $reviewingApplications = (clone $appQuery)->where('status', 'reviewing')->count();
-        $acceptedApplications = (clone $appQuery)->where('status', 'accepted')->count();
+        $reviewingApplications = (clone $appQuery)->whereIn('status', ['screening', 'processing', 'reviewed', 'test'])->count();
+        $acceptedApplications = (clone $appQuery)->whereIn('status', ['accepted', 'hired'])->count();
         $rejectedApplications = (clone $appQuery)->where('status', 'rejected')->count();
-        $interviewApplications = (clone $appQuery)->where('status', 'interview')->count();
+        $interviewApplications = (clone $appQuery)->whereIn('status', ['interview', 'interview_hr', 'interview_user'])->count();
 
         $latestApplications = (clone $appQuery)->with(['user.candidateProfile', 'job'])->latest()->take(5)->get();
 

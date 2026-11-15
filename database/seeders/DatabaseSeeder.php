@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             CandidateFaridProfileSeeder::class,
             CandidateTaniaLogbookSeeder::class,
             CandidateIqbalJuniorBackendSeeder::class,
+            CandidateGaluhHelpdeskSeeder::class,
         ]);
     }
 }

@@ -182,18 +182,22 @@
                          x-transition:enter-end="opacity-100 translate-y-0"
                          class="h-full">
                         <a href="{{ route('jobs.index', ['division' => $cat->name]) }}" 
-                           class="group bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 border border-slate-200/90 dark:border-slate-700/80 hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between h-full relative overflow-hidden">
+                           class="group bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 border border-slate-200/90 dark:border-slate-700/80 hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between h-full relative overflow-hidden">
                             
+                            <!-- Top Accent Line on Hover -->
+                            <div class="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-blue-600 via-indigo-600 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
                             <!-- Top Row: Icon & Job Count Badge -->
                             <div>
                                 <div class="flex items-start justify-between gap-3 mb-4">
-                                    <div class="w-12 h-12 rounded-2xl {{ $styles['bg_light'] }} {{ $styles['text'] }} flex items-center justify-center text-lg font-bold border {{ $styles['border'] }} {{ $styles['hover_bg'] }} transition-all duration-200 shadow-2xs shrink-0">
+                                    <!-- High-Contrast Themed Icon (Always visible & scales smoothly on hover) -->
+                                    <div class="w-12 h-12 rounded-2xl {{ $styles['bg_light'] }} {{ $styles['text'] }} flex items-center justify-center text-lg font-bold border {{ $styles['border'] }} group-hover:scale-110 group-hover:shadow-md transition-all duration-300 shadow-2xs shrink-0">
                                         <i class="{{ $cat->icon ?: 'fa-solid fa-briefcase' }}"></i>
                                     </div>
 
-                                    <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border {{ $styles['badge'] }} transition">
-                                        <span>{{ $jobCount }}</span>
-                                        <span class="font-medium text-[10px] opacity-80">Posisi</span>
+                                    <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border {{ $styles['badge'] }} transition">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
+                                        <span>{{ $jobCount }} Posisi</span>
                                     </span>
                                 </div>
 
@@ -209,8 +213,8 @@
                             <!-- Footer Action -->
                             <div class="mt-5 pt-3.5 border-t border-slate-100 dark:border-slate-700/70 flex items-center justify-between text-xs font-semibold text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
                                 <span class="text-[11px] font-bold">Jelajahi Lowongan</span>
-                                <div class="w-6 h-6 rounded-full bg-slate-50 dark:bg-slate-700/50 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/40 flex items-center justify-center transition">
-                                    <i class="fa-solid fa-arrow-right text-[10px] group-hover:translate-x-0.5 transition-transform"></i>
+                                <div class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center transition-all duration-200 shadow-2xs">
+                                    <i class="fa-solid fa-arrow-right text-[11px] group-hover:translate-x-0.5 transition-transform"></i>
                                 </div>
                             </div>
                         </a>
@@ -319,75 +323,187 @@
     </div>
 
     <!-- 5. Featured Latest Jobs Section -->
-    <div class="py-16 sm:py-20 bg-slate-50/60 border-t border-slate-200">
+    <div class="py-16 sm:py-20 bg-slate-50/70 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4 border-b border-slate-200 pb-4">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4 border-b border-slate-200/80 dark:border-slate-800 pb-4">
                 <div>
-                    <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider block mb-1">Lowongan Pilihan</span>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Peluang Karir Terbaru</h2>
+                    <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-1">Lowongan Pilihan</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Peluang Karir Terbaru</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Temukan posisi karir terbaik dari perusahaan mitra terverifikasi yang siap merekrut Anda.</p>
                 </div>
-                <a href="{{ route('jobs.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 transition">
-                    Lihat Semua Lowongan <i class="fa-solid fa-arrow-right text-xs"></i>
+                <a href="{{ route('jobs.index') }}" class="inline-flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition group shrink-0">
+                    <span>Lihat Semua Lowongan</span>
+                    <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
                 </a>
             </div>
 
             <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 @forelse($latestJobs ?? [] as $job)
-                    <div class="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all flex flex-col group h-full">
-                        <div class="p-5 flex-grow flex flex-col">
-                            <div class="flex justify-between items-start mb-3.5">
-                                <div class="w-10 h-10 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center justify-center shadow-xs">
-                                    {{ strtoupper(substr($job->title, 0, 2)) }}
-                                </div>
-                                <span class="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-[11px] font-semibold rounded-md border border-slate-200">
-                                    {{ ucfirst($job->work_type ?? 'Full-time') }}
+                    @php
+                        $company = $job->companyProfile;
+                        
+                        // Smart company initials (e.g. PT Sinergi Cloud Nusantara -> SC)
+                        $cleanCompanyName = preg_replace('/^(PT|CV|UD|PO)\.?\s+/i', '', trim($job->company_name ?? ''));
+                        $words = array_values(array_filter(explode(' ', $cleanCompanyName)));
+                        $initials = '';
+                        if (count($words) >= 2) {
+                            $initials = strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
+                        } else {
+                            $initials = strtoupper(substr($cleanCompanyName ?: 'CO', 0, 2));
+                        }
+
+                        // Gradient palette for company logo avatar
+                        $avatarGradients = [
+                            'from-blue-600 to-indigo-600',
+                            'from-violet-600 to-purple-600',
+                            'from-emerald-600 to-teal-600',
+                            'from-amber-500 to-orange-600',
+                            'from-rose-500 to-pink-600',
+                            'from-cyan-600 to-blue-600',
+                        ];
+                        $gradClass = $avatarGradients[abs(crc32($job->company_name ?? '')) % count($avatarGradients)];
+
+                        // Work Type configuration
+                        $wt = strtolower($job->work_type ?? 'full-time');
+                        $wtConfig = match(true) {
+                            str_contains($wt, 'remote') => [
+                                'class' => 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800',
+                                'icon' => 'fa-solid fa-globe',
+                                'label' => 'Remote'
+                            ],
+                            str_contains($wt, 'hybrid') => [
+                                'class' => 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200/80 dark:border-indigo-800',
+                                'icon' => 'fa-solid fa-house-laptop',
+                                'label' => 'Hybrid'
+                            ],
+                            str_contains($wt, 'intern') || str_contains($wt, 'magang') => [
+                                'class' => 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200/80 dark:border-amber-800',
+                                'icon' => 'fa-solid fa-graduation-cap',
+                                'label' => 'Magang'
+                            ],
+                            str_contains($wt, 'part') => [
+                                'class' => 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200/80 dark:border-purple-800',
+                                'icon' => 'fa-solid fa-clock',
+                                'label' => 'Part-time'
+                            ],
+                            default => [
+                                'class' => 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200/80 dark:border-blue-800',
+                                'icon' => 'fa-solid fa-briefcase',
+                                'label' => 'Full-time'
+                            ]
+                        };
+
+                        // Clean salary format for display
+                        $rawSalary = $job->salary ?? 'Negosiasi';
+                        $cleanSalary = preg_replace('/(\/ Bulan|\/Bulan|\/ bln)/i', '', $rawSalary);
+                        $hasMonthly = preg_match('/(\/ Bulan|\/Bulan|\/ bln)/i', $rawSalary);
+                    @endphp
+
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700/80 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1.5 transition-all duration-300 flex flex-col group h-full relative overflow-hidden">
+                        <!-- Top Accent Highlight on Hover -->
+                        <div class="h-1 w-full bg-linear-to-r from-blue-600 via-indigo-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                        <div class="p-5 sm:p-6 flex-grow flex flex-col">
+                            <!-- Card Header: Company Logo/Avatar & Work Type Badge -->
+                            <div class="flex justify-between items-start gap-3 mb-4">
+                                @if($company && $company->logo_path)
+                                    <img src="{{ asset('storage/' . $company->logo_path) }}" 
+                                         alt="{{ $job->company_name }}" 
+                                         class="w-12 h-12 rounded-xl object-contain p-1.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 shadow-2xs shrink-0 group-hover:scale-105 transition-transform">
+                                @else
+                                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br {{ $gradClass }} text-white font-extrabold text-sm tracking-wider flex items-center justify-center shadow-sm shrink-0 group-hover:scale-105 transition-transform border border-white/20">
+                                        {{ $initials }}
+                                    </div>
+                                @endif
+
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-lg border {{ $wtConfig['class'] }} shadow-2xs shrink-0">
+                                    <i class="{{ $wtConfig['icon'] }} text-[10px]"></i>
+                                    <span>{{ $wtConfig['label'] }}</span>
                                 </span>
                             </div>
                             
-                            <a href="{{ route('jobs.show', $job) }}" class="group-hover:text-blue-600 transition">
-                                <h3 class="text-sm font-bold text-slate-900 mb-1 leading-snug line-clamp-2">{{ $job->title }}</h3>
+                            <!-- Job Title & Company -->
+                            <a href="{{ route('jobs.show', $job) }}" class="group/title block mb-1">
+                                <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-snug line-clamp-2 group-hover/title:text-blue-600 dark:group-hover/title:text-blue-400 transition-colors">
+                                    {{ $job->title }}
+                                </h3>
                             </a>
-                            <p class="text-xs font-medium text-slate-600 mb-3 flex items-center gap-1.5">
-                                <i class="fa-solid fa-building text-slate-400"></i> {{ $job->company_name ?? 'Perusahaan Mitra' }}
+                            <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-3 flex items-center gap-1.5 truncate">
+                                <i class="fa-regular fa-building text-slate-400 text-[11px]"></i>
+                                <span class="truncate">{{ $job->company_name ?? 'Perusahaan Mitra' }}</span>
+                                @if($company?->is_verified ?? true)
+                                    <i class="fa-solid fa-circle-check text-blue-500 text-[11px] shrink-0" title="Perusahaan Terverifikasi"></i>
+                                @endif
                             </p>
                             
-                            <div class="mb-3">
-                                <span class="inline-flex items-center text-[11px] font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                                    {{ $job->division ?? 'Umum' }}
+                            <!-- Division & Skill Tags -->
+                            <div class="flex flex-wrap items-center gap-1.5 mb-3.5">
+                                <span class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700/60 px-2.5 py-0.5 rounded-md border border-slate-200/80 dark:border-slate-600/80">
+                                    <i class="fa-solid fa-layer-group text-[9px] text-slate-400"></i>
+                                    <span>{{ $job->division ?? 'Umum' }}</span>
                                 </span>
+                                @if(!empty($job->skills_required))
+                                    @php
+                                        $skillsList = is_array($job->skills_required) 
+                                            ? $job->skills_required 
+                                            : array_slice(array_map('trim', explode(',', $job->skills_required)), 0, 2);
+                                    @endphp
+                                    @foreach(array_slice($skillsList, 0, 2) as $skill)
+                                        @php
+                                            $skillName = is_array($skill) ? ($skill['name'] ?? '') : $skill;
+                                        @endphp
+                                        @if(!empty($skillName))
+                                            <span class="text-[10px] font-medium text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/80 px-2 py-0.5 rounded border border-slate-200/60 dark:border-slate-700/60">
+                                                {{ $skillName }}
+                                            </span>
+                                        @endif
+                                    @endforeach
+                                @endif
                             </div>
 
-                            <div class="flex flex-wrap items-center text-xs text-slate-500 mb-3 gap-x-4 gap-y-1">
+                            <!-- Location & Timestamp -->
+                            <div class="flex items-center text-xs text-slate-500 dark:text-slate-400 mb-3.5 gap-x-3 gap-y-1 flex-wrap">
                                 <div class="flex items-center gap-1.5">
-                                    <i class="fa-solid fa-location-dot text-slate-400"></i>
-                                    <span>{{ $job->location }}</span>
+                                    <i class="fa-solid fa-location-dot text-rose-500 text-[11px]"></i>
+                                    <span class="truncate max-w-[150px] font-medium text-slate-600 dark:text-slate-300">{{ $job->location }}</span>
                                 </div>
-                                <div class="flex items-center gap-1.5">
-                                    <i class="fa-solid fa-clock text-slate-400"></i>
+                                <span class="text-slate-300 dark:text-slate-600">•</span>
+                                <div class="flex items-center gap-1 text-[11px]">
+                                    <i class="fa-regular fa-clock text-slate-400 text-[10px]"></i>
                                     <span>{{ $job->created_at ? $job->created_at->diffForHumans() : 'Baru saja' }}</span>
                                 </div>
                             </div>
                             
-                            <!-- Excerpt -->
-                            <p class="text-slate-600 text-xs leading-relaxed line-clamp-2 mb-4 flex-grow">
+                            <!-- Excerpt Description -->
+                            <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed line-clamp-2 mb-4 flex-grow">
                                 {{ Str::limit(strip_tags($job->description), 110) }}
                             </p>
                         </div>
                         
-                        <!-- Card Footer -->
-                        <div class="px-5 py-3.5 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl flex items-center justify-between gap-3">
-                            <div class="min-w-0">
-                                <span class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold block">Kompensasi / Gaji</span>
-                                <span class="text-xs font-bold text-slate-900 block truncate">{{ $job->salary ?? 'Negosiasi' }}</span>
+                        <!-- Card Footer: Salary & Detail Action -->
+                        <div class="px-5 sm:px-6 py-3.5 border-t border-slate-100 dark:border-slate-700/60 bg-slate-50/60 dark:bg-slate-800/40 rounded-b-2xl flex items-center justify-between gap-3">
+                            <div class="min-w-0 pr-1">
+                                <span class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold block mb-0.5">Kompensasi / Gaji</span>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate block">
+                                        {{ $cleanSalary }}
+                                    </span>
+                                    @if($hasMonthly)
+                                        <span class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold shrink-0">/bln</span>
+                                    @endif
+                                </div>
                             </div>
-                            <a href="{{ route('jobs.show', $job) }}" class="inline-flex items-center justify-center px-3.5 py-1.5 bg-slate-900 hover:bg-blue-600 text-white font-semibold text-xs rounded-lg transition shadow-xs">
-                                Detail Posisi &rarr;
+                            <a href="{{ route('jobs.show', $job) }}" 
+                               class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-slate-900 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all duration-200 shadow-xs hover:shadow-md group-hover:bg-blue-600 shrink-0">
+                                <span>Detail Posisi</span>
+                                <i class="fa-solid fa-arrow-right text-[10px] group-hover:translate-x-0.5 transition-transform"></i>
                             </a>
                         </div>
                     </div>
                 @empty
-                    <div class="col-span-full text-center py-12 bg-white rounded-2xl border border-slate-200">
-                        <p class="text-xs font-medium text-slate-500">Belum ada lowongan terbaru saat ini.</p>
+                    <div class="col-span-full text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+                        <i class="fa-solid fa-briefcase text-3xl mb-2 text-slate-300 dark:text-slate-600"></i>
+                        <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Belum ada lowongan terbaru saat ini.</p>
                     </div>
                 @endforelse
             </div>
